@@ -1,8 +1,11 @@
-﻿// Learn more about F# at http://fsharp.org
+﻿open GameManager
+open MapGenerator
+open Renderer
 
-open System
+let g = Game(MakeMap)
 
-[<EntryPoint>]
-let main argv =
-    printfn "Hello World from F#!"
-    0 // return an integer exit code
+g.Update |> ignore
+
+//printfn "frame=%i entities=%i maxEntityID=%i" g.Frames.Length g.Frame_Current.ECM.EntitiesExist .Count g.Frame_Current.ECM.MaxEntityID
+
+RenderFrame g.Frame_Current

@@ -6,6 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="CommonGenericFunctions.fs" />
+    <Compile Include="LocationTypes.fs" />
+    <Compile Include="Components.fs" />
+    <Compile Include="EntityComponentManager.fs" />
+    <Compile Include="GameManager.fs" />
+    <Compile Include="MapGenerator.fs" />
+    <Compile Include="Renderer.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
