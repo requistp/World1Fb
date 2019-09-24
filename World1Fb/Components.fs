@@ -1,6 +1,12 @@
 ﻿module Components
 open LocationTypes
 
+[<Literal>]
+let ComponentID_Form = 1
+
+[<Literal>]
+let ComponentID_Terrain = 2
+
 type TerrainType = 
     | Dirt 
     | Rock
@@ -35,8 +41,8 @@ type ComponentType =
     | Terrain of Terrain:TerrainComponent
     member this.ComponentID = 
         match this with
-        | Form _ -> 1
-        | Terrain _ -> 2
+        | Form _ -> ComponentID_Form
+        | Terrain _ -> ComponentID_Terrain
 
 [<Struct>]
 type EntityComponent(eid:uint32, comp:ComponentType) =

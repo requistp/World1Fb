@@ -1,39 +1,63 @@
 ﻿module EntityComponentManager
 open Components
-//open LocationTypes
 
-type EntityComponentManager(entityComponents:Map<uint32,EntityComponent list>) =
-    static let mutable _maxEntityID = uint32 0
+[<Struct>]
+type EntityComponentMap(ecmap:Map<uint32,EntityComponent list>, maxEntityID:uint32) =
+    static member New = EntityComponentMap(Map.empty, 0u)
+    member this.MaxEntityID = maxEntityID
+    member this.Map = ecmap
+    member this.Add (ecl:EntityComponent list) = EntityComponentMap(ecmap.Add(maxEntityID+1u,ecl), maxEntityID+1u)
+
+let BuildComponentDict (ecmap:Map<uint32,EntityComponent list>) = 
+    let mutable _componentDict = Map.empty:Map<int,uint32 list>
+    for e in ecmap do
+        for v in e.Value do
+            match _componentDict.ContainsKey(v.Component.ComponentID) with
+            | false -> _componentDict <- _componentDict.Add(v.Component.ComponentID,[e.Key])
+            | true -> let l = [e.Key] @ _componentDict.Item(v.Component.ComponentID)
+                      _componentDict <- _componentDict.Remove(v.Component.ComponentID).Add(v.Component.ComponentID,l)
+    _componentDict
+
+[<Struct>]
+type ComponentDict(ecmap:Map<uint32,EntityComponent list>) =
+    member this.CD = BuildComponentDict ecmap
+
+type EntityComponentManager(ecmap:EntityComponentMap) = 
     let mutable _componentDict = Map.empty:Map<int,uint32 list>
 
-    let addToComponentDict (c:ComponentType) e =
-        match _componentDict.ContainsKey(c.ComponentID) with
-        | false -> _componentDict <- _componentDict.Add(c.ComponentID,[e])
-        | true -> let l = [e] @ _componentDict.Item(c.ComponentID)
-                  _componentDict <- _componentDict.Remove(c.ComponentID).Add(c.ComponentID,l)
+    let addToComponentDict cid e =
+        match _componentDict.ContainsKey(cid) with
+        | false -> _componentDict <- _componentDict.Add(cid,[e])
+        | true -> let l = [e] @ _componentDict.Item(cid)
+                  _componentDict <- _componentDict.Remove(cid).Add(cid,l)
     let tryGetEntity e =
-        match entityComponents.ContainsKey(e) with
+        match ecmap.Map.ContainsKey(e) with
         | false -> None
-        | true -> Some (entityComponents.Item(e))
-                  
+        | true -> Some (ecmap.Map.Item(e))
+           
     do
-        for e in entityComponents do
-            if (e.Key > _maxEntityID) then _maxEntityID <- e.Key
+        for e in ecmap.Map do
             for v in e.Value do
-                addToComponentDict v.Component v.EntityID
+                addToComponentDict v.Component.ComponentID v.EntityID
 
+    member this.ECMap = ecmap
     member this.EntitiesWithComponent cid = 
         match _componentDict.ContainsKey(cid) with
         | true -> _componentDict.Item(cid)
         | false -> []
+    member this.GetEntityComponent cid e = 
+        let ec = ecmap.Map.Item(e) |> List.find (fun x -> x.Component.ComponentID=cid)
+        ec.Component
     member this.TryGetEntity e = tryGetEntity e
     member this.TryGetEntityComponent cid e = 
-        match entityComponents.ContainsKey(e) with
+        match ecmap.Map.ContainsKey(e) with
         | false -> None
-        | true -> let l = entityComponents.Item(e) |> List.filter (fun c -> c.Component.ComponentID=cid)
+        | true -> let l = ecmap.Map.Item(e) |> List.filter (fun c -> c.Component.ComponentID=cid)
                   match l with
                   | [] -> None
                   | _ -> Some l.Head
+
+    new() = EntityComponentManager(EntityComponentMap.New)
 
 //type EntityComponentManager(entities:Set<int>, entityComponents:Map<int,AbstractComponent list>, maxEntityID:int) =
 //    member this.Entities = entities

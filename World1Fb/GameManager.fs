@@ -2,36 +2,44 @@
 open CommonGenericFunctions
 open EntityComponentManager
 
-type Frame = { number:int; ECM:EntityComponentManager }
+[<Struct>]
+type Frame(number:uint32, ecman:EntityComponentManager) =
+    static member New = Frame(0u, EntityComponentManager())
+    member this.Number = number
+    member this.ECMan = ecman
+    member this.Add(ecman:EntityComponentManager) = Frame(number + 1u, ecman)
 
 type Game(frames:Frame list) =
     let mutable _frames = frames
-    let isInitialized = (not _frames.IsEmpty) && (_frames.Head.number > 0)
-    let frame_NextNumber = if isInitialized then _frames.Head.number + 1 else 1
-    let frame_Next (ecm:EntityComponentManager) = { number = frame_NextNumber; ECM = ecm }
-    let frame_Add (ecm:EntityComponentManager) = _frames <- [frame_Next ecm] @ frames; _frames
+    let isInitialized = (_frames.Head.Number > 0u)
+    let frame_Add (ecman:EntityComponentManager) = _frames <- [_frames.Head.Add(ecman)] @ frames
 
-    let InitializeGame (ecm:EntityComponentManager) = 
-        match ecm.EntitiesExist with
-        | false -> _frames <- []; _frames
-        | true -> frame_Add ecm
+    let InitializeGame (ecman:EntityComponentManager) = 
+        match ecman.ECMap.Map.IsEmpty with
+        | true -> _frames <- [Frame.New]
+        | false -> frame_Add ecman
+        _frames.Head
  
     member this.Frames = _frames
     member this.IsInitialized = isInitialized
     member this.Frame_Current = frames.Head
 
-    member this.StartGame_New ecm = 
+    member this.StartGame_New ecman = 
         match isInitialized with 
         | true -> Failure "Game is already started"
-        | false -> Success (InitializeGame ecm) //Set base state
+        | false -> Success (InitializeGame ecman) //Set base state
 
-    member this.Update = 
+    member this.Update ecman = 
         match isInitialized with
         | false -> Failure "Game is not initialized"
-        | true  -> Success (frame_Add _frames.Head.ECM)
+        | true  -> Success (frame_Add ecman)
         //Run all systems to generate the new state of all Entities (ie, it should return an ECM which would be piped in below)
         //  _frames.Head.ECM 
         //  |> SystemManager.Update 
         //  |> frame_Add
     
-    new(ecm:EntityComponentManager) = Game([{ number = 1; ECM = ecm }])
+    new() = Game([Frame.New])
+    new(ecmap:EntityComponentMap) =
+        let f0 = Frame.New
+        let ecman = EntityComponentManager ecmap
+        Game([f0.Add(ecman)] @ [f0])
