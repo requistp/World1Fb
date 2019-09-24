@@ -39,7 +39,7 @@ type Game(frames:Frame list) =
         //  |> frame_Add
     
     new() = Game([Frame.New])
-    new(ecmap:EntityComponentMap) =
+    new(ecmap:EntityComponentData) =
         let f0 = Frame.New
         let ecman = EntityComponentManager ecmap
         Game([f0.Add(ecman)] @ [f0])

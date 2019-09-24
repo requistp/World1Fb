@@ -3,7 +3,7 @@ open Components
 open EntityComponentManager
 open LocationTypes
 
-let MakeMap (ecmap:EntityComponentMap) =
+let MakeMap (ecmap:EntityComponentData) =
     let mutable newecm = ecmap
 
     let st = System.DateTime.Now

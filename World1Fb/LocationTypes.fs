@@ -1,9 +1,9 @@
 ﻿module LocationTypes
 
 [<Literal>]
-let MapWidth = 1000
+let MapWidth = 2000
 [<Literal>]
-let MapHeight = 1000
+let MapHeight = 2000
 
 [<Struct>]
 type LocationDataInt(x:int, y:int) =

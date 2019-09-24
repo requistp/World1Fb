@@ -7,7 +7,7 @@ open Renderer
 
 //let ecman = EntityComponentManager ecmap
 
-let g = Game(MakeMap EntityComponentMap.New)
+let g = Game(MakeMap EntityComponentData.New)
 
 
 g.StartGame_New
