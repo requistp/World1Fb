@@ -1,33 +1,29 @@
 ﻿module GameManager
 open CommonGenericFunctions
+//open ECM2
 open EntityComponentManager
 
 [<Struct>]
 type Frame(number:uint32, ecman:EntityComponentManager) =
     static member New = Frame(0u, EntityComponentManager())
     member this.Number = number
-    member this.ECMan = ecman
+    member this.EntityManager = ecman
     member this.Add(ecman:EntityComponentManager) = Frame(number + 1u, ecman)
 
 type Game(frames:Frame list) =
     let mutable _frames = frames
-    let isInitialized = (_frames.Head.Number > 0u)
-    let frame_Add (ecman:EntityComponentManager) = _frames <- [_frames.Head.Add(ecman)] @ frames
-
-    let InitializeGame (ecman:EntityComponentManager) = 
-        match ecman.ECMap.Map.IsEmpty with
-        | true -> _frames <- [Frame.New]
-        | false -> frame_Add ecman
-        _frames.Head
+    let isInitialized = (_frames.Head.Number > 0u) 
+    let frame_Add (ecman:EntityComponentManager) = _frames <- [_frames.Head.Add(ecman)] @ frames; _frames.Head
  
+    member this.EntityManager = _frames.Head.EntityManager
     member this.Frames = _frames
-    member this.IsInitialized = isInitialized
     member this.Frame_Current = frames.Head
+    member this.IsInitialized = isInitialized
 
-    member this.StartGame_New ecman = 
-        match isInitialized with 
-        | true -> Failure "Game is already started"
-        | false -> Success (InitializeGame ecman) //Set base state
+    member this.InitializeGame (ecman:EntityComponentManager) = 
+        match not isInitialized || ecman.Entities.IsEmpty with
+        | true -> Failure "Game is not initialized"
+        | false -> Success (frame_Add ecman)
 
     member this.Update ecman = 
         match isInitialized with
@@ -38,8 +34,4 @@ type Game(frames:Frame list) =
         //  |> SystemManager.Update 
         //  |> frame_Add
     
-    new() = Game([Frame.New])
-    new(ecmap:EntityComponentData) =
-        let f0 = Frame.New
-        let ecman = EntityComponentManager ecmap
-        Game([f0.Add(ecman)] @ [f0])
+    new() = Game([Frame(0u, EntityComponentManager())])

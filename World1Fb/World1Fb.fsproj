@@ -10,6 +10,7 @@
     <Compile Include="LocationTypes.fs" />
     <Compile Include="Components.fs" />
     <Compile Include="EntityComponentManager.fs" />
+    <Compile Include="ECM2.fs" />
     <Compile Include="GameManager.fs" />
     <Compile Include="MapGenerator.fs" />
     <Compile Include="Renderer.fs" />
