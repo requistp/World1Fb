@@ -1,6 +1,5 @@
 ﻿module GameManager
 open CommonGenericFunctions
-//open ECM2
 open EntityComponentManager
 
 [<Struct>]

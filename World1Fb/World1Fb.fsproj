@@ -6,13 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="FormSystem.fs" />
-    <Compile Include="SystemManager.fs" />
-    <Compile Include="TerrainSystem.fs" />
     <Compile Include="CommonGenericFunctions.fs" />
     <Compile Include="LocationTypes.fs" />
     <Compile Include="Components.fs" />
     <Compile Include="EntityComponentManager.fs" />
+    <Compile Include="SystemManager.fs" />
+    <Compile Include="FormSystem.fs" />
+    <Compile Include="TerrainSystem.fs" />
     <Compile Include="GameManager.fs" />
     <Compile Include="MapGenerator.fs" />
     <Compile Include="Renderer.fs" />
