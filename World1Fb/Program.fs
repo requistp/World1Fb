@@ -1,13 +1,20 @@
 ﻿open GameManager
 open MapGenerator
 open Renderer
-//open EntityComponentManager 
+open SystemManager
+open FormSystem
+open TerrainSystem
+
+let sl = [
+    FormSystem(true) :> AbstractSystem
+    TerrainSystem(true) :> AbstractSystem
+    ]
 
 let g = Game()
 
-let f0 = g.InitializeGame (TranslateMapToEntities g.EntityManager MakeMap)
+let f0 = g.InitializeGame sl
 
-RenderFrame g.Frame_Current
+//RenderFrame g.Frame_Current
 
 //g.Update |> ignore
 
