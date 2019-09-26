@@ -2,10 +2,10 @@
 open LocationTypes
 
 [<Literal>]
-let ComponentID_Form = 1
+let ComponentID_Form = 1uy
 
 [<Literal>]
-let ComponentID_Terrain = 2
+let ComponentID_Terrain = 2uy
 
 type TerrainType = 
     | Dirt 
