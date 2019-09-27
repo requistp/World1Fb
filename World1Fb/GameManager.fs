@@ -2,6 +2,7 @@
 open CommonGenericFunctions
 open Components
 open EntityComponentManager
+open System_Abstract
 open SystemManager
 
 [<Struct>]
