@@ -10,13 +10,16 @@ type SystemManager() =
     let applyChangeLog = 
         1
 
-    let registerAllSystems (ecm:EntityComponentManager) (sl:AbstractSystem list) = 
+    let registerAllSystems (sl:AbstractSystem list) = 
         _systems <- sl
-        //for s in sl |> List.filter (fun x -> x.IsActive ) do
-        //    s.Initialize ecm
 
-        let newecm = EntityComponentManager()
-        Success newecm
+        for s in sl |> List.filter (fun x -> x.IsActive ) do
+            s.Initialize |> ignore
+
+
+        Success 1
+        //let newecm = EntityComponentManager()
+        //Success newecm
 
     let updateAllSystems (ecm:EntityComponentManager) = 
         printfn "update all systems"
@@ -24,10 +27,10 @@ type SystemManager() =
 
     member this.IsInitialized = not _systems.IsEmpty
     
-    member this.RegisterSystems (ecm:EntityComponentManager) (sl:AbstractSystem list) = 
+    member this.RegisterSystems (sl:AbstractSystem list) = 
         match sl.IsEmpty with
         | true -> Failure "No systems to register"
-        | false -> registerAllSystems ecm sl
+        | false -> registerAllSystems sl
 
     member this.Update (ecm:EntityComponentManager) = 
         let dt = _lastUpdated

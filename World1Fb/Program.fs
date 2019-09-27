@@ -7,7 +7,7 @@ open FormSystem
 open TerrainSystem
 
 let sl = [
-    FormSystem(true) :> AbstractSystem
+    //FormSystem(true) :> AbstractSystem
     TerrainSystem(true) :> AbstractSystem
     ]
 

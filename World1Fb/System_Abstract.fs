@@ -1,4 +1,5 @@
 ﻿module System_Abstract
+open Components
 open EntityComponentManager
 
 [<AbstractClass>]
@@ -11,5 +12,5 @@ type AbstractSystem(isActive:bool, requireInitialize:bool) =
         with get () = (_isInitialized || not requireInitialize)
         and internal set (value) = _isInitialized <- value
 
-    abstract member Initialize: EntityComponentManager
-    abstract member Update: EntityComponentManager -> EntityComponentManager
+    abstract member Initialize: FrameChangeLog
+    abstract member Update: EntityComponentManager -> FrameChangeLog

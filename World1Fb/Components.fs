@@ -21,15 +21,6 @@ type ComponentChangeType =
         | TerrainChange _ -> ComponentID_Terrain
 
 [<Struct>]
-type ComponentChangeLog(log:Map<uint32,ComponentChangeType list>) =
-    member this.Log = log
-
-[<Struct>]
-type EntityChangeLog(additions:Map<uint32,ComponentType list>, removals:uint32 list) =
-    member this.Additions = additions
-    member this.Removals = removals
-
-[<Struct>]
 type EntityComponent(eid:uint32, comp:ComponentType) =
     member this.EntityID = eid
     member this.Component = comp
