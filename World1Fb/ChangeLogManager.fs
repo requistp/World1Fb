@@ -20,7 +20,10 @@ type ChangeLogManager() =
     //    //entityAdditions:Map<string,ComponentType list>
     //    FrameChangeLog(Map.empty, Map.empty, List.empty
 
-    member this.CreateEntities_ViaComponentTypeList (ctl:ComponentType list) =
+    member this.AddEntities_ViaTuple (i,ctl:ComponentType list) list =
+        1
+
+    member this.AddEntities_ViaComponentTypeList (ctl:ComponentType list) =
 
         ctl |> List.indexed
 
