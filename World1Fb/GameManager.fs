@@ -1,18 +1,19 @@
 ﻿module GameManager
 open CommonGenericFunctions
+open Components
 open EntityComponentManager
 open SystemManager
 
 [<Struct>]
-type Frame(number:uint32, ecman:EntityComponentManager) =
-    static member New = Frame(0u, EntityComponentManager())
+type Frame(number:uint32, ecm:EntityComponentManager, ccl:ComponentChangeLog) =
+    static member New = Frame(0u, EntityComponentManager(), ComponentChangeLog Map.empty)
     member this.Number = number
-    member this.EntityManager = ecman
-    member this.Add(ecman:EntityComponentManager) = Frame(number + 1u, ecman)
-
+    member this.EntityManager = ecm
+    member this.Add (ecm:EntityComponentManager) (ccl:ComponentChangeLog) = Frame(number + 1u, ecm, ccl)
+     
 type Game(frames:Frame list) =
     let mutable _frames = frames
-    let frame_Add (ecman:EntityComponentManager) = _frames <- [_frames.Head.Add(ecman)] @ frames; _frames.Head
+    let frame_Add (ecm:EntityComponentManager) (ccl:ComponentChangeLog) = _frames <- [_frames.Head.Add ecm ccl] @ frames; _frames.Head
     let systemManager = SystemManager()
     
     member this.EntityManager = _frames.Head.EntityManager
@@ -20,7 +21,11 @@ type Game(frames:Frame list) =
     member this.Frame_Current = frames.Head
 
     member this.InitializeGame (sl:AbstractSystem list) = 
-        systemManager.RegisterSystems sl
+        //Could check for game already initialized, but until that, I'm just gonna clear existing frams...
+        _frames <- [Frame.New]
+        match systemManager.RegisterSystems this.EntityManager sl with
+        | Failure x -> Failure x
+        | Success ecm -> Success (frame_Add ecm)
 
     //member this.Update ecman = 
     //    match isInitialized with
@@ -31,4 +36,4 @@ type Game(frames:Frame list) =
         //  |> SystemManager.Update 
         //  |> frame_Add
     
-    new() = Game([Frame(0u, EntityComponentManager())])
+    new() = Game([Frame.New])

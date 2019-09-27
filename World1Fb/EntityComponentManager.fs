@@ -1,6 +1,11 @@
 ﻿module EntityComponentManager
 open Components
-   
+  
+[<Struct>]
+type EntityComponent(eid:uint32, comp:ComponentType) =
+    member this.EntityID = eid
+    member this.Component = comp
+
 type EntityComponentManager(ecmap:Map<uint32,EntityComponent list>, maxEntityID:uint32, compDict:Map<byte,uint32 list>) = 
     let maintainComponentDict_Add (cd:Map<byte,uint32 list>) (ec:EntityComponent) =
         match cd.ContainsKey(ec.Component.ComponentID) with
