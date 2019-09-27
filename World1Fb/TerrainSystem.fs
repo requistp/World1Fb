@@ -15,6 +15,8 @@ type TerrainSystem(isActive:bool) =
     let MakeMap = List.collect (fun x -> [for (y:uint16) in [0us..MapHeight - 1us] -> Terrain(TerrainComponent(Dirt, LocationDataInt(x,y)))]) [0us..MapWidth - 1us]
    
     let TranslateMapToFrameChangeLog (ctl:ComponentType list) = 
+        MakeMap |> List.indexed
+
         let mm2 = List.init MakeMap.Length (fun index -> index)
         printfn "%O" mm2.ToString
         let t = List.map2 (fun k v -> (k,v)) mm2 MakeMap

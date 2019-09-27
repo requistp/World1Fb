@@ -1,4 +1,5 @@
 ﻿module SystemManager
+open ChangeLogManager
 open CommonGenericFunctions
 open EntityComponentManager
 open System_Abstract
@@ -25,6 +26,7 @@ type SystemManager() =
         printfn "update all systems"
         ecm
 
+    member this.ChangeLogManager = ChangeLogManager()
     member this.IsInitialized = not _systems.IsEmpty
     
     member this.RegisterSystems (sl:AbstractSystem list) = 
