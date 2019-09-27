@@ -1,19 +1,7 @@
 ﻿module SystemManager
 open CommonGenericFunctions
 open EntityComponentManager
-
-[<AbstractClass>]
-type AbstractSystem(isActive:bool, requireInitialize:bool) =
-    let mutable _isInitialized = false
-
-    member this.IsActive = isActive
-    member this.RequireInitialize = requireInitialize
-    member this.IsInitialized
-        with get () = (_isInitialized || not requireInitialize)
-        and internal set (value) = _isInitialized <- value
-
-    abstract member Initialize: EntityComponentManager -> EntityComponentManager
-    abstract member Update: float -> EntityComponentManager -> EntityComponentManager
+open System_Abstract
 
 type SystemManager() =
     let mutable _systems = List.empty:AbstractSystem list
@@ -24,8 +12,8 @@ type SystemManager() =
 
     let registerAllSystems (ecm:EntityComponentManager) (sl:AbstractSystem list) = 
         _systems <- sl
-        for s in sl |> List.filter (fun x -> x.IsActive ) do
-            s.Initialize ecm
+        //for s in sl |> List.filter (fun x -> x.IsActive ) do
+        //    s.Initialize ecm
 
         let newecm = EntityComponentManager()
         Success newecm

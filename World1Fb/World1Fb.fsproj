@@ -8,11 +8,14 @@
   <ItemGroup>
     <Compile Include="CommonGenericFunctions.fs" />
     <Compile Include="LocationTypes.fs" />
+    <Compile Include="FormComponent.fs" />
+    <Compile Include="TerrainComponent.fs" />
     <Compile Include="Components.fs" />
     <Compile Include="EntityComponentManager.fs" />
-    <Compile Include="SystemManager.fs" />
+    <Compile Include="System_Abstract.fs" />
     <Compile Include="FormSystem.fs" />
     <Compile Include="TerrainSystem.fs" />
+    <Compile Include="SystemManager.fs" />
     <Compile Include="GameManager.fs" />
     <Compile Include="MapGenerator.fs" />
     <Compile Include="Renderer.fs" />

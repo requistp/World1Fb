@@ -1,10 +1,11 @@
 ﻿module FormSystem
-open SystemManager
+open System_Abstract
+open EntityComponentManager
 
 type FormSystem(isActive:bool) =
     inherit AbstractSystem(isActive,false) 
    
-    override this.Initialize ecm = ecm
+    override this.Initialize = EntityComponentManager()
 
-    override this.Update dt ecm = 
+    override this.Update ecm = 
         ecm
