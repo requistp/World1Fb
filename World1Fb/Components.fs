@@ -21,6 +21,20 @@ type ComponentChangeType =
         | TerrainChange _ -> ComponentID_Terrain
 
 [<Struct>]
+type EntityAdditionType (ctl:ComponentType list) =
+    member this.Components = ctl
+
+[<Struct>]
+type EntityRemovalType (e:uint32) =
+    member this.EntityID = e
+
+[<Struct>]
+type ChangeTypes = 
+    | Component of Component:ComponentChangeType
+    | EntityAddition of EntityAddition:EntityAdditionType
+    | EntityRemoval of EntityRemoval:EntityRemovalType
+
+[<Struct>]
 type EntityComponent(eid:uint32, comp:ComponentType) =
     member this.EntityID = eid
     member this.Component = comp

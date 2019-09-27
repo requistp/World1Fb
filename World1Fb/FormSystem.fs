@@ -1,4 +1,5 @@
 ﻿module FormSystem
+open ChangeLogManager
 open Components
 open System_Abstract
 open EntityComponentManager
@@ -6,8 +7,8 @@ open EntityComponentManager
 type FormSystem(isActive:bool) =
     inherit AbstractSystem(isActive,false) 
    
-    override this.Initialize = 
-        FrameChangeLog(Map.empty, Map.empty, List.empty)
+    override this.Initialize  (clm:ChangeLogManager) = 
+        Ok "done"
 
     override this.Update ecm = 
-        FrameChangeLog(Map.empty, Map.empty, List.empty)
+        ChangeLog(Map.empty, Map.empty, List.empty)
