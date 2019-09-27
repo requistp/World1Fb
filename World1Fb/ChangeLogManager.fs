@@ -1,4 +1,5 @@
 ﻿module ChangeLogManager
+open CommonGenericFunctions
 open Components
 
 [<Struct>]
@@ -7,6 +8,8 @@ type FrameChangeLog(ccl:Map<uint32,ComponentChangeType list>, entityAdditions:Ma
     member this.ComponentChangeLog = ccl
     member this.EntityAdditions = entityAdditions
     member this.EntityRemovals = entityRemovals
+
+    member this.AddEntity(ct:ComponentType list) = 
 
 type ChangeLogManager() = 
     let mutable _fcl = FrameChangeLog.New
@@ -19,6 +22,13 @@ type ChangeLogManager() =
     //    //let x = MakeMap |> Map.ofList MakeMap.It
     //    //entityAdditions:Map<string,ComponentType list>
     //    FrameChangeLog(Map.empty, Map.empty, List.empty
+
+    member this.AddEntity (ctl:ComponentType list) = 
+        match ctl.IsEmpty with
+        | true -> Failure "ctl is empty"
+        | false -> fcl <-
+                   Success "done"
+        
 
     member this.AddEntities_ViaTuple (i,ctl:ComponentType list) list =
         1
