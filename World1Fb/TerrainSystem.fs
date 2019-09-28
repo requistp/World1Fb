@@ -12,14 +12,11 @@ type TerrainSystem(isActive:bool) =
 
     let MakeMap = List.collect (fun x -> [for (y:uint16) in [0us..MapHeight - 1us] -> Terrain(TerrainComponent(Dirt, LocationDataInt(x,y)))]) [0us..MapWidth - 1us]
    
-    let TranslateMapToFrameChangeLog (ctl:ComponentType list) = 
-        clm.AddEntities_ViaComponentTypeList ctl
-
-    override this.Initialize (clm:ChangeLogManager) = 
-        match TranslateMapToFrameChangeLog clm MakeMap with
-        | Error e -> Error e
-        | Ok s -> this.IsInitialized <- true
-                  Ok s
+    override this.Initialize = 
+        base.SetToInitialized
+        match this.IsActive with
+        | true -> MakeMap |> List.collect (fun ct -> [EntityAddition [ct]])
+        | false -> List.empty
 
     override this.Update ecm = 
-        ChangeLog(Map.empty, Map.empty, List.empty)
+        List.empty  

@@ -2,7 +2,7 @@
 open FormComponent
 open TerrainComponent
 
-[<Struct>]
+//[<Struct>]
 type ComponentType = 
     | Form of Form:FormComponent
     | Terrain of Terrain:TerrainComponent
@@ -11,7 +11,7 @@ type ComponentType =
         | Form _ -> ComponentID_Form
         | Terrain _ -> ComponentID_Terrain
 
-[<Struct>]
+//[<Struct>]
 type ComponentChangeType = 
     | FormChange of Form:FormComponent_Change
     | TerrainChange of Terrain:TerrainComponent_Change
@@ -20,21 +20,13 @@ type ComponentChangeType =
         | FormChange _ -> ComponentID_Form
         | TerrainChange _ -> ComponentID_Terrain
 
-[<Struct>]
-type EntityAdditionType (ctl:ComponentType list) =
-    member this.Components = ctl
+//[<Struct>]
+type EntityComponentChange = 
+    | ComponentChange of ComponentChange:ComponentChangeType
+    | EntityAddition of EntityAddition:ComponentType list
+    | EntityRemoval of uint32
 
-[<Struct>]
-type EntityRemovalType (e:uint32) =
-    member this.EntityID = e
-
-[<Struct>]
-type ChangeTypes = 
-    | Component of Component:ComponentChangeType
-    | EntityAddition of EntityAddition:EntityAdditionType
-    | EntityRemoval of EntityRemoval:EntityRemovalType
-
-[<Struct>]
+//[<Struct>]
 type EntityComponent(eid:uint32, comp:ComponentType) =
     member this.EntityID = eid
     member this.Component = comp

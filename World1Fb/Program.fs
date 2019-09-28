@@ -13,9 +13,11 @@ let sl = [
 
 let g = Game()
 
-let f0 = g.InitializeGame sl
+let r = g.InitializeGame sl
+match r with
+| Ok f -> RenderFrame f
+| _ -> ()
 
-//RenderFrame g.Frame_Current
 
 //g.Update |> ignore
 

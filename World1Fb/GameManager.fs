@@ -1,5 +1,4 @@
 ﻿module GameManager
-open ChangeLogManager
 open CommonGenericFunctions
 open Components
 open EntityComponentManager
@@ -7,15 +6,15 @@ open System_Abstract
 open SystemManager
 
 [<Struct>]
-type Frame(number:uint32, ecm:EntityComponentManager, cl:ChangeLog) =
-    static member New = Frame(0u, EntityComponentManager(), ChangeLog.New)
+type Frame(number:uint32, ecm:EntityComponentManager, eccl:EntityComponentChange list) =
+    static member New = Frame(0u, EntityComponentManager(), List.empty)
     member this.Number = number
     member this.EntityManager = ecm
-    member this.Add (ecm:EntityComponentManager) (cl:ChangeLog) = Frame(number + 1u, ecm, cl)
+    member this.Add (ecm:EntityComponentManager) (eccl:EntityComponentChange list) = Frame(number + 1u, ecm, eccl)
      
 type Game(frames:Frame list) =
     let mutable _frames = frames
-    let frame_Add (ecm:EntityComponentManager) (cl:ChangeLog) = _frames <- [_frames.Head.Add ecm cl] @ frames; _frames.Head
+    let frame_Add (ecm:EntityComponentManager) (eccl:EntityComponentChange list) = _frames <- [_frames.Head.Add ecm eccl] @ frames; _frames.Head
     let systemManager = SystemManager()
     
     member this.EntityManager = _frames.Head.EntityManager
@@ -27,7 +26,7 @@ type Game(frames:Frame list) =
         _frames <- [Frame.New]
         match systemManager.RegisterSystems sl with
         | Error e -> Error e
-        | Ok ecm -> Ok ecm//(frame_Add ecm)
+        | Ok tup -> Ok (frame_Add (snd tup) (fst tup))
 
     //member this.Update ecman = 
     //    match isInitialized with

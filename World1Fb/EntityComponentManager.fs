@@ -12,6 +12,7 @@ type EntityComponentManager(ecmap:Map<uint32,EntityComponent list>, maxEntityID:
         | false -> None
         | true -> Some (ecmap.Item(e))
 
+    static member New = EntityComponentManager(Map.empty, 0u, Map.empty)
     member this.Entities = ecmap    
     member this.CreateEntity (ctl:ComponentType list) =
         let i = maxEntityID + 1u

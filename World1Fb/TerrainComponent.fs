@@ -20,13 +20,13 @@ let TerrainIsPassable tt =
     | Dirt | Sand -> true
     | Rock -> false
 
-[<Struct>]
+//[<Struct>]
 type TerrainComponent(terrainType:TerrainType, location:LocationDataInt) =
     member this.IsPassable = TerrainIsPassable terrainType
     member this.TerrainType = terrainType
     member this.Symbol = TerrainSymbol terrainType
     member this.Location = location
 
-[<Struct>]
+//[<Struct>]
 type TerrainComponent_Change(terrainType:TerrainType option) =
     member this.TerrainType = terrainType
