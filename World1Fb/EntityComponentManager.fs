@@ -41,6 +41,7 @@ type EntityComponentManager(ecmap:Map<uint32,EntityComponent list>, maxEntityID:
     member this.GetEntityComponent cid e = 
         let ec = ecmap.Item(e) |> List.find (fun x -> x.Component.ComponentID=cid)
         ec.Component
+    member this.RemoveEntity e = EntityComponentManager(ecmap.Remove(e), maxEntityID, compDict)
     member this.TryGetEntity e = tryGetEntity e
     member this.TryGetEntityComponent cid e = 
         match ecmap.ContainsKey(e) with

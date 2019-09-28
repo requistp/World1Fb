@@ -1,5 +1,4 @@
 ﻿open GameManager
-open MapGenerator
 open Renderer
 open System_Abstract
 open SystemManager
@@ -7,7 +6,7 @@ open FormSystem
 open TerrainSystem
 
 let sl = [
-    //FormSystem(true) :> AbstractSystem
+    FormSystem(true) :> AbstractSystem
     TerrainSystem(true) :> AbstractSystem
     ]
 
@@ -16,8 +15,12 @@ let g = Game()
 let r = g.InitializeGame sl
 match r with
 | Ok f -> RenderFrame f
-| _ -> ()
+| Error e -> printfn "Error:%O" e
 
+let r2 = g.Update
+match r2 with
+| Ok f -> printfn "r2"; RenderFrame f
+| Error e -> printfn "r2 Error:%O" e; ()
 
 //g.Update |> ignore
 

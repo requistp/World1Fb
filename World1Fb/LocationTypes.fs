@@ -6,7 +6,6 @@ let MapWidth = 2000us
 [<Literal>]
 let MapHeight = 2000us
 
-//[<Struct>]
 type LocationDataInt(x:uint16, y:uint16) =
     member this.X = x
     member this.Y = y
