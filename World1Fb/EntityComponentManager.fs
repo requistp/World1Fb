@@ -6,6 +6,8 @@ type EntityComponentData(ecm:Map<uint32,EntityComponent list>, maxEntityID:uint3
     member this.ECMap = ecm
     member this.MaxEntityID = maxEntityID
 
+type ChangesAndNewECData = EntityComponentChange list * EntityComponentData
+    
 module Entity =
     let AllWithComponent (ecd:EntityComponentData) (cid:byte) =
         ecd.ECMap |> Map.filter (fun k ctl -> ctl |> List.exists (fun ct -> ct.Component.ComponentID=cid))

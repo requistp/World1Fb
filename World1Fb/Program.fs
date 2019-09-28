@@ -10,17 +10,16 @@ let sl = [
     TerrainSystem(true) :> AbstractSystem
     ]
 
-let g = Game()
+let g = Game(sl)
 
-let r = g.InitializeGame sl
-match r with
-| Ok f -> RenderFrame f
-| Error e -> printfn "Error:%O" e
+let f = g.InitializeGame
+RenderFrame f
 
-let r2 = g.Update
-match r2 with
-| Ok f -> printfn "r2"; RenderFrame f
-| Error e -> printfn "r2 Error:%O" e; ()
+
+//let r2 = g.Update
+//match r2 with
+//| Ok f -> printfn "r2"; RenderFrame f
+//| Error e -> printfn "r2 Error:%O" e; ()
 
 //g.Update |> ignore
 

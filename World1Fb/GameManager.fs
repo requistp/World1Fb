@@ -11,26 +11,25 @@ type Frame(number:uint32, ecd:EntityComponentData, eccl:EntityComponentChange li
     member this.EntityComponentData = ecd
     member this.Add (ecd:EntityComponentData) (eccl:EntityComponentChange list) = Frame(number + 1u, ecd, eccl)
      
-type Game(frames:Frame list) =
+type Game(sl:AbstractSystem list, frames:Frame list) =
     let mutable _frames = frames
+    let _systems = sl
 
-    let systemManager = SystemManager()
-    let genericUpdate (updateFunc:Result<ChangesAndNewECM,string>) =
-        match updateFunc with
-        | Error e -> Error e
-        | Ok tup -> _frames <- [_frames.Head.Add (snd tup) (fst tup)] @ frames
-                    Ok (_frames.Head)
+    let genericUpdate (tup:ChangesAndNewECData) =
+        _frames <- [_frames.Head.Add (snd tup) (fst tup)] @ frames
+        _frames.Head
 
     member this.Frames = _frames
     member this.Frame_Current = _frames.Head
+    member this.Systems = _systems
 
-    member this.InitializeGame (sl:AbstractSystem list) = 
+    member this.InitializeGame = 
         _frames <- [Frame.New]
-        genericUpdate (systemManager.RegisterSystems sl)
+        genericUpdate (SystemManager.RegisterSystems _systems)
     member this.Update = 
-        genericUpdate (systemManager.Update this.Frame_Current.EntityComponentData)
+        genericUpdate (SystemManager.Update _systems this.Frame_Current.EntityComponentData)
     
-    new() = Game([Frame.New])
+    new(sl:AbstractSystem list) = Game(sl, [Frame.New])
 
 
 //type Frame(number:uint32, ecm:EntityComponentManager, eccl:EntityComponentChange list) =

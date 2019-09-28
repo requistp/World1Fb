@@ -14,9 +14,9 @@
     <Compile Include="Components.fs" />
     <Compile Include="EntityComponentManager.fs" />
     <Compile Include="System_Abstract.fs" />
+    <Compile Include="SystemManager.fs" />
     <Compile Include="FormSystem.fs" />
     <Compile Include="TerrainSystem.fs" />
-    <Compile Include="SystemManager.fs" />
     <Compile Include="GameManager.fs" />
     <Compile Include="Renderer.fs" />
     <Compile Include="Program.fs" />
