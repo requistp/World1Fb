@@ -13,4 +13,4 @@ type AbstractSystem(isActive:bool, requireInitialize:bool) =
 
     member internal this.SetToInitialized = _isInitialized <- true
     abstract member Initialize: EntityComponentChange list
-    abstract member Update: EntityComponentManager -> EntityComponentChange list
+    abstract member Update: EntityComponentData -> EntityComponentChange list

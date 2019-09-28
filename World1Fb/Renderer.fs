@@ -1,5 +1,6 @@
 ﻿module Renderer
 open Components
+open EntityComponentManager
 open GameManager
 open LocationTypes
 open TerrainComponent
@@ -11,10 +12,16 @@ let DrawAt (c:char) (l:LocationDataInt) =
 let RenderTerrain (f:Frame) =
     let st = System.DateTime.Now
 
-    for e in f.EntityManager.EntitiesWithComponent ComponentID_Terrain do
-        match f.EntityManager.GetEntityComponent ComponentID_Terrain e with
+    for ecd in Entity.AllWithComponent f.EntityComponentData ComponentID_Terrain do
+        let ct = ecd.Value |> List.find (fun x -> x.Component.ComponentID=ComponentID_Terrain)
+        match ct.Component with
         | Terrain x -> ()//DrawAt x.Symbol x.Location
         | _ -> ()
+
+    //for e in f.EntityManager.EntitiesWithComponent ComponentID_Terrain do
+    //    match f.EntityManager.GetEntityComponent ComponentID_Terrain e with
+    //    | Terrain x -> ()//DrawAt x.Symbol x.Location
+    //    | _ -> ()
     //    //| Terrain x -> let DrawAtAsync = async { DrawAt x.Symbol x.Location }; 
     //    //               Async.Start DrawAtAsync 
     let et = System.DateTime.Now

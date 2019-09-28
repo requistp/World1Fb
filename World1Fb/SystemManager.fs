@@ -4,19 +4,19 @@ open Components
 open EntityComponentManager
 open System_Abstract
 
-type ChangesAndNewECM = EntityComponentChange list * EntityComponentManager    
+type ChangesAndNewECM = EntityComponentChange list * EntityComponentData
 
 type SystemManager() =
     let mutable _systems = List.empty:AbstractSystem list
 
-    let applyChangeLog (ecm:EntityComponentManager) (eccl:EntityComponentChange list) = 
-        let mutable newecm = ecm
+    let applyChangeLog (ecd:EntityComponentData) (eccl:EntityComponentChange list) = 
+        let mutable newecd = ecd
         for ecc in eccl do 
             match ecc with
-            | EntityAddition ctl -> newecm <- newecm.CreateEntity ctl
-            | EntityRemoval e -> newecm <- newecm.RemoveEntity e
+            | EntityAddition ctl -> newecd <- Entity.Create newecd ctl
+            | EntityRemoval e -> newecd <- Entity.Remove newecd e
             | _ -> () //newecm
-        Ok (ChangesAndNewECM (eccl,newecm))
+        Ok (ChangesAndNewECM (eccl,newecd))
     let collectAndApplyChanges fx ecm (asl:AbstractSystem list) =
         asl
         |> List.collect fx
@@ -29,7 +29,7 @@ type SystemManager() =
         | false -> _systems <- sl
                    _systems 
                    |> List.filter (fun x -> x.IsActive)
-                   |> collectAndApplyChanges (fun s -> s.Initialize) (EntityComponentManager.New)
+                   |> collectAndApplyChanges (fun s -> s.Initialize) (EntityComponentData.New)
     member this.Update ecm = 
         match this.IsInitialized with
         | false -> Error "Systems not initialized"
