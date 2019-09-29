@@ -9,10 +9,9 @@ let sl = [
     TerrainSystem(true) :> AbstractSystem
     ]
 
-let g = Game(sl)
+let g = Game(sl, RenderFrame)
 
 let f = g.InitializeGame
-RenderFrame f
 
 
 //let r2 = g.Update
