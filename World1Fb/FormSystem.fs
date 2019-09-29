@@ -1,7 +1,6 @@
 ﻿module FormSystem
-open ChangeLogManager
 open Components
-open System_Abstract
+open SystemManager
 open EntityComponentManager
 
 type FormSystem(isActive:bool) =

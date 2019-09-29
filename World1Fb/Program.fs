@@ -1,6 +1,5 @@
 ﻿open GameManager
 open Renderer
-open System_Abstract
 open SystemManager
 open FormSystem
 open TerrainSystem

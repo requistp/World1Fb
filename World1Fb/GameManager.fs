@@ -2,7 +2,6 @@
 open CommonGenericFunctions
 open Components
 open EntityComponentManager
-open System_Abstract
 open SystemManager
 
 type Frame(number:uint32, ecd:EntityComponentData, eccl:EntityComponentChange list) =

@@ -2,7 +2,7 @@
 open CommonGenericFunctions
 open Components
 open LocationTypes
-open System_Abstract
+open SystemManager
 open TerrainComponent
 
 type TerrainSystem(isActive:bool) =

@@ -6,14 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="ChangeLogManager.fs" />
     <Compile Include="CommonGenericFunctions.fs" />
     <Compile Include="LocationTypes.fs" />
     <Compile Include="FormComponent.fs" />
     <Compile Include="TerrainComponent.fs" />
     <Compile Include="Components.fs" />
     <Compile Include="EntityComponentManager.fs" />
-    <Compile Include="System_Abstract.fs" />
     <Compile Include="SystemManager.fs" />
     <Compile Include="FormSystem.fs" />
     <Compile Include="TerrainSystem.fs" />

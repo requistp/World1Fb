@@ -15,7 +15,7 @@ let RenderTerrain (f:Frame) =
     for ecd in Entity.AllWithComponent f.EntityComponentData ComponentID_Terrain do
         let ct = ecd.Value |> List.find (fun x -> x.Component.ComponentID=ComponentID_Terrain)
         match ct.Component with
-        | Terrain x -> DrawAt x.Symbol x.Location
+        | Terrain x -> ()//DrawAt x.Symbol x.Location
         | _ -> ()
 
     //for e in f.EntityManager.EntitiesWithComponent ComponentID_Terrain do
