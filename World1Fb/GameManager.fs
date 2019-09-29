@@ -5,7 +5,9 @@ open EntityComponentManager
 open SystemManager
 
 type Frame(number:uint32, ecd:EntityComponentData, eccl:EntityComponentChange list) =
-    static member New = Frame(0u, EntityComponentData.New, List.empty)
+    //static member New = Frame(0u, EntityComponentData.New, List.empty)
+    static member New = Frame(0u, { ECMap = Map.empty; MaxEntityID = 0u }, List.empty)
+
     member this.Number = number
     member this.EntityComponentData = ecd
     member this.Add (ecd:EntityComponentData) (eccl:EntityComponentChange list) = Frame(number + 1u, ecd, eccl)

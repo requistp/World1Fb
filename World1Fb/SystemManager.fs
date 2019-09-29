@@ -35,7 +35,8 @@ module SystemManager =
         |> applyChangeLog ecm
 
     let RegisterSystems (sl:AbstractSystem list) = 
-        collectAndApplyChange (fun x -> x.IsActive) (fun s -> s.Initialize) (EntityComponentData.New) sl
-
+        //collectAndApplyChange (fun x -> x.IsActive) (fun s -> s.Initialize) (EntityComponentData.New) sl
+        collectAndApplyChange (fun x -> x.IsActive) (fun s -> s.Initialize) { ECMap = Map.empty; MaxEntityID = 0u } sl
+        
     let Update (sl:AbstractSystem list) ecm = 
         collectAndApplyChange (fun x -> x.IsActive && x.IsInitialized) (fun s -> s.Update ecm) ecm sl
