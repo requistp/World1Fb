@@ -1,10 +1,10 @@
 ﻿module LocationTypes
 
 [<Literal>]
-let MapWidth = 20us
+let MapWidth = 80us
 
 [<Literal>]
-let MapHeight = 20us
+let MapHeight = 40us
 
 type LocationDataInt(x:uint16, y:uint16) =
     member this.X = x

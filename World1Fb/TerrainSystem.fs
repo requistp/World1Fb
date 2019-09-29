@@ -2,7 +2,7 @@
 open CommonGenericFunctions
 open Components
 open LocationTypes
-open SystemManager
+open GameManager
 open TerrainComponent
 
 type TerrainSystem(isActive:bool) =

@@ -1,6 +1,6 @@
 ﻿module FormSystem
 open Components
-open SystemManager
+open GameManager
 open EntityComponentManager
 
 type FormSystem(isActive:bool) =

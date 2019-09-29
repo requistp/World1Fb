@@ -1,17 +1,22 @@
-﻿open GameManager
-open Renderer
-open SystemManager
+﻿open Renderer
+open GameManager
 open FormSystem
 open TerrainSystem
 
-let sl = [
+let systems = [
     FormSystem(true) :> AbstractSystem
     TerrainSystem(true) :> AbstractSystem
     ]
 
-let g = Game(sl, RenderFrame)
+let mutable _frames = List.empty:Frame list
 
-let f = g.InitializeGame
+let f = Game.Initialize systems
+
+RenderFrame f
+
+//let g = Game(sl, RenderFrame)
+
+//let f = g.InitializeGame
 
 
 //let r2 = g.Update

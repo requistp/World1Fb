@@ -1,4 +1,5 @@
 ﻿module Renderer
+open CommonGenericFunctions
 open Components
 open EntityComponentManager
 open GameManager
@@ -10,24 +11,15 @@ let DrawAt (c:char) (l:LocationDataInt) =
     System.Console.Write(c)
 
 let RenderTerrain (f:Frame) =
-    //let st = System.DateTime.Now
+    let st = TimerStart
 
     for ecd in Entity.AllWithComponent f.EntityComponentData ComponentID_Terrain do
         let ct = ecd.Value |> List.find (fun x -> x.Component.ComponentID=ComponentID_Terrain)
         match ct.Component with
-        | Terrain x -> DrawAt x.Symbol x.Location
+        | Terrain x -> ()//DrawAt x.Symbol x.Location
         | _ -> ()
 
-    //for e in f.EntityManager.EntitiesWithComponent ComponentID_Terrain do
-    //    match f.EntityManager.GetEntityComponent ComponentID_Terrain e with
-    //    | Terrain x -> ()//DrawAt x.Symbol x.Location
-    //    | _ -> ()
-    //    //| Terrain x -> let DrawAtAsync = async { DrawAt x.Symbol x.Location }; 
-    //    //               Async.Start DrawAtAsync 
-    //let et = System.DateTime.Now
-    //printfn "\nRender terrain start:%O, %i" st st.Millisecond
-    //printfn "Render terrain end  :%O, %i" et et.Millisecond
-    //printfn "Cost                :%i" (et.Subtract(st).Milliseconds)
+    TimerEnd "render" st
 
 //let RenderForms (f:Frame) =
 //    for e in f.ECM.EntityIDsWithComponent (typeof<FormComponent>) do
