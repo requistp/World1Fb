@@ -1,10 +1,15 @@
 ﻿module LocationTypes
+open CommonGenericFunctions
 
 [<Literal>]
-let MapWidth = 80us
+let MapWidth = 60us
+[<Literal>]
+let MapWidthInt = 60
 
 [<Literal>]
-let MapHeight = 40us
+let MapHeight = 30us
+[<Literal>]
+let MapHeightInt = 30
 
 type LocationDataInt(x:uint16, y:uint16) =
     member this.X = x
