@@ -8,16 +8,18 @@ open Components
 open TerrainComponent
 open FormComponent
 
-let MakeMap = List.collect (fun x -> [for (y:uint16) in [0us..MapHeight - 1us] -> Terrain(TerrainComponent(Dirt, LocationDataInt(x,y)))]) [0us..MapWidth - 1us]
+let MakeMap = List.collect (fun x -> [for (y:uint16) in [0us..MapHeight - 1us] -> ComponentType.Terrain({ Type=Dirt; Location={X=x; Y=y} })]) [0us..MapWidth - 1us]
 
 let MakeRabbit rnd = 
-    let form = ComponentType.Form(FormComponent(true, "rabbit", 'r', LocationDataInt((uint16 (random.Next(0,MapWidthInt-1))),(uint16 (random.Next(0,MapHeightInt-1))))))
-    //movement
+    let rx = (uint16 (random.Next(0,MapWidthInt-1)))
+    let ry = (uint16 (random.Next(0,MapHeightInt-1)))
+    let form = ComponentType.Form { IsPassable=true; Name="rabbit"; Symbol='r'; Location={X=rx;Y=ry} }
+    let move = ComponentType.Movement { MovesPerTurn = 2uy }
     //sight
     //health
     [
         form
-        //terrain
+        move
     ]
 let MakeRabbits n = 
     match n with 
@@ -25,15 +27,15 @@ let MakeRabbits n =
     | _ -> [1..n] |> List.map (fun i -> MakeRabbit (random.Next()))
 
 let systems = [
-    TerrainSystem(true,MakeMap) :> AbstractSystem
-    FormSystem(true, (MakeRabbits 3)) :> AbstractSystem
+    FormSystem(true) :> AbstractSystem
+    TerrainSystem(true) :> AbstractSystem
     ]
 
 let mutable _frames = List.empty:Frame list
 
 let f = Game.Initialize systems
 
-RenderFrame f
+//RenderFrame f
 
 //let g = Game(sl, RenderFrame)
 

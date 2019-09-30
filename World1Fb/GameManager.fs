@@ -6,26 +6,29 @@ open EntityComponentManager
 type ChangesAndNewECData = EntityComponentChange list * EntityComponentData
 
 [<AbstractClass>]
-type AbstractSystem(isActive:bool, requireInitialize:bool) =
+type AbstractSystem(isActive:bool) =
     let mutable _isInitialized = false
 
     member this.IsActive = isActive
-    member this.RequireInitialize = requireInitialize
-    member this.IsInitialized = (_isInitialized || not requireInitialize)
+    member this.IsInitialized = _isInitialized
 
     member internal this.SetToInitialized = _isInitialized <- true
-    abstract member Initialize: EntityComponentChange list
-    abstract member Update: EntityComponentData -> EntityComponentChange list
+    abstract member Initialize : unit //: EntityComponentChange list
+    abstract member Update: EntityComponentData -> unit //EntityComponentChange list
 
-type Frame(number:uint32, ecd:EntityComponentData, eccl:EntityComponentChange list) =
-    static member New = Frame(0u,EntityComponentData(Map.empty,0u),List.empty)
-    static member Add number (tup:ChangesAndNewECData) = Frame(number, snd tup, fst tup)
-    member this.Number = number
-    member this.EntityComponentData = ecd
-    member this.ChangeLog = eccl
+type Frame = {
+    Number : uint32
+    ECD : EntityComponentData
+    ChangeLog : EntityComponentChange list
+    }
+    //static member New = Frame(0u,EntityComponentData(Map.empty,0u),List.empty)
+    //static member Add number (tup:ChangesAndNewECData) = Frame(number, snd tup, fst tup)
+    //member this.Number = number
+    //member this.EntityComponentData = ecd
+    //member this.ChangeLog = eccl
 
 module Game =
-    let private applyChangeLog (ecd:EntityComponentData) (eccl:EntityComponentChange list) = 
+    let private applyChangeLog ecd eccl = 
         let mutable newecd = ecd
         for ecc in eccl do 
             match ecc with
@@ -41,8 +44,10 @@ module Game =
         |> applyChangeLog ecm
 
     let Initialize systems = 
-        Frame.Add 0u (collectAndApplyChange (fun x -> x.IsActive) (fun s -> s.Initialize) (EntityComponentData.New) systems)
+        () //Frame.Add 0u (collectAndApplyChange (fun x -> x.IsActive) (fun s -> s.Initialize) (EntityComponentData.New) systems)
 
-    let Update systems (frame:Frame) = 
-        let ecm = frame.EntityComponentData
-        Frame.Add (frame.Number+1u) (collectAndApplyChange (fun x -> x.IsActive && x.IsInitialized) (fun s -> s.Update ecm) ecm systems)
+    let Update systems frame = 
+        ()
+        //let ecm = frame.EntityComponentData
+        //Frame.Add (frame.Number+1u) (collectAndApplyChange (fun x -> x.IsActive && x.IsInitialized) (fun s -> s.Update ecm) ecm systems)
+
