@@ -7,8 +7,9 @@ open TerrainSystem
 open Components
 open TerrainComponent
 open FormComponent
+open BuildNewWorld
 
-let MakeMap = List.collect (fun x -> [for (y:uint16) in [0us..MapHeight - 1us] -> ComponentType.Terrain({ Type=Dirt; Location={X=x; Y=y} })]) [0us..MapWidth - 1us]
+//let MakeMap = List.collect (fun x -> [for (y:uint16) in [0us..MapHeight - 1us] -> ComponentType.Terrain({ Type=Dirt; Location={X=x; Y=y} })]) [0us..MapWidth - 1us]
 
 let MakeRabbit rnd = 
     let rx = (uint16 (random.Next(0,MapWidthInt-1)))
@@ -32,10 +33,10 @@ let systems = [
     ]
 
 let mutable _frames = List.empty:Frame list
+let ecd = MakeMap { Entities=Map.empty; MaxEntityID=0u }
+let f = Game.Initialize ecd systems
 
-let f = Game.Initialize systems
-
-//RenderFrame f
+RenderFrame f
 
 //let g = Game(sl, RenderFrame)
 

@@ -12,10 +12,12 @@ let DrawAt (c:char) location =
     System.Console.Write(c)
 
 let RenderTerrain f =
+    let st = TimerStart
     for ecd in Entity.AllWithComponent f.ECD ComponentID_Terrain do
         match (ecd.Value |> List.find (fun x -> x.ComponentID=ComponentID_Terrain)).Component with
-        | Terrain x -> DrawAt x.Symbol x.Location
+        | Terrain x -> () //DrawAt x.Symbol x.Location
         | _ -> ()
+    TimerEnd "render" st
 
 let RenderForms f =
     for ecd in Entity.AllWithComponent f.ECD ComponentID_Form do

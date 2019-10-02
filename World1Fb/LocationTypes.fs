@@ -2,14 +2,14 @@
 open CommonGenericFunctions
 
 [<Literal>]
-let MapWidth = 60us
+let MapWidth = 2000us
 [<Literal>]
-let MapWidthInt = 60
+let MapWidthInt = 2000
 
 [<Literal>]
-let MapHeight = 30us
+let MapHeight = 2000us
 [<Literal>]
-let MapHeightInt = 30
+let MapHeightInt = 2000
 
 type LocationDataInt = {
     X : uint16

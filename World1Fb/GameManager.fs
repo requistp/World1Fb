@@ -13,7 +13,7 @@ type AbstractSystem(isActive:bool) =
     member this.IsInitialized = _isInitialized
 
     member internal this.SetToInitialized = _isInitialized <- true
-    abstract member Initialize : unit //: EntityComponentChange list
+    abstract member Initialize : unit
     abstract member Update: EntityComponentData -> unit //EntityComponentChange list
 
 type Frame = {
@@ -21,11 +21,6 @@ type Frame = {
     ECD : EntityComponentData
     ChangeLog : EntityComponentChange list
     }
-    //static member New = Frame(0u,EntityComponentData(Map.empty,0u),List.empty)
-    //static member Add number (tup:ChangesAndNewECData) = Frame(number, snd tup, fst tup)
-    //member this.Number = number
-    //member this.EntityComponentData = ecd
-    //member this.ChangeLog = eccl
 
 module Game =
     let private applyChangeLog ecd eccl = 
@@ -42,11 +37,12 @@ module Game =
         |> List.filter filterFx
         |> List.collect collectFx
         |> applyChangeLog ecm
+        
+    let Initialize ecd (systems:AbstractSystem list) = 
+        systems |> List.filter (fun x -> x.IsActive) |> List.iter (fun s -> s.Initialize)
+        { Number=0u; ECD=ecd; ChangeLog=List.empty}
 
-    let Initialize systems = 
-        () //Frame.Add 0u (collectAndApplyChange (fun x -> x.IsActive) (fun s -> s.Initialize) (EntityComponentData.New) systems)
-
-    let Update systems frame = 
+    let Update ecd systems frame = 
         ()
         //let ecm = frame.EntityComponentData
         //Frame.Add (frame.Number+1u) (collectAndApplyChange (fun x -> x.IsActive && x.IsInitialized) (fun s -> s.Update ecm) ecm systems)
