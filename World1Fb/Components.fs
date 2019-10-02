@@ -2,6 +2,7 @@
 open FormComponent
 open MovementComponent
 open TerrainComponent
+open System
 
 type ComponentType = 
     | Form of FormComponent
@@ -23,13 +24,9 @@ type ComponentChangeType =
         | MovementChange _ -> ComponentID_Movement
         | TerrainChange _ -> ComponentID_Terrain
 
-type EntityComponentChange = 
-    | ComponentChange of ComponentChangeType
-    | EntityAddition of ComponentType list
-    | EntityRemoval of uint32
 
 type EntityComponent = {
-    EntityID : uint32
+    EntityID : Guid
     Component : ComponentType
     } with
     member this.ComponentID = 
@@ -38,3 +35,7 @@ type EntityComponent = {
         | Movement _ -> ComponentID_Movement
         | Terrain _ -> ComponentID_Terrain
 
+type EntityComponentChange = 
+    | ComponentChange of ComponentChangeType
+    | EntityAddition of (Guid * EntityComponent list)
+    | EntityRemoval of Guid

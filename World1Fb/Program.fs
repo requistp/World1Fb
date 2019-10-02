@@ -33,7 +33,7 @@ let systems = [
     ]
 
 let mutable _frames = List.empty:Frame list
-let ecd = MakeMap { Entities=Map.empty; MaxEntityID=0u }
+let ecd = MakeMap //{ Entities=Map.empty; MaxEntityID=0u }
 let f = Game.Initialize ecd systems
 
 RenderFrame f
