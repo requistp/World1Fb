@@ -1,24 +1,54 @@
 ﻿module EntityComponentManager
 open Components
+open System
 
 type EntityComponentData = {
-    Entities : Map<uint32,EntityComponent list>
+    Entities : Map<uint32,ComponentType list>
+    Components : Map<Byte,uint32 list>
     MaxEntityID : uint32
     }
     
 module Entity =
+    let private componentDictionary_AddEntity (cd:Map<Byte,uint32 list>) i (ctl:ComponentType list) =
+        let mutable newcd = cd
+        for ct in ctl do
+            match newcd.ContainsKey(ct.ComponentID) with
+            | false -> newcd <- newcd.Add(ct.ComponentID,[i])
+            | true -> let il = newcd.Item(ct.ComponentID)
+                      newcd <- newcd.Remove(ct.ComponentID).Add((ct.ComponentID),i::il)
+        newcd
+
+    let private componentDictionary_RemoveEntity (cd:Map<Byte,uint32 list>) i (ctl:ComponentType list) =
+        let mutable newcd = cd
+        for ct in ctl do
+            match newcd.Item(ct.ComponentID) |> List.exists (fun x -> x=i) with
+            | true -> let il = newcd.Item(ct.ComponentID) |> List.filter (fun x -> x<>i)
+                      newcd <- newcd.Remove(ct.ComponentID).Add((ct.ComponentID),il)
+            | false -> ()
+        newcd
+
     let AllWithComponent ecd cid =
-        ecd.Entities |> Map.filter (fun k ctl -> ctl |> List.exists (fun ct -> ct.ComponentID=cid))
+        match ecd.Components.ContainsKey(cid) with
+        | true -> ecd.Components.Item(cid)
+        | false -> []
 
     let Create ecd ctl =
         let i = ecd.MaxEntityID + 1u
-        let ecl = ctl |> List.collect (fun ct -> [{ EntityID=i; Component=ct }])
-        { Entities=ecd.Entities.Add(i,ecl); MaxEntityID=i }
+        {
+            Entities = ecd.Entities.Add(i,ctl)
+            Components = componentDictionary_AddEntity ecd.Components i ctl
+            MaxEntityID = i
+        }
 
     let GetComponent ecd cid e = 
-        (ecd.Entities.Item(e) |> List.find (fun x -> x.ComponentID=cid)).Component
+        ecd.Entities.Item(e) |> List.find (fun x -> x.ComponentID=cid)
 
-    let Remove ecd e = { Entities=ecd.Entities.Remove(e); MaxEntityID=ecd.MaxEntityID }
+    let Remove ecd e = 
+        {
+            Entities = ecd.Entities.Remove(e)
+            Components = componentDictionary_RemoveEntity ecd.Components e (ecd.Entities.Item(e))
+            MaxEntityID = ecd.MaxEntityID
+        }
 
     let TryGet ecd e =
         match ecd.Entities.ContainsKey(e) with
@@ -28,8 +58,6 @@ module Entity =
     let TryGetComponent ecd cid e = 
         match ecd.Entities.ContainsKey(e) with
         | false -> None
-        | true -> let l = ecd.Entities.Item(e) |> List.filter (fun c -> c.ComponentID=cid)
-                  match l with
+        | true -> match ecd.Entities.Item(e) |> List.filter (fun c -> c.ComponentID=cid) with
                   | [] -> None
-                  | _ -> Some l.Head
-
+                  | l -> Some l.Head
