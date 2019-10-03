@@ -1,8 +1,9 @@
 ﻿module LocationTypes
 open CommonGenericFunctions
 
-[<Literal>]
+[<Literal>] 
 let MapWidth = 2000us
+
 [<Literal>]
 let MapWidthInt = 2000
 

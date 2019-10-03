@@ -16,6 +16,7 @@ let TimerEnd name (st:System.DateTime) =
     printfn "%s   end:%O, %i" name et et.Millisecond
     printfn "%s  cost:%i" name (et.Subtract(st).Milliseconds)
 
+[<Measure>] type EntityID
 
 //type Result<'TSuccess,'TFailure> = 
 //    | Success of 'TSuccess

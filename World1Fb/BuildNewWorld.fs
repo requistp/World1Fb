@@ -10,10 +10,6 @@ open TerrainComponent
 open FormComponent
 open EntityComponentManager
 
-//let MakeMap ecm = 
-//    [0us..MapWidth - 1us] 
-//    |> List.collect (fun x -> [for (y:uint16) in [0us..MapHeight - 1us] -> ComponentType.Terrain({ Type=Dirt; Location={X=x; Y=y} })]) 
-
 let MakeMap ecm = 
     let mutable newecm = ecm
     
