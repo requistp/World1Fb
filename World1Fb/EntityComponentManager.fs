@@ -15,7 +15,7 @@ module Entity =
             match newcd.ContainsKey(ct.ComponentID) with
             | false -> newcd <- newcd.Add(ct.ComponentID,[i])
             | true -> let il = newcd.Item(ct.ComponentID)
-                      newcd <- newcd.Remove(ct.ComponentID).Add((ct.ComponentID),i::il)
+                      newcd <- newcd.Remove(ct.ComponentID).Add(ct.ComponentID,i::il)
         newcd
 
     let private componentDictionary_RemoveEntity (cd:Map<Byte,uint32 list>) i (ctl:ComponentType list) =
@@ -23,7 +23,7 @@ module Entity =
         for ct in ctl do
             match newcd.Item(ct.ComponentID) |> List.exists (fun x -> x=i) with
             | true -> let il = newcd.Item(ct.ComponentID) |> List.filter (fun x -> x<>i)
-                      newcd <- newcd.Remove(ct.ComponentID).Add((ct.ComponentID),il)
+                      newcd <- newcd.Remove(ct.ComponentID).Add(ct.ComponentID,il)
             | false -> ()
         newcd
 
