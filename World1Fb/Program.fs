@@ -16,7 +16,7 @@ let systems = [
 
 let mutable _frames = List.empty:Frame list
 //let ecd = MakeMap { Entities=Map.empty; Components=Map.empty; MaxEntityID=0u }
-let ecd = MakeRabbits (MakeMap { Entities=Map.empty; Components=Map.empty; MaxEntityID=0u }) 3
+let ecd = MakeRabbits (MakeMap { Entities=Map.empty; Components=Map.empty; MaxEntityID=0u }) 1
 let f = Game.Initialize ecd systems
 
 RenderFrame f

@@ -21,22 +21,17 @@ let MakeMap ecd =
     newecd
 
 let MakeRabbit ecd x y = 
-    //let rx = (uint16 (random.Next(0,MapWidthInt-1)))
-    //let ry = (uint16 (random.Next(0,MapHeightInt-1)))
-    let form = ComponentType.Form { IsPassable=true; Name="rabbit"; Symbol='r'; Location={X=x;Y=y} }
-    let move = ComponentType.Movement { MovesPerTurn = 2uy }
-    //sight
-    //health
-    let ctl = [
-        form
-        move
-    ]
-    Entity.Create ecd ctl
+    [
+        ComponentType.Form { IsPassable=true; Name="rabbit"; Symbol='r'; Location={X=x;Y=y} }
+        ComponentType.Movement { MovesPerTurn = 1uy }
+        //sight
+        //health        
+    ] |> Entity.Create ecd
 
 let MakeRabbits ecd n = 
-    let mutable newecd = ecd
     match n with 
     | 0 -> ecd
-    | _ -> for x in [1..n] do
+    | _ -> let mutable newecd = ecd
+           for x in [1..n] do
                newecd <- MakeRabbit newecd (uint16 (random.Next(0,MapWidthInt-1))) (uint16 (random.Next(0,MapHeightInt-1)))
            newecd
