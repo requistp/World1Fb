@@ -9,12 +9,13 @@ let Keys(map: Map<'K,'V>) =
             yield key
     } |> Set.ofSeq
 
-let TimerStart = System.DateTime.Now
-let TimerEnd name (st:System.DateTime) =
-    let et = System.DateTime.Now
-    printfn "\n%s start:%O, %i" name st st.Millisecond
-    printfn "%s   end:%O, %i" name et et.Millisecond
-    printfn "%s  cost:%i" name (et.Subtract(st).Milliseconds)
+module Timer =
+    let Start = System.DateTime.Now
+    let End name (st:System.DateTime) =
+        let et = System.DateTime.Now
+        printfn "\n%s start:%O, %i" name st st.Millisecond
+        printfn "%s   end:%O, %i" name et et.Millisecond
+        printfn "%s  cost:%i" name (et.Subtract(st).Milliseconds)
 
 
 //type Result<'TSuccess,'TFailure> = 

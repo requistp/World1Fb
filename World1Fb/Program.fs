@@ -9,31 +9,14 @@ open TerrainComponent
 open FormComponent
 open BuildNewWorld
 
-//let MakeMap = List.collect (fun x -> [for (y:uint16) in [0us..MapHeight - 1us] -> ComponentType.Terrain({ Type=Dirt; Location={X=x; Y=y} })]) [0us..MapWidth - 1us]
-
-let MakeRabbit rnd = 
-    let rx = (uint16 (random.Next(0,MapWidthInt-1)))
-    let ry = (uint16 (random.Next(0,MapHeightInt-1)))
-    let form = ComponentType.Form { IsPassable=true; Name="rabbit"; Symbol='r'; Location={X=rx;Y=ry} }
-    let move = ComponentType.Movement { MovesPerTurn = 2uy }
-    //sight
-    //health
-    [
-        form
-        move
-    ]
-let MakeRabbits n = 
-    match n with 
-    | 0 -> List.empty:ComponentType list list
-    | _ -> [1..n] |> List.map (fun i -> MakeRabbit (random.Next()))
-
 let systems = [
     FormSystem(true) :> AbstractSystem
     TerrainSystem(true) :> AbstractSystem
     ]
 
 let mutable _frames = List.empty:Frame list
-let ecd = MakeMap { Entities=Map.empty; Components=Map.empty; MaxEntityID=0u }
+//let ecd = MakeMap { Entities=Map.empty; Components=Map.empty; MaxEntityID=0u }
+let ecd = MakeRabbits (MakeMap { Entities=Map.empty; Components=Map.empty; MaxEntityID=0u }) 3
 let f = Game.Initialize ecd systems
 
 RenderFrame f
