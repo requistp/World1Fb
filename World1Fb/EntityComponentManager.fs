@@ -9,6 +9,11 @@ type EntityComponentData = {
     }
     
 module Entity =
+    let private componentDictionary_AddComponent (cd:Map<Byte,uint32 list>) i (ct:ComponentType) =
+        match cd.ContainsKey(ct.ComponentID) with
+        | false -> cd.Add(ct.ComponentID,[i])
+        | true -> let il = cd.Item(ct.ComponentID)
+                  cd.Remove(ct.ComponentID).Add(ct.ComponentID,i::il)
     let private componentDictionary_AddEntity (cd:Map<Byte,uint32 list>) i (ctl:ComponentType list) =
         let mutable newcd = cd
         for ct in ctl do
@@ -17,7 +22,11 @@ module Entity =
             | true -> let il = newcd.Item(ct.ComponentID)
                       newcd <- newcd.Remove(ct.ComponentID).Add(ct.ComponentID,i::il)
         newcd
-
+    let private componentDictionary_RemoveComponent (cd:Map<Byte,uint32 list>) i (ct:ComponentType) =
+        match cd.Item(ct.ComponentID) |> List.exists (fun x -> x=i) with
+        | false -> cd
+        | true -> let il = cd.Item(ct.ComponentID) |> List.filter (fun x -> x<>i)
+                  cd.Remove(ct.ComponentID).Add(ct.ComponentID,il)
     let private componentDictionary_RemoveEntity (cd:Map<Byte,uint32 list>) i (ctl:ComponentType list) =
         let mutable newcd = cd
         for ct in ctl do

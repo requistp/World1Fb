@@ -3,6 +3,7 @@ open CommonGenericFunctions
 
 [<Literal>]
 let MapWidth = 2000us
+
 [<Literal>]
 let MapWidthInt = 2000
 
