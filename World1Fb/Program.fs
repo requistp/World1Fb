@@ -8,19 +8,33 @@ open Components
 open TerrainComponent
 open FormComponent
 open BuildNewWorld
+open System
+open EntityComponentManager
 
-let systems = [
-    FormSystem(true) :> AbstractSystem
-    TerrainSystem(true) :> AbstractSystem
+let systems = 
+    [
+        FormSystem(true) :> AbstractSystem
+        TerrainSystem(true) :> AbstractSystem
     ]
 
-let mutable _frames = List.empty:Frame list
-//let ecd = MakeMap { Entities=Map.empty; Components=Map.empty; MaxEntityID=0u }
-let ecd = MakeRabbits (MakeMap { Entities=Map.empty; Components=Map.empty; MaxEntityID=0u }) 1
-let f = Game.Initialize ecd systems
+let ecd = MakeRabbits (MakeMap Entity.EmptyECD) 1
 
-RenderFrame f
+let mutable _fl = Game.Initialize ecd systems
 
+Console.CursorVisible <- false 
+
+let mutable k = ConsoleKey.Z
+
+while k <> ConsoleKey.Escape do
+    RenderFrame _fl.Head
+    k <- Console.ReadKey(true).Key
+    printfn "\n Key:%A" k
+    _fl <- Game.Update _fl.Head.ECD systems
+
+
+//while not Console.KeyAvailable do
+//    let k = Console.Read()
+//    ()
 //let g = Game(sl, RenderFrame)
 
 //let f = g.InitializeGame

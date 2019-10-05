@@ -49,6 +49,13 @@ module Entity =
             MaxEntityID = i
         }
 
+    let EmptyECD = 
+        {
+            Entities = Map.empty
+            Components = Map.empty
+            MaxEntityID = 0u 
+        }
+
     let GetComponent ecd cid e = 
         ecd.Entities.Item(e) |> List.find (fun x -> x.ComponentID=cid)
 

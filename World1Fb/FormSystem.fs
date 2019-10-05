@@ -6,13 +6,13 @@ open EntityComponentManager
 type FormSystem(isActive:bool) =
     inherit AbstractSystem(isActive) 
    
-    override this.Initialize = 
+    override this.Initialize (ecd:EntityComponentData) = 
         base.SetToInitialized
-        ()
+        List.empty
         //match this.IsActive with
         //| false -> List.empty
         //| true -> base.SetToInitialized
         //          newEntities |> List.collect (fun ctl -> [EntityAddition ctl]) 
 
-    override this.Update ecm = 
-        () //List.empty
+    override this.Update (ecd:EntityComponentData) = 
+        List.empty
