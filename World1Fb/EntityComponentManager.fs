@@ -1,6 +1,7 @@
 ﻿module EntityComponentManager
 open Components
 open System
+open CommonGenericFunctions
 
 type EntityComponentData = {
     Entities : Map<uint32,ComponentType list>
@@ -35,6 +36,10 @@ module Entity =
                       newcd <- newcd.Remove(ct.ComponentID).Add(ct.ComponentID,il)
             | false -> ()
         newcd
+    let private tryGetComponent cid (ctl:ComponentType list) = 
+        match ctl |> List.filter (fun c -> c.ComponentID=cid) with
+        | [] -> None
+        | l -> Some l.Head
 
     let AllWithComponent ecd cid =
         match ecd.Components.ContainsKey(cid) with
@@ -67,13 +72,8 @@ module Entity =
         }
 
     let TryGet ecd e =
-        match ecd.Entities.ContainsKey(e) with
-        | false -> None
-        | true -> Some (ecd.Entities.Item(e))
+        ecd.Entities.ContainsKey(e) |> TrueSomeFalseNone (ecd.Entities.Item(e))
 
     let TryGetComponent ecd cid e = 
-        match ecd.Entities.ContainsKey(e) with
-        | false -> None
-        | true -> match ecd.Entities.Item(e) |> List.filter (fun c -> c.ComponentID=cid) with
-                  | [] -> None
-                  | l -> Some l.Head
+        e |> TryGet ecd |> Option.bind (tryGetComponent cid)
+

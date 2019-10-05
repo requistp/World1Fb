@@ -32,10 +32,10 @@ let RenderForms f =
     //Timer.End "render Forms" st
 
 let RenderFrame f =
-    RenderTerrain f
-    RenderForms f
+    //RenderTerrain f
+    //RenderForms f
 
-    System.Console.SetCursorPosition(MapWidthInt + 1,MapHeightInt)
+    //System.Console.SetCursorPosition(MapWidthInt + 1,MapHeightInt)
     System.Console.Write(sprintf "Frame #%i" f.Number)
     
     //System.Console.SetCursorPosition(0,MapHeightInt+9)

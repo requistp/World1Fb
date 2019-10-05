@@ -25,10 +25,8 @@ Console.CursorVisible <- false
 
 let mutable k = ConsoleKey.Z
 
-while k <> ConsoleKey.Escape do
+while not _fl.IsEmpty do
     RenderFrame _fl.Head
-    k <- Console.ReadKey(true).Key
-    printfn "\n Key:%A" k
     _fl <- Game.Update _fl.Head.ECD systems
 
 

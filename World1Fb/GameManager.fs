@@ -2,6 +2,8 @@
 open CommonGenericFunctions
 open Components
 open EntityComponentManager
+open Microsoft.Xna.Framework
+open Microsoft.Xna.Framework.Input
 
 [<AbstractClass>]
 type AbstractSystem(isActive:bool) =
@@ -42,6 +44,20 @@ module Game =
         |> List.collect processFx
         |> applyChangeLog ecd
         
+    let private handleKeyboardInput (kbState:KeyboardState) =
+        //let rec HandleKeys keys =
+        //    match keys with
+        //    | x :: xs -> match x with
+        //                 | _ -> true //HandleKeys xs
+        //                 | Keys.Escape -> true
+        //    | [] -> false
+        
+        let HandleKeys2 keys =
+            printfn "%A" keys
+            false
+
+        HandleKeys2 (kbState.GetPressedKeys() |> Array.toList)
+
     let Initialize ecd systems = 
         _frames <- [{ Number=0u; ECD=ecd; ChangeLog=List.empty}]
         // Frame 0 should be the initial world state before initialization
@@ -49,5 +65,9 @@ module Game =
         systems |> collectAndApplyChange (fun s -> s.IsActive) (fun s -> s.Initialize ecd) ecd
 
     let Update ecd systems = 
-        systems |> collectAndApplyChange (fun s -> s.IsActive && s.IsInitialized) (fun s -> s.Update ecd) ecd
+        printfn "%A" (Keyboard.GetState().ToString)
+        []
+        //match handleKeyboardInput (Keyboard.GetState()) with
+        //| false -> systems |> collectAndApplyChange (fun s -> s.IsActive && s.IsInitialized) (fun s -> s.Update ecd) ecd
+        //| true -> List.empty
 

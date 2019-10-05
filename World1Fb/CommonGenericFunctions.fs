@@ -9,6 +9,11 @@ let Keys(map: Map<'K,'V>) =
             yield key
     } |> Set.ofSeq
 
+let TrueSomeFalseNone ifTrueFx statement =
+    match statement with
+    | false -> None
+    | true -> Some ifTrueFx
+
 module Timer =
     let Start = System.DateTime.Now
     let End name (st:System.DateTime) =
