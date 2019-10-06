@@ -7,7 +7,8 @@ type EntityComponentData = {
     Entities : Map<uint32,ComponentType list>
     Components : Map<Byte,uint32 list>
     MaxEntityID : uint32
-    }
+    } with 
+    static member Empty = { Entities=Map.empty; Components=Map.empty; MaxEntityID=0u}
     
 module Entity =
     let private componentDictionary_AddComponent (cd:Map<Byte,uint32 list>) i (ct:ComponentType) =

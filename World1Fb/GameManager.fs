@@ -2,8 +2,7 @@
 open CommonGenericFunctions
 open Components
 open EntityComponentManager
-open Microsoft.Xna.Framework
-open Microsoft.Xna.Framework.Input
+open System
 
 [<AbstractClass>]
 type AbstractSystem(isActive:bool) =
@@ -27,7 +26,7 @@ module Game =
 
     let private addFrame c =
         _frames <- { Number=_frames.Head.Number + 1u; ECD=fst c; ChangeLog=snd c} :: _frames
-        _frames
+        _frames.Head
 
     let private applyChangeLog ecd eccl = 
         let mutable newecd = ecd
@@ -43,31 +42,27 @@ module Game =
         |> List.filter filterFx
         |> List.collect processFx
         |> applyChangeLog ecd
-        
-    let private handleKeyboardInput (kbState:KeyboardState) =
-        //let rec HandleKeys keys =
-        //    match keys with
-        //    | x :: xs -> match x with
-        //                 | _ -> true //HandleKeys xs
-        //                 | Keys.Escape -> true
-        //    | [] -> false
-        
-        let HandleKeys2 keys =
-            printfn "%A" keys
-            false
 
-        HandleKeys2 (kbState.GetPressedKeys() |> Array.toList)
-
-    let Initialize ecd systems = 
+    let private Initialize ecd systems = 
         _frames <- [{ Number=0u; ECD=ecd; ChangeLog=List.empty}]
         // Frame 0 should be the initial world state before initialization
         // ...then we run Initialize and that is frame 1, return the list
         systems |> collectAndApplyChange (fun s -> s.IsActive) (fun s -> s.Initialize ecd) ecd
 
-    let Update ecd systems = 
-        printfn "%A" (Keyboard.GetState().ToString)
-        []
-        //match handleKeyboardInput (Keyboard.GetState()) with
-        //| false -> systems |> collectAndApplyChange (fun s -> s.IsActive && s.IsInitialized) (fun s -> s.Update ecd) ecd
-        //| true -> List.empty
+    let private Update ecd systems = 
+        systems |> collectAndApplyChange (fun s -> s.IsActive && s.IsInitialized) (fun s -> s.Update ecd) ecd
+        
+    let Start (ecd:EntityComponentData) (renderer: Frame -> unit) (systems:AbstractSystem list) = 
+        let mutable _abort = false
 
+        renderer (Initialize ecd systems)
+
+        while not _abort do
+            while not Console.KeyAvailable do
+                System.Threading.Thread.Sleep 250
+        
+            let k = Console.ReadKey(true).Key
+    
+            match k with
+            | ConsoleKey.Escape -> _abort <- true
+            | _ -> renderer (Update _frames.Head.ECD systems)

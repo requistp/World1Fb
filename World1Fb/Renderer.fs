@@ -7,13 +7,11 @@ open LocationTypes
 open TerrainComponent
 open FormComponent
 
-let DrawAt (c:char) location =
-    //console.X = int location.X
-    //console.Y = int location.Y
+let private DrawAt (c:char) location =
     System.Console.SetCursorPosition(int location.X, int location.Y)
     System.Console.Write(c)
 
-let RenderTerrain f =
+let private RenderTerrain f =
     //let st = Timer.Start
     for e in Entity.AllWithComponent f.ECD ComponentID_Terrain do
         match Entity.GetComponent f.ECD ComponentID_Terrain e with
@@ -22,7 +20,7 @@ let RenderTerrain f =
     //System.Console.SetCursorPosition(0,MapHeightInt+1)
     //Timer.End "render Terrain" st
 
-let RenderForms f =
+let private RenderForms f =
     //let st = Timer.Start
     for e in Entity.AllWithComponent f.ECD ComponentID_Form do
         match Entity.GetComponent f.ECD ComponentID_Form e with
@@ -32,14 +30,12 @@ let RenderForms f =
     //Timer.End "render Forms" st
 
 let RenderFrame f =
-    //RenderTerrain f
-    //RenderForms f
+    System.Console.CursorVisible <- false 
+    RenderTerrain f
+    RenderForms f
 
-    //System.Console.SetCursorPosition(MapWidthInt + 1,MapHeightInt)
+    System.Console.SetCursorPosition(MapWidthInt + 1,MapHeightInt)
     System.Console.Write(sprintf "Frame #%i" f.Number)
-    
-    //System.Console.SetCursorPosition(0,MapHeightInt+9)
-    //System.Console.WriteLine("")
 
 let RenderFrames fl =
     fl |> List.iter RenderFrame

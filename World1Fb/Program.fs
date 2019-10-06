@@ -17,17 +17,32 @@ let systems =
         TerrainSystem(true) :> AbstractSystem
     ]
 
-let ecd = MakeRabbits (MakeMap Entity.EmptyECD) 1
+Game.Start (MakeRabbits (MakeMap Entity.EmptyECD) 1) RenderFrame systems
 
-let mutable _fl = Game.Initialize ecd systems
+//let mutable abort = false
 
-Console.CursorVisible <- false 
+//while not abort do
+//    RenderFrame f
 
-let mutable k = ConsoleKey.Z
+//    while not Console.KeyAvailable do
+//        System.Threading.Thread.Sleep 250
+    
+//    let k = Console.ReadKey(true).Key
 
-while not _fl.IsEmpty do
-    RenderFrame _fl.Head
-    _fl <- Game.Update _fl.Head.ECD systems
+//    match k with
+//    | ConsoleKey.Escape -> abort <- true
+//    | _ -> f <- Game.Update f.ECD systems
+
+
+//let mutable k = Console.K Keyboard.GetState().GetPressedKeys()
+//let mutable escWasPressed = false
+
+//while not escWasPressed do
+//    k <- Keyboard.GetState().GetPressedKeys()
+//    match k |> Array.toList |> List.length with
+//    | 0 -> ()
+//    | _ -> escWasPressed <- true
+//   // ()
 
 
 //while not Console.KeyAvailable do
