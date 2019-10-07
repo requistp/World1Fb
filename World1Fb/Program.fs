@@ -17,7 +17,13 @@ let systems =
         TerrainSystem(true) :> AbstractSystem
     ]
 
-Game.Start (MakeRabbits (MakeMap Entity.EmptyECD) 1) RenderFrame systems
+let TestEvent k =
+    printf "Event: %A" k
+
+let g = new Game((MakeRabbits (MakeMap Entity.EmptyECD) 1), RenderFrame, systems)
+
+g.Start //(MakeRabbits (MakeMap Entity.EmptyECD) 1) RenderFrame systems
+
 
 //let mutable abort = false
 

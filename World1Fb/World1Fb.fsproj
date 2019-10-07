@@ -13,6 +13,7 @@
     <Compile Include="TerrainComponent.fs" />
     <Compile Include="Components.fs" />
     <Compile Include="EntityComponentManager.fs" />
+    <Compile Include="InputHandler.fs" />
     <Compile Include="GameManager.fs" />
     <Compile Include="FormSystem.fs" />
     <Compile Include="TerrainSystem.fs" />

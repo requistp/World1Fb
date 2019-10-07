@@ -12,10 +12,6 @@ type TerrainSystem(isActive:bool) =
     override this.Initialize (ecd:EntityComponentData) = 
         base.SetToInitialized
         List.empty
-        //match this.IsActive with
-        //| false -> List.empty
-        //| true -> base.SetToInitialized
-        //          map |> List.collect (fun ct -> [EntityAddition [ct]])
 
     override this.Update (ecd:EntityComponentData) = 
         List.empty  

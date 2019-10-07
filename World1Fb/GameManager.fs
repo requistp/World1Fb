@@ -3,6 +3,7 @@ open CommonGenericFunctions
 open Components
 open EntityComponentManager
 open System
+open InputHandler
 
 [<AbstractClass>]
 type AbstractSystem(isActive:bool) =
@@ -21,48 +22,41 @@ type Frame = {
     ChangeLog : EntityComponentChange list
     }
 
-module Game =
+type Game(ecd:EntityComponentData, renderer:Frame->unit, systems:AbstractSystem list) =
     let mutable _frames = List.empty:Frame list
+    let _input = new InputHandler()
 
-    let private addFrame c =
-        _frames <- { Number=_frames.Head.Number + 1u; ECD=fst c; ChangeLog=snd c} :: _frames
+    do
+        _frames <- [{ Number=0u; ECD=ecd; ChangeLog=List.empty}]
+
+    let addFrame (data: {| ECD:EntityComponentData; ChangeLog:EntityComponentChange list |}) =
+        _frames <- { Number=_frames.Head.Number + 1u; ECD=data.ECD; ChangeLog=data.ChangeLog} :: _frames
         _frames.Head
 
-    let private applyChangeLog ecd eccl = 
-        let mutable newecd = ecd
+    let applyChangeLog eccl = 
+        let mutable newecd = _frames.Head.ECD
         for ecc in eccl do 
             match ecc with
             | EntityAddition ctl -> newecd <- Entity.Create newecd ctl
             | EntityRemoval e -> newecd <- Entity.Remove newecd e
             | _ -> () //newecm 
-        addFrame (newecd,eccl)
+        addFrame {| ECD = newecd; ChangeLog = eccl |}
 
-    let private collectAndApplyChange filterFx processFx ecd (sl:AbstractSystem list) = 
-        sl
+    let collectAndApplyChange filterFx processFx = 
+        systems
         |> List.filter filterFx
         |> List.collect processFx
-        |> applyChangeLog ecd
+        |> applyChangeLog
 
-    let private Initialize ecd systems = 
-        _frames <- [{ Number=0u; ECD=ecd; ChangeLog=List.empty}]
-        // Frame 0 should be the initial world state before initialization
-        // ...then we run Initialize and that is frame 1, return the list
-        systems |> collectAndApplyChange (fun s -> s.IsActive) (fun s -> s.Initialize ecd) ecd
+    member private this.Initialize = 
+        collectAndApplyChange (fun s -> s.IsActive) (fun s -> s.Initialize _frames.Head.ECD)
 
-    let private Update ecd systems = 
-        systems |> collectAndApplyChange (fun s -> s.IsActive && s.IsInitialized) (fun s -> s.Update ecd) ecd
-        
-    let Start (ecd:EntityComponentData) (renderer: Frame -> unit) (systems:AbstractSystem list) = 
-        let mutable _abort = false
-
-        renderer (Initialize ecd systems)
-
-        while not _abort do
-            while not Console.KeyAvailable do
-                System.Threading.Thread.Sleep 250
-        
-            let k = Console.ReadKey(true).Key
+    member private this.Update =
+        collectAndApplyChange (fun s -> s.IsActive && s.IsInitialized) (fun s -> s.Update _frames.Head.ECD)
     
-            match k with
-            | ConsoleKey.Escape -> _abort <- true
-            | _ -> renderer (Update _frames.Head.ECD systems)
+    member this.Start = 
+        renderer this.Initialize
+
+        while _input.AwaitKeyboardInput do
+            renderer this.Update
+
