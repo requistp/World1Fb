@@ -1,5 +1,10 @@
 ﻿module AbstractComponent
 
+type ComponentTypes =
+     | Form
+     | Controller
+     | Movement
+     | Terrain
 
 [<AbstractClass>]
 type AbstractComponent(componentID:byte) =
