@@ -15,15 +15,19 @@ let MakeMap ecd =
     
     let AddTerrain x y = Entity.Create newecd [ComponentType.Terrain({ Type=Dirt; Location={X=x; Y=y} })]
 
-    for x in [0us..MapWidth - 1us] do
-        for y in [0us..MapHeight - 1us] do
+    for x in [0..MapWidth-1] do
+        for y in [0..MapHeight-1] do
             newecd <- AddTerrain x y
     newecd
 
 let MakeRabbit ecd x y = 
     [
-        ComponentType.Form { IsPassable=true; Name="rabbit"; Symbol='r'; Location={X=x;Y=y} }
-        ComponentType.Movement { MovesPerTurn = 1uy }
+        ComponentType.Form { IsPassable = true
+                             Name = "rabbit"
+                             Symbol = 'r'
+                             Location = {X=x;Y=y} }
+        ComponentType.Movement { MovesPerTurn = 1 }
+        ComponentType.Controller
         //sight
         //health        
     ] |> Entity.Create ecd
@@ -33,5 +37,5 @@ let MakeRabbits ecd n =
     | 0 -> ecd
     | _ -> let mutable newecd = ecd
            for x in [1..n] do
-               newecd <- MakeRabbit newecd (uint16 (random.Next(0,MapWidthInt-1))) (uint16 (random.Next(0,MapHeightInt-1)))
+               newecd <- MakeRabbit newecd (random.Next(0,MapWidth-1)) (random.Next(0,MapHeight-1))
            newecd

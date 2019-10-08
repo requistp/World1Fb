@@ -72,6 +72,8 @@ module Entity =
             MaxEntityID = ecd.MaxEntityID
         }
 
+    //Entity.ReplaceComponent ecd c.EntityID ComponentID_Form newc
+
     let TryGet ecd e =
         ecd.Entities.ContainsKey(e) |> TrueSomeFalseNone (ecd.Entities.Item(e))
 

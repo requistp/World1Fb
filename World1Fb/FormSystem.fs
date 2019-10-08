@@ -2,17 +2,14 @@
 open Components
 open GameManager
 open EntityComponentManager
+open EventManager
 
-type FormSystem(isActive:bool) =
+type FormSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
    
-    override this.Initialize (ecd:EntityComponentData) = 
+    override this.Initialize = 
         base.SetToInitialized
         List.empty
-        //match this.IsActive with
-        //| false -> List.empty
-        //| true -> base.SetToInitialized
-        //          newEntities |> List.collect (fun ctl -> [EntityAddition ctl]) 
 
-    override this.Update (ecd:EntityComponentData) = 
+    override this.Update = 
         List.empty

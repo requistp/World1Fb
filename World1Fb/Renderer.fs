@@ -34,8 +34,8 @@ let RenderFrame f =
     RenderTerrain f
     RenderForms f
 
-    System.Console.SetCursorPosition(MapWidthInt + 1,MapHeightInt)
-    System.Console.Write(sprintf "Frame #%i" f.Number)
+    System.Console.SetCursorPosition(MapWidth+1,MapHeight)
+    System.Console.Write(sprintf "Frame #%i\n" f.Number)
 
 let RenderFrames fl =
     fl |> List.iter RenderFrame

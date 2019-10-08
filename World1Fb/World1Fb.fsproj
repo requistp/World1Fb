@@ -8,18 +8,25 @@
   <ItemGroup>
     <Compile Include="CommonGenericFunctions.fs" />
     <Compile Include="LocationTypes.fs" />
+    <Compile Include="AbstractComponent.fs" />
     <Compile Include="FormComponent.fs" />
     <Compile Include="MovementComponent.fs" />
     <Compile Include="TerrainComponent.fs" />
     <Compile Include="Components.fs" />
     <Compile Include="EntityComponentManager.fs" />
+    <Compile Include="EventManager.fs" />
     <Compile Include="InputHandler.fs" />
     <Compile Include="GameManager.fs" />
     <Compile Include="FormSystem.fs" />
+    <Compile Include="MovementSystem.fs" />
     <Compile Include="TerrainSystem.fs" />
     <Compile Include="Renderer.fs" />
     <Compile Include="BuildNewWorld.fs" />
     <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="NewFolder\" />
   </ItemGroup>
 
 </Project>
