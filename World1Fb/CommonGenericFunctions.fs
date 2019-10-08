@@ -14,6 +14,11 @@ let TrueSomeFalseNone ifTrueFx statement =
     | false -> None
     | true -> Some ifTrueFx
 
+let Map_Replace (map:Map<'K,'V>) (key:'K) (newValue:'V) =
+    match map.ContainsKey(key) with
+    | false -> map
+    | true -> map.Remove(key).Add(key,newValue)
+
 module Timer =
     let Start = System.DateTime.Now
     let End name (st:System.DateTime) =

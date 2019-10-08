@@ -1,43 +1,43 @@
 ﻿module EntityComponentManager
-open Components
-open System
+open AbstractComponent
 open CommonGenericFunctions
+open System
 
 type EntityComponentData = {
-    Entities : Map<uint32,ComponentType list>
+    Entities : Map<uint32,AbstractComponent list>
     Components : Map<Byte,uint32 list>
     MaxEntityID : uint32
     } with 
     static member Empty = { Entities=Map.empty; Components=Map.empty; MaxEntityID=0u}
     
 module Entity =
-    let private componentDictionary_AddComponent (cd:Map<Byte,uint32 list>) i (ct:ComponentType) =
+    let private componentDictionary_AddComponent (cd:Map<Byte,uint32 list>) eid (ct:AbstractComponent) =
         match cd.ContainsKey(ct.ComponentID) with
-        | false -> cd.Add(ct.ComponentID,[i])
+        | false -> cd.Add(ct.ComponentID,[eid])
         | true -> let il = cd.Item(ct.ComponentID)
-                  cd.Remove(ct.ComponentID).Add(ct.ComponentID,i::il)
-    let private componentDictionary_AddEntity (cd:Map<Byte,uint32 list>) i (ctl:ComponentType list) =
+                  cd.Remove(ct.ComponentID).Add(ct.ComponentID,eid::il)
+    let private componentDictionary_AddEntity (cd:Map<Byte,uint32 list>) eid (ctl:AbstractComponent list) =
         let mutable newcd = cd
         for ct in ctl do
             match newcd.ContainsKey(ct.ComponentID) with
-            | false -> newcd <- newcd.Add(ct.ComponentID,[i])
+            | false -> newcd <- newcd.Add(ct.ComponentID,[eid])
             | true -> let il = newcd.Item(ct.ComponentID)
-                      newcd <- newcd.Remove(ct.ComponentID).Add(ct.ComponentID,i::il)
+                      newcd <- newcd.Remove(ct.ComponentID).Add(ct.ComponentID,eid::il)
         newcd
-    let private componentDictionary_RemoveComponent (cd:Map<Byte,uint32 list>) i (ct:ComponentType) =
-        match cd.Item(ct.ComponentID) |> List.exists (fun x -> x=i) with
+    let private componentDictionary_RemoveComponent (cd:Map<Byte,uint32 list>) eid (ct:AbstractComponent) =
+        match cd.Item(ct.ComponentID) |> List.exists (fun x -> x=eid) with
         | false -> cd
-        | true -> let il = cd.Item(ct.ComponentID) |> List.filter (fun x -> x<>i)
+        | true -> let il = cd.Item(ct.ComponentID) |> List.filter (fun x -> x<>eid)
                   cd.Remove(ct.ComponentID).Add(ct.ComponentID,il)
-    let private componentDictionary_RemoveEntity (cd:Map<Byte,uint32 list>) i (ctl:ComponentType list) =
+    let private componentDictionary_RemoveEntity (cd:Map<Byte,uint32 list>) eid (ctl:AbstractComponent list) =
         let mutable newcd = cd
         for ct in ctl do
-            match newcd.Item(ct.ComponentID) |> List.exists (fun x -> x=i) with
-            | true -> let il = newcd.Item(ct.ComponentID) |> List.filter (fun x -> x<>i)
+            match newcd.Item(ct.ComponentID) |> List.exists (fun x -> x=eid) with
+            | true -> let il = newcd.Item(ct.ComponentID) |> List.filter (fun x -> x<>eid)
                       newcd <- newcd.Remove(ct.ComponentID).Add(ct.ComponentID,il)
             | false -> ()
         newcd
-    let private tryGetComponent cid (ctl:ComponentType list) = 
+    let private tryGetComponent cid (ctl:AbstractComponent list) = 
         match ctl |> List.filter (fun c -> c.ComponentID=cid) with
         | [] -> None
         | l -> Some l.Head
@@ -72,11 +72,19 @@ module Entity =
             MaxEntityID = ecd.MaxEntityID
         }
 
-    //Entity.ReplaceComponent ecd c.EntityID ComponentID_Form newc
+    let TryGet (entities:Map<uint32,AbstractComponent list>) eid =
+        entities.ContainsKey(eid) |> TrueSomeFalseNone (entities.Item(eid))
 
-    let TryGet ecd e =
-        ecd.Entities.ContainsKey(e) |> TrueSomeFalseNone (ecd.Entities.Item(e))
+    let ReplaceComponent (ecd:EntityComponentData) eid (newc:AbstractComponent) =
+        match (TryGet ecd.Entities eid) with
+        | None -> ecd
+        | Some ctl -> let newEntities = 
+                          ctl 
+                          |> List.filter (fun ct -> ct.ComponentID<>newc.ComponentID) 
+                          |> List.append [newc]
+                          |> Map_Replace ecd.Entities eid  
+                      { Entities = newEntities; Components = ecd.Components; MaxEntityID = ecd.MaxEntityID } //Replacing component won't change the componentDictionary
 
-    let TryGetComponent ecd cid e = 
-        e |> TryGet ecd |> Option.bind (tryGetComponent cid)
+    let TryGetComponent (entities:Map<uint32,AbstractComponent list>) cid eid = 
+        eid |> TryGet entities |> Option.bind (tryGetComponent cid)
 

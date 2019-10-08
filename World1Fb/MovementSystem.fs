@@ -1,18 +1,12 @@
 ﻿module MovementSystem
-open MovementComponent
-open GameManager
-open EntityComponentManager
 open AbstractComponent
+open ControllerComponent
+open EntityComponentManager
 open EventManager
-open System
-open Components
 open FormComponent
-
-type SystemChanges = {
-    ECD : EntityComponentData
-    Changes : AbstractComponent_Change[]
-    SumOfChanges : AbstractComponent_ChangeSum[]
-    }
+open GameManager
+open MovementComponent
+open System
 
 type MovementSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
@@ -37,21 +31,20 @@ type MovementSystem(game:Game, isActive:bool) =
         |> Map.toArray
         |> Array.map (fun tup -> snd tup)
 
-    let applyChange (ecd:EntityComponentData) (c:MovementComponent_ChangeSum) =
-        match Entity.TryGetComponent ecd ComponentID_Form c.EntityID with
+    let applyChange (ecd:EntityComponentData) (sumOfChanges:MovementComponent_ChangeSum) =
+        match sumOfChanges.EntityID |> Entity.TryGetComponent ecd.Entities ComponentID_Form with
         | None -> ecd
-        | Some ac -> let (Form oldc) = ac
-                     let newc = { IsPassable = oldc.IsPassable; Name = oldc.Name; Symbol = oldc.Symbol; Location = oldc.Location.Add c.X c.Y }:FormComponent
-                     //Entity.ReplaceComponent ecd c.EntityID ComponentID_Form newc
-                     ecd
+        | Some ac -> let oldc = ac :?> FormComponent
+                     FormComponent(oldc.IsPassable, oldc.Name, oldc.Symbol, oldc.Location.Add sumOfChanges.X sumOfChanges.Y)
+                     |> Entity.ReplaceComponent ecd sumOfChanges.EntityID
 
-    let applyChangesToEntities (ecd:EntityComponentData) (s:MovementComponent_ChangeSum[]) = 
-        s |> Array.fold (fun ecd c -> applyChange ecd c) ecd
+    let applyChangesToEntities (ecd:EntityComponentData) (sumOfChanges:MovementComponent_ChangeSum[]) = 
+        sumOfChanges |> Array.fold (fun ecd c -> applyChange ecd c) ecd
 
     override _.Initialize = 
         base.SetToInitialized
         game.EventManager.RegisterListener GameEventID_KeyPressed_Movement onMovementKeyPressed
-        List.empty
+        ()
 
     override _.Update = 
         printfn "Movement changes to process: %i" _pendingChanges.Length
@@ -63,9 +56,8 @@ type MovementSystem(game:Game, isActive:bool) =
         
         let newecd = applyChangesToEntities game.ECD s
         
-        //{
-        //    ECD : newecd
-        //    Changes : c |> Array.map (fun x -> x :> AbstractComponent_Change)
-        //    SumOfChanges : s |> Array.map (fun x -> x :> AbstractComponent_ChangeSum)
-        //}
-        List.empty
+        {
+            ECD = newecd
+            Changes = c // |> Array.map (fun x -> x :> AbstractComponent_Change)
+            SumOfChanges = s // |> Array.map (fun x -> x :> AbstractComponent_ChangeSum)
+        }

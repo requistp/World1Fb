@@ -47,10 +47,3 @@ type EventManager() =
         | true -> let l = Array.append (_listeners.Item(eid)) [|callback|]
                   _listeners <- _listeners.Remove(eid).Add(eid,l)
 
-
-        //match e with 
-        //| Test1 -> printf "Queue 1"
-        //| Test2 i -> printfn "Queue 2 %i" i
-        //| Test3 s -> printf "Queue 3 %s" s
-        //| KeyPressed k -> printfn "handle %A" k
-

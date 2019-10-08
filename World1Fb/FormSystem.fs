@@ -9,7 +9,7 @@ type FormSystem(game:Game, isActive:bool) =
    
     override this.Initialize = 
         base.SetToInitialized
-        List.empty
+        ()
 
     override this.Update = 
         List.empty

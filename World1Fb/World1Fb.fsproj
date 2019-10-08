@@ -9,6 +9,7 @@
     <Compile Include="CommonGenericFunctions.fs" />
     <Compile Include="LocationTypes.fs" />
     <Compile Include="AbstractComponent.fs" />
+    <Compile Include="ControllerComponent.fs" />
     <Compile Include="FormComponent.fs" />
     <Compile Include="MovementComponent.fs" />
     <Compile Include="TerrainComponent.fs" />

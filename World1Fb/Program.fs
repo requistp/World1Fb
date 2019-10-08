@@ -5,11 +5,9 @@ open GameManager
 open FormSystem
 open MovementSystem
 open TerrainSystem
-open Components
 open TerrainComponent
 open FormComponent
 open BuildNewWorld
-open System
 open EntityComponentManager
 
 let g = new Game((MakeRabbits (MakeMap Entity.EmptyECD) 1), RenderFrame)

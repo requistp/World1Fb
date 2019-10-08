@@ -1,4 +1,5 @@
 ﻿module TerrainComponent
+open AbstractComponent
 open LocationTypes
 
 [<Literal>]
@@ -9,24 +10,21 @@ type TerrainType =
     | Rock
     | Sand
 
-let TerrainSymbol tt = 
-    match tt with
-    | Dirt -> '.'
-    | Sand -> ','
-    | Rock -> '#'
+type TerrainComponent(terrainType:TerrainType, location:LocationDataInt) =
+    inherit AbstractComponent(ComponentID_Terrain)
+    member _.Type = terrainType
+    member _.Location = location  
+    member _.IsPassable = 
+        match terrainType with
+        | Dirt | Sand -> true
+        | Rock -> false
+    member _.Symbol = 
+        match terrainType with
+        | Dirt -> '.'
+        | Sand -> ','
+        | Rock -> '#'
 
-let TerrainIsPassable tt = 
-    match tt with
-    | Dirt | Sand -> true
-    | Rock -> false
 
-type TerrainComponent = {
-    Type : TerrainType
-    Location : LocationDataInt
-    } with
-    member this.IsPassable = TerrainIsPassable this.Type
-    member this.Symbol = TerrainSymbol this.Type
-
-type TerrainComponent_Change = {
-    Type : TerrainType option
-    }
+//type TerrainComponent_Change = {
+//    Type : TerrainType option
+//    }

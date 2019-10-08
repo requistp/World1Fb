@@ -1,19 +1,17 @@
 ﻿module BuildNewWorld
+open AbstractComponent
 open CommonGenericFunctions
-open LocationTypes
-open Renderer
-open GameManager
-open FormSystem
-open TerrainSystem
-open Components
-open TerrainComponent
+open ControllerComponent
 open FormComponent
+open LocationTypes
+open MovementComponent
+open TerrainComponent
 open EntityComponentManager
 
 let MakeMap ecd = 
     let mutable newecd = ecd
     
-    let AddTerrain x y = Entity.Create newecd [ComponentType.Terrain({ Type=Dirt; Location={X=x; Y=y} })]
+    let AddTerrain x y = Entity.Create newecd [ TerrainComponent(TerrainType.Dirt, {X=x; Y=y}) ]
 
     for x in [0..MapWidth-1] do
         for y in [0..MapHeight-1] do
@@ -22,12 +20,9 @@ let MakeMap ecd =
 
 let MakeRabbit ecd x y = 
     [
-        ComponentType.Form { IsPassable = true
-                             Name = "rabbit"
-                             Symbol = 'r'
-                             Location = {X=x;Y=y} }
-        ComponentType.Movement { MovesPerTurn = 1 }
-        ComponentType.Controller
+        ControllerComponent() :> AbstractComponent
+        FormComponent(true, "rabbit", 'r', {X=x;Y=y}) :> AbstractComponent
+        MovementComponent(1) :> AbstractComponent
         //sight
         //health        
     ] |> Entity.Create ecd

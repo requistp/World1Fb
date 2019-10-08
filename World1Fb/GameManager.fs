@@ -1,10 +1,16 @@
 ﻿module GameManager
+open AbstractComponent
 open CommonGenericFunctions
-open Components
 open EntityComponentManager
-open System
-open InputHandler
 open EventManager 
+open InputHandler
+open System
+
+type SystemChanges = {
+    ECD : EntityComponentData
+    ChangeLog : AbstractComponent_Change[]
+    SumOfChanges : AbstractComponent_ChangeSum[]
+    }
 
 [<AbstractClass>]
 type AbstractSystem(isActive:bool) =
@@ -15,15 +21,17 @@ type AbstractSystem(isActive:bool) =
 
     member internal this.SetToInitialized = _isInitialized <- true
 
-    abstract member Initialize : EntityComponentChange list
-    abstract member Update : EntityComponentChange list
+    abstract member Initialize : unit
+    abstract member Update : SystemChanges
 
 type Frame = {
     Number : uint32
     ECD : EntityComponentData
-    ChangeLog : EntityComponentChange list
+    ChangeLog : AbstractComponent_Change[]
+    SumOfChanges : AbstractComponent_ChangeSum[]
     GameEvents : GameEvent[]
-    }
+    } with 
+    static member Empty = { Number = 0u; ECD = EntityComponentData.Empty; ChangeLog = Array.empty; SumOfChanges = Array.empty; GameEvents = Array.empty}
 
 type Game(ecd:EntityComponentData, renderer:Frame->unit) =
     let mutable _frames = List.empty:Frame list
@@ -32,10 +40,10 @@ type Game(ecd:EntityComponentData, renderer:Frame->unit) =
     let _input = new InputHandler(_eventManager)
 
     do
-        _frames <- [{ Number = 0u; ECD = ecd; ChangeLog = List.empty; GameEvents = Array.empty}]
+        _frames <- [ Frame.Empty ]
 
-    let addFrame (data: {| ECD:EntityComponentData; ChangeLog:EntityComponentChange list; GameEvents:GameEvent[] |}) =
-        _frames <- { Number=_frames.Head.Number + 1u; ECD=data.ECD; ChangeLog=data.ChangeLog; GameEvents=data.GameEvents } :: _frames
+    let addFrame (data: {| ECD:EntityComponentData; ChangeLog:AbstractComponent_Change[]; SumOfChanges:AbstractComponent_ChangeSum[]; GameEvents:GameEvent[] |}) =
+        _frames <- { Number=_frames.Head.Number + 1u; ECD=data.ECD; ChangeLog=data.ChangeLog; SumOfChanges=data.SumOfChanges; GameEvents=data.GameEvents } :: _frames
         _frames.Head
 
     let applyChangeLog (gel:GameEvent[]) eccl = 
@@ -57,7 +65,9 @@ type Game(ecd:EntityComponentData, renderer:Frame->unit) =
     member this.EventManager = _eventManager
 
     member private this.Initialize = 
-        collectAndApplyChange (fun s -> s.IsActive) (fun s -> s.Initialize) (Array.empty<GameEvent>)
+        _systems
+        |> List.filter (fun s -> s.IsActive)
+        |> List.iter (fun s -> s.Initialize)
 
     member private this.Update gel =
         collectAndApplyChange (fun s -> s.IsActive && s.IsInitialized) (fun s -> s.Update) gel
@@ -66,7 +76,7 @@ type Game(ecd:EntityComponentData, renderer:Frame->unit) =
         _systems <- sl
 
     member this.Start = 
-        renderer this.Initialize 
+        renderer _frames.Head
 
         while _input.AwaitKeyboardInput do
             let gel = _eventManager.ProcessEvents

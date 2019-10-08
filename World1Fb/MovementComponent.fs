@@ -1,6 +1,6 @@
 ﻿module MovementComponent
 open AbstractComponent
-open System
+open LocationTypes
 
 [<Literal>]
 let ComponentID_Movement = 3uy
@@ -20,10 +20,14 @@ type MovementDirection =
         | East | West -> 0
         | North -> -1
         | South -> 1
+    member this.AddToLocation (location:LocationDataInt) =
+        { X = location.X + this.X_change; Y = location.Y + this.Y_change }
 
-type MovementComponent = {
-    MovesPerTurn : int
-    }
+
+type MovementComponent(movesPerTurn:int) =
+    inherit AbstractComponent(ComponentID_Movement)
+    member _.MovesPerTurn = movesPerTurn
+    
 
 type MovementComponent_Change(eid:uint32, moveDirection:MovementDirection, x:int, y:int) =
     inherit AbstractComponent_Change(eid)
@@ -35,3 +39,4 @@ type MovementComponent_ChangeSum(eid:uint32, x:int, y:int) =
     inherit AbstractComponent_ChangeSum(eid)
     member _.X = x
     member _.Y = y
+
