@@ -1,16 +1,18 @@
 ﻿module InputHandler
-open System
+open GameEvents
 open EventManager
 open MovementComponent
+open System
+
 
 type InputHandler(em:EventManager) =
 
     let OnKeyPressed k = 
         match k with 
-        | ConsoleKey.UpArrow -> em.QueueEvent(GameEvent.KeyPressed_Movement North)
-        | ConsoleKey.DownArrow -> em.QueueEvent(GameEvent.KeyPressed_Movement South)
-        | ConsoleKey.LeftArrow -> em.QueueEvent(GameEvent.KeyPressed_Movement West)
-        | ConsoleKey.RightArrow -> em.QueueEvent(GameEvent.KeyPressed_Movement East)
+        | ConsoleKey.UpArrow -> em.QueueEvent(GameEventData_Movement_KeyPressed(North))
+        | ConsoleKey.DownArrow -> em.QueueEvent(GameEventData_Movement_KeyPressed(South))
+        | ConsoleKey.LeftArrow -> em.QueueEvent(GameEventData_Movement_KeyPressed(West))
+        | ConsoleKey.RightArrow -> em.QueueEvent(GameEventData_Movement_KeyPressed(East))
         | _ -> ()  
 
     member _.AwaitKeyboardInput =

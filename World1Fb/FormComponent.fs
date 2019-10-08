@@ -2,8 +2,6 @@
 open AbstractComponent
 open LocationTypes
 
-//[<Literal>]
-//let ComponentID_Form = 1uy
 
 type FormComponent(isPassable:bool, name:string, symbol:char, location:LocationDataInt) = 
     inherit AbstractComponent(Form)
@@ -19,3 +17,16 @@ type FormComponent(isPassable:bool, name:string, symbol:char, location:LocationD
 //       Symbol : char option
 //       Location : LocationDataInt option
 //   }
+
+
+type MovementComponent_Change(eid:uint32, moveDirection:MovementDirection, x:int, y:int) =
+    inherit AbstractComponent_Change(eid)
+    member _.Movement = moveDirection
+    member _.X = x
+    member _.Y = y
+
+type MovementComponent_ChangeSum(eid:uint32, x:int, y:int) =
+    inherit AbstractComponent_ChangeSum(eid)
+    member _.X = x
+    member _.Y = y
+

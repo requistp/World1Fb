@@ -8,6 +8,7 @@ open MovementComponent
 open TerrainComponent
 open EntityComponentManager
 
+
 let MakeMap ecd = 
     let mutable newecd = ecd
     
@@ -18,6 +19,7 @@ let MakeMap ecd =
             newecd <- AddTerrain x y
     newecd
 
+
 let MakeRabbit ecd x y = 
     [
         ControllerComponent() :> AbstractComponent
@@ -26,6 +28,7 @@ let MakeRabbit ecd x y =
         //sight
         //health        
     ] |> Entity.Create ecd
+
 
 let MakeRabbits ecd n = 
     match n with 

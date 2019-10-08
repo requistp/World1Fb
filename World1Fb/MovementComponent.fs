@@ -2,8 +2,6 @@
 open AbstractComponent
 open LocationTypes
 
-//[<Literal>]
-//let ComponentID_Movement = 3uy
 
 type MovementDirection =
     | North
@@ -28,15 +26,3 @@ type MovementComponent(movesPerTurn:int) =
     inherit AbstractComponent(Movement)
     member _.MovesPerTurn = movesPerTurn
     
-
-type MovementComponent_Change(eid:uint32, moveDirection:MovementDirection, x:int, y:int) =
-    inherit AbstractComponent_Change(eid)
-    member _.Movement = moveDirection
-    member _.X = x
-    member _.Y = y
-
-type MovementComponent_ChangeSum(eid:uint32, x:int, y:int) =
-    inherit AbstractComponent_ChangeSum(eid)
-    member _.X = x
-    member _.Y = y
-

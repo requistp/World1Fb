@@ -4,6 +4,7 @@ open ControllerComponent
 open EntityComponentManager
 open EventManager
 open FormComponent
+open GameEvents
 open GameManager
 open MovementComponent
 open System
@@ -12,11 +13,11 @@ type MovementSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
     let mutable _pendingChanges = Array.empty<MovementComponent_Change>
 
-    let onMovementKeyPressed (e:GameEvent) = 
-        let (KeyPressed_Movement m) = e
+    let onMovementKeyPressed (ge:AbstractGameEvent) = 
+        let m = ge :?> GameEventData_Movement_KeyPressed
         match Controller |> Entity.AllWithComponent game.ECD with
         | [] -> ()
-        | l -> _pendingChanges <- Array.append _pendingChanges [| MovementComponent_Change(l.Head, m, m.X_change, m.Y_change) |]
+        | l -> ()// Should raise event to move the form component. I go through here because if the form listened for a movement keypress event, it could move without having a move component //_pendingChanges <- Array.append _pendingChanges [| MovementComponent_Change(l.Head, m, m.X_change, m.Y_change) |]
 
     let updateSumOfChanges (map:Map<uint32,MovementComponent_ChangeSum>) (c:MovementComponent_Change) =
         let eid = c.EntityID
@@ -43,7 +44,7 @@ type MovementSystem(game:Game, isActive:bool) =
 
     override _.Initialize = 
         base.SetToInitialized
-        game.EventManager.RegisterListener GameEventID_KeyPressed_Movement onMovementKeyPressed
+        game.EventManager.RegisterListener Movement_KeyPressed onMovementKeyPressed
         ()
 
     override _.Update = 

@@ -3,12 +3,14 @@ open AbstractComponent
 open CommonGenericFunctions
 open System
 
+
 type EntityComponentData = {
     Entities : Map<uint32,AbstractComponent list>
     Components : Map<ComponentTypes,uint32 list>
     MaxEntityID : uint32
     } with 
     static member Empty = { Entities=Map.empty; Components=Map.empty; MaxEntityID=0u}
+
     
 module Entity =
     let private componentDictionary_AddComponent (cd:Map<ComponentTypes,uint32 list>) eid (ct:AbstractComponent) =
