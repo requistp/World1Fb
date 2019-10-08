@@ -14,7 +14,7 @@ type MovementSystem(game:Game, isActive:bool) =
 
     let onMovementKeyPressed (e:GameEvent) = 
         let (KeyPressed_Movement m) = e
-        match Entity.AllWithComponent game.ECD ComponentID_Controller with
+        match Controller |> Entity.AllWithComponent game.ECD with
         | [] -> ()
         | l -> _pendingChanges <- Array.append _pendingChanges [| MovementComponent_Change(l.Head, m, m.X_change, m.Y_change) |]
 
@@ -32,7 +32,7 @@ type MovementSystem(game:Game, isActive:bool) =
         |> Array.map (fun tup -> snd tup)
 
     let applyChange (ecd:EntityComponentData) (sumOfChanges:MovementComponent_ChangeSum) =
-        match sumOfChanges.EntityID |> Entity.TryGetComponent ecd.Entities ComponentID_Form with
+        match sumOfChanges.EntityID |> Entity.TryGetComponent ecd.Entities Form with
         | None -> ecd
         | Some ac -> let oldc = ac :?> FormComponent
                      FormComponent(oldc.IsPassable, oldc.Name, oldc.Symbol, oldc.Location.Add sumOfChanges.X sumOfChanges.Y)

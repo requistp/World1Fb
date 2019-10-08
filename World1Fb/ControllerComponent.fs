@@ -1,8 +1,8 @@
 ﻿module ControllerComponent
 open AbstractComponent
 
-[<Literal>]
-let ComponentID_Controller = 4uy
+//[<Literal>]
+//let ComponentID_Controller = 4uy
 
 type ControllerComponent() = 
-    inherit AbstractComponent(ComponentID_Controller)
+    inherit AbstractComponent(Controller)

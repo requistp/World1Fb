@@ -1,5 +1,5 @@
 ﻿module FormSystem
-open Components
+open AbstractComponent
 open GameManager
 open EntityComponentManager
 open EventManager

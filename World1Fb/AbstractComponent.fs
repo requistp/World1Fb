@@ -1,14 +1,16 @@
 ﻿module AbstractComponent
 
+
 type ComponentTypes =
      | Form
      | Controller
      | Movement
      | Terrain
 
+
 [<AbstractClass>]
-type AbstractComponent(componentID:byte) =
-    member _.ComponentID = componentID
+type AbstractComponent(componentType:ComponentTypes) =
+    member _.ComponentType = componentType
 
 
 [<AbstractClass>]

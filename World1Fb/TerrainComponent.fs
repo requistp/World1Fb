@@ -2,8 +2,8 @@
 open AbstractComponent
 open LocationTypes
 
-[<Literal>]
-let ComponentID_Terrain = 2uy
+//[<Literal>]
+//let ComponentID_Terrain = 2uy
 
 type TerrainType = 
     | Dirt 
@@ -11,7 +11,7 @@ type TerrainType =
     | Sand
 
 type TerrainComponent(terrainType:TerrainType, location:LocationDataInt) =
-    inherit AbstractComponent(ComponentID_Terrain)
+    inherit AbstractComponent(Terrain)
     member _.Type = terrainType
     member _.Location = location  
     member _.IsPassable = 

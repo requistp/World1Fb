@@ -1,6 +1,6 @@
 ﻿module TerrainSystem
 open CommonGenericFunctions
-open Components
+open AbstractComponent
 open LocationTypes
 open GameManager
 open TerrainComponent

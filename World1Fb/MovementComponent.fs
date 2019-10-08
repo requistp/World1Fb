@@ -2,8 +2,8 @@
 open AbstractComponent
 open LocationTypes
 
-[<Literal>]
-let ComponentID_Movement = 3uy
+//[<Literal>]
+//let ComponentID_Movement = 3uy
 
 type MovementDirection =
     | North
@@ -25,7 +25,7 @@ type MovementDirection =
 
 
 type MovementComponent(movesPerTurn:int) =
-    inherit AbstractComponent(ComponentID_Movement)
+    inherit AbstractComponent(Movement)
     member _.MovesPerTurn = movesPerTurn
     
 
