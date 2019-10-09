@@ -14,13 +14,14 @@ type AbstractComponent(componentType:ComponentTypes) =
 
 
 [<AbstractClass>]
-type AbstractComponent_Change(eid:uint32) =
+type AbstractComponentChange(componentType:ComponentTypes, eid:uint32) =
+    member _.ComponentType = componentType
     member _.EntityID = eid
 
 
-[<AbstractClass>]
-type AbstractComponent_ChangeSum(eid:uint32) = 
-    member _.EntityID = eid
+//[<AbstractClass>]
+//type AbstractComponent_ChangeSum(eid:uint32) = 
+//    member _.EntityID = eid
 
 
 //[<AbstractClass>]

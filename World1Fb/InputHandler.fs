@@ -1,18 +1,25 @@
 ﻿module InputHandler
-open GameEvents
+open AbstractComponent
+open EntityComponentManager
 open EventManager
+open GameEvents
 open MovementComponent
 open System
 
 
-type InputHandler(em:EventManager) =
+type InputHandler(em:EventManager, ecd:EntityComponentData) =
 
-    let OnKeyPressed k = 
+    let keyPressed_Movement d = 
+        match Controller |> Entity.AllWithComponent ecd with
+        | [] -> ()
+        | l -> em.QueueEvent(GameEvent_KeyPressed_Movement(l.Head,d))
+
+    let onKeyPressed k = 
         match k with 
-        | ConsoleKey.UpArrow -> em.QueueEvent(GameEventData_Movement_KeyPressed(North))
-        | ConsoleKey.DownArrow -> em.QueueEvent(GameEventData_Movement_KeyPressed(South))
-        | ConsoleKey.LeftArrow -> em.QueueEvent(GameEventData_Movement_KeyPressed(West))
-        | ConsoleKey.RightArrow -> em.QueueEvent(GameEventData_Movement_KeyPressed(East))
+        | ConsoleKey.UpArrow -> keyPressed_Movement North 
+        | ConsoleKey.DownArrow -> keyPressed_Movement South
+        | ConsoleKey.LeftArrow -> keyPressed_Movement West 
+        | ConsoleKey.RightArrow -> keyPressed_Movement East
         | _ -> ()  
 
     member _.AwaitKeyboardInput =
@@ -21,5 +28,5 @@ type InputHandler(em:EventManager) =
 
         match Console.ReadKey(true).Key with
         | ConsoleKey.Escape -> false
-        | k -> OnKeyPressed k
+        | k -> onKeyPressed k
                true

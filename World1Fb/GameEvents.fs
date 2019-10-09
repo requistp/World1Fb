@@ -2,16 +2,22 @@
 open MovementComponent
 
 type GameEventTypes =
-    //| KeyPressed
     | Movement_KeyPressed
     | Movement
 
 
 [<AbstractClass>]
-type AbstractGameEvent(et:GameEventTypes) =
+type AbstractGameEvent(et:GameEventTypes, eid:uint32) =
     member _.GameEventType = et
+    member _.EntityID = eid
 
 
-type GameEventData_Movement_KeyPressed(direction:MovementDirection) =
-    inherit AbstractGameEvent(Movement_KeyPressed)
+type GameEvent_KeyPressed_Movement(eid:uint32, direction:MovementDirection) =
+    inherit AbstractGameEvent(Movement_KeyPressed,eid)
     member _.Direction = direction
+
+
+type GameEvent_Movement(eid:uint32, direction:MovementDirection) =
+    inherit AbstractGameEvent(Movement,eid)
+    member _.Direction = direction
+    

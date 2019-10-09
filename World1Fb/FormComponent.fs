@@ -1,5 +1,6 @@
 ﻿module FormComponent
 open AbstractComponent
+open CommonGenericFunctions
 open LocationTypes
 
 
@@ -11,22 +12,11 @@ type FormComponent(isPassable:bool, name:string, symbol:char, location:LocationD
     member _.Location = location
 
     
-//type FormComponent_Change = {
-//       IsPassable : bool option
-//       Name : string option
-//       Symbol : char option
-//       Location : LocationDataInt option
-//   }
+type FormComponent_Change(eid:uint32, isPassable:bool option, symbol:char option, location:LocationDataInt) =
+    inherit AbstractComponentChange(Form,eid)
+    member _.IsPassable = isPassable
+    member _.Symbol = symbol
+    member _.Location = location
 
-
-type MovementComponent_Change(eid:uint32, moveDirection:MovementDirection, x:int, y:int) =
-    inherit AbstractComponent_Change(eid)
-    member _.Movement = moveDirection
-    member _.X = x
-    member _.Y = y
-
-type MovementComponent_ChangeSum(eid:uint32, x:int, y:int) =
-    inherit AbstractComponent_ChangeSum(eid)
-    member _.X = x
-    member _.Y = y
-
+    member _.AddChange (c:FormComponent_Change) =
+        FormComponent_Change(eid, ResolveAddingTwoOptions isPassable c.IsPassable, ResolveAddingTwoOptions symbol c.Symbol, location.Add c.Location)
