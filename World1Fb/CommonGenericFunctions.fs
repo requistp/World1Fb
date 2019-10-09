@@ -23,14 +23,13 @@ let Map_Replace (map:Map<'K,'V>) (key:'K) (newValue:'V) =
     | false -> map
     | true -> map.Remove(key).Add(key,newValue)
 
-let ResolveAddingTwoOptions (o1:'T option) (o2:'T option) =
+
+let ResolveCombiningTwoOptions (o1:'T option) (o2:'T option) =
     match o1 with
     | None -> o2
     | Some s1 -> match o2 with
                  | None -> o1
-                 | Some ip2 -> match s1 with
-                               | ip2 -> o1 //same as o2
-                               | _ -> None
+                 | Some s2 -> if s1=s2 then o1 else None
 
 module Timer =
     let Start = System.DateTime.Now

@@ -14,5 +14,6 @@ type TerrainSystem(game:Game, isActive:bool) =
         base.SetToInitialized
         ()
 
-    override this.Update = 
-        List.empty  
+    override this.Update (ecd:EntityComponentData, scl:SystemChangeLog)= 
+        (ecd,scl) 
+

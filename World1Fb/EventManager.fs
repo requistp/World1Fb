@@ -14,15 +14,18 @@ type EventManager() =
         | false -> ()
         | true -> _listeners.Item(ge.GameEventType) |> Array.iter (fun cb -> cb ge)
 
-    member _.ProcessEvents = 
-        let mutable processedEvents = Array.empty<AbstractGameEvent>
+    member private this.processEventBatch = 
+        let processedEvents = _pendingEvents
+        _pendingEvents <- Array.empty
+        processedEvents |> Array.Parallel.iter (fun ge -> processCallbacks ge)
+        processedEvents
 
-        while _pendingEvents.Length > 0 do
-            processedEvents <- Array.append processedEvents _pendingEvents
-            _pendingEvents <- Array.empty
-            processedEvents |> Array.iter (fun ge -> processCallbacks ge)
-            //printfn "processed events = %i" processedEvents.Length
-            //printfn "pending events   = %i" _pendingEvents.Length
+    member _.PendingCount = _pendingEvents.Length
+
+    member this.ProcessEvents = 
+        let mutable processedEvents = Array.empty<AbstractGameEvent>
+        while (_pendingEvents.Length > 0) do
+            processedEvents <- Array.append processedEvents this.processEventBatch
         processedEvents
 
     member _.QueueEvent ge = 

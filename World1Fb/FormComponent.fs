@@ -18,5 +18,10 @@ type FormComponent_Change(eid:uint32, isPassable:bool option, symbol:char option
     member _.Symbol = symbol
     member _.Location = location
 
-    member _.AddChange (c:FormComponent_Change) =
-        FormComponent_Change(eid, ResolveAddingTwoOptions isPassable c.IsPassable, ResolveAddingTwoOptions symbol c.Symbol, location.Add c.Location)
+    member this.AddChange (c:FormComponent) =
+        FormComponent(Option.defaultValue c.IsPassable this.IsPassable, c.Name, Option.defaultValue c.Symbol this.Symbol, location.Add c.Location)
+
+    member this.AddChange (c:FormComponent_Change) =
+        FormComponent_Change(eid, ResolveCombiningTwoOptions isPassable c.IsPassable, ResolveCombiningTwoOptions symbol c.Symbol, location.Add c.Location)
+
+        

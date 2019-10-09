@@ -7,12 +7,13 @@ open MovementComponent
 open System
 
 
-type InputHandler(em:EventManager, ecd:EntityComponentData) =
+type InputHandler(em:EventManager) =
+    let mutable _entityID = None
 
     let keyPressed_Movement d = 
-        match Controller |> Entity.AllWithComponent ecd with
-        | [] -> ()
-        | l -> em.QueueEvent(GameEvent_KeyPressed_Movement(l.Head,d))
+        match _entityID with
+        | None -> ()
+        | Some eid -> em.QueueEvent(GameEvent_KeyPressed_Movement(eid,d))
 
     let onKeyPressed k = 
         match k with 
@@ -21,6 +22,8 @@ type InputHandler(em:EventManager, ecd:EntityComponentData) =
         | ConsoleKey.LeftArrow -> keyPressed_Movement West 
         | ConsoleKey.RightArrow -> keyPressed_Movement East
         | _ -> ()  
+
+    member _.SetEntityID eid = _entityID <- eid
 
     member _.AwaitKeyboardInput =
         while not Console.KeyAvailable do
