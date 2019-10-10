@@ -27,7 +27,7 @@ type Game(ecd:EntityComponentData, renderer:Frame->unit) =
     let mutable _frames = Array.empty:Frame[]
     let _eventManager = new EventManager()
     let _systemManager = new SystemManager()
-    let _input = new InputHandler(_eventManager) //, _frames.Head.ECD)
+    let _input = new InputHandler(_eventManager)
 
     do
         _frames <- [| {Frame.Empty with ECD=ecd} |] //Should just be empty frame after I change the the 0>1 frame step being the initial changes

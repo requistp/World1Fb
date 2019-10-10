@@ -18,27 +18,15 @@ module Entity =
         | false -> cd.Add(ct.ComponentType,[|eid|])
         | true -> let il = [|eid|] |> Array.append (cd.Item(ct.ComponentType)) 
                   cd.Remove(ct.ComponentType).Add(ct.ComponentType,il)
-    let private componentDictionary_AddEntity (cd:Map<ComponentTypes,uint32[]>) eid (ctl:AbstractComponent[]) =
-        let mutable newcd = cd
-        for ct in ctl do
-            match newcd.ContainsKey(ct.ComponentType) with
-            | false -> newcd <- newcd.Add(ct.ComponentType,[|eid|])
-            | true -> let il = [|eid|] |> Array.append (newcd.Item(ct.ComponentType))
-                      newcd <- newcd.Remove(ct.ComponentType).Add(ct.ComponentType,il)
-        newcd
+    let private componentDictionary_AddEntity (cd:Map<ComponentTypes,uint32[]>) eid (cts:AbstractComponent[]) =
+        cts |> Array.fold (fun cd ct -> componentDictionary_AddComponent cd eid ct) cd
     let private componentDictionary_RemoveComponent (cd:Map<ComponentTypes,uint32[]>) eid (ct:AbstractComponent) =
-        match cd.Item(ct.ComponentType) |> Array.exists (fun x -> x=eid) with
+        match cd.Item(ct.ComponentType) |> Array.exists (fun x -> x = eid) with
         | false -> cd
-        | true -> let il = cd.Item(ct.ComponentType) |> Array.filter (fun x -> x<>eid)
+        | true -> let il = cd.Item(ct.ComponentType) |> Array.filter (fun x -> x <> eid)
                   cd.Remove(ct.ComponentType).Add(ct.ComponentType,il)
-    let private componentDictionary_RemoveEntity (cd:Map<ComponentTypes,uint32[]>) eid (ctl:AbstractComponent[]) =
-        let mutable newcd = cd
-        for ct in ctl do
-            match newcd.Item(ct.ComponentType) |> Array.exists (fun x -> x=eid) with
-            | true -> let il = newcd.Item(ct.ComponentType) |> Array.filter (fun x -> x<>eid)
-                      newcd <- newcd.Remove(ct.ComponentType).Add(ct.ComponentType,il)
-            | false -> ()
-        newcd
+    let private componentDictionary_RemoveEntity (cd:Map<ComponentTypes,uint32[]>) eid (cts:AbstractComponent[]) =
+        cts |> Array.fold (fun cd ct -> componentDictionary_RemoveComponent cd eid ct) cd
     let private tryGetComponent componentType (ctl:AbstractComponent[]) = 
         match ctl |> Array.filter (fun c -> c.ComponentType=componentType) with
         | [||] -> None

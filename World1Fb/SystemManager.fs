@@ -9,15 +9,15 @@ type SystemChangeLog =
     } with 
     static member empty = 
         { 
-            Items = Array.empty
-            Sum = Array.empty
+            Items = Array.empty<AbstractComponentChange>
+            Sum = Array.empty<AbstractComponentChange>
         }
     static member New (c:AbstractComponentChange[],s:AbstractComponentChange[]) =
         {   
             Items = c
             Sum = s
         }  
-    static member Add scl1 scl2 = 
+    static member Add (scl1:SystemChangeLog) (scl2:SystemChangeLog) = 
         {
             Items = scl2.Items |> Array.append scl1.Items
             Sum = scl2.Sum |> Array.append scl1.Sum
@@ -79,7 +79,10 @@ type SystemManager() =
             |> Array.Parallel.map (fun x -> x.Update) 
             |> Array.fold (fun scl c -> SystemChangeLog.Add scl c) SystemChangeLog.empty
 
-        let newecd = scl.Sum |> Array.fold (fun d s -> applyChanges d s) ecd
+        let newecd = 
+            scl.Sum
+            |> Array.sortBy (fun s -> s.EntityID)
+            |> Array.fold (fun d s -> applyChanges d s) ecd
 
         (newecd,scl)
 
