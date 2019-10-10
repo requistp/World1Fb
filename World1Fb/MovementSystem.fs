@@ -25,4 +25,4 @@ type MovementSystem(game:Game, isActive:bool) =
         ()
 
     override this.Update = 
-        this.ConsolidateChanges
+        base.PackageAndCloseChangeLog

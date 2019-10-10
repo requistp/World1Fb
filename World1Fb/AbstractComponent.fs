@@ -21,7 +21,8 @@ type AbstractComponentChange(componentType:ComponentTypes, eid:uint32) =
     abstract member AddChange : AbstractComponentChange -> AbstractComponentChange
     abstract member AddChange : AbstractComponent -> AbstractComponent
 
-
+//[<AbstractClass>]
+//type AbstractEntityCreation(cts:AbstractComponent[]) =
 
 
 //type EntityComponentChange = 

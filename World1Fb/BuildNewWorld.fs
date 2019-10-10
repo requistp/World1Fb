@@ -6,34 +6,36 @@ open FormComponent
 open LocationTypes
 open MovementComponent
 open TerrainComponent
-open EntityComponentManager
 
 
-let MakeMap ecd = 
-    let mutable newecd = ecd
+let MakeMap = 
+    let AddTerrain x y = 
+        [| [| TerrainComponent(TerrainType.Dirt, {X=x; Y=y}) :> AbstractComponent |] |]
     
-    let AddTerrain x y = Entity.Create newecd [| TerrainComponent(TerrainType.Dirt, {X=x; Y=y}) |]
+    let mutable tmap = Array.empty<AbstractComponent[]>
 
     for x in [0..MapWidth-1] do
         for y in [0..MapHeight-1] do
-            newecd <- AddTerrain x y
-    newecd
+            tmap <- tmap |> Array.append (AddTerrain x y)
+
+    tmap
 
 
-let MakeRabbit ecd x y = 
+let MakeRabbit x y = 
     [|
         ControllerComponent() :> AbstractComponent
         FormComponent(true, "rabbit", 'r', {X=x;Y=y}) :> AbstractComponent
         MovementComponent(1) :> AbstractComponent
         //sight
         //health        
-    |] |> Entity.Create ecd
+    |] 
 
 
-let MakeRabbits ecd n = 
+let MakeRabbits n = 
     match n with 
-    | 0 -> ecd
-    | _ -> let mutable newecd = ecd
-           for x in [1..n] do
-               newecd <- MakeRabbit newecd (random.Next(0,MapWidth-1)) (random.Next(0,MapHeight-1))
-           newecd
+    | 0 -> Array.empty<AbstractComponent[]>
+    | _ -> [1..n] |> List.toArray |> Array.map (fun i -> MakeRabbit (random.Next(0,MapWidth-1)) (random.Next(0,MapHeight-1)))
+           // let mutable newecd = ecd
+           //for x in [1..n] do
+           //    newecd <- MakeRabbit newecd (random.Next(0,MapWidth-1)) (random.Next(0,MapHeight-1))
+           //newecd
