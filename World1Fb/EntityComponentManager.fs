@@ -5,7 +5,7 @@ open System
 
 
 type EntityComponentData = {
-    Entities : Map<uint32,AbstractComponent list>
+    Entities : Map<uint32,AbstractComponent[]>
     Components : Map<ComponentTypes,uint32 list>
     MaxEntityID : uint32
     } with 
@@ -18,7 +18,7 @@ module Entity =
         | false -> cd.Add(ct.ComponentType,[eid])
         | true -> let il = cd.Item(ct.ComponentType)
                   cd.Remove(ct.ComponentType).Add(ct.ComponentType,eid::il)
-    let private componentDictionary_AddEntity (cd:Map<ComponentTypes,uint32 list>) eid (ctl:AbstractComponent list) =
+    let private componentDictionary_AddEntity (cd:Map<ComponentTypes,uint32 list>) eid (ctl:AbstractComponent[]) =
         let mutable newcd = cd
         for ct in ctl do
             match newcd.ContainsKey(ct.ComponentType) with
@@ -31,7 +31,7 @@ module Entity =
         | false -> cd
         | true -> let il = cd.Item(ct.ComponentType) |> List.filter (fun x -> x<>eid)
                   cd.Remove(ct.ComponentType).Add(ct.ComponentType,il)
-    let private componentDictionary_RemoveEntity (cd:Map<ComponentTypes,uint32 list>) eid (ctl:AbstractComponent list) =
+    let private componentDictionary_RemoveEntity (cd:Map<ComponentTypes,uint32 list>) eid (ctl:AbstractComponent[]) =
         let mutable newcd = cd
         for ct in ctl do
             match newcd.Item(ct.ComponentType) |> List.exists (fun x -> x=eid) with
@@ -39,10 +39,10 @@ module Entity =
                       newcd <- newcd.Remove(ct.ComponentType).Add(ct.ComponentType,il)
             | false -> ()
         newcd
-    let private tryGetComponent componentType (ctl:AbstractComponent list) = 
-        match ctl |> List.filter (fun c -> c.ComponentType=componentType) with
-        | [] -> None
-        | l -> Some l.Head
+    let private tryGetComponent componentType (ctl:AbstractComponent[]) = 
+        match ctl |> Array.filter (fun c -> c.ComponentType=componentType) with
+        | [||] -> None
+        | l -> Some l.[0]
 
     let AllWithComponent ecd componentType =
         match ecd.Components.ContainsKey(componentType) with
@@ -65,7 +65,7 @@ module Entity =
         }
 
     let GetComponent ecd componentType eid = 
-        ecd.Entities.Item(eid) |> List.find (fun x -> x.ComponentType=componentType)
+        ecd.Entities.Item(eid) |> Array.find (fun x -> x.ComponentType=componentType)
 
     let Remove ecd eid = 
         {
@@ -74,7 +74,7 @@ module Entity =
             MaxEntityID = ecd.MaxEntityID
         }
 
-    let TryGet (entities:Map<uint32,AbstractComponent list>) eid =
+    let TryGet (entities:Map<uint32,AbstractComponent[]>) eid =
         entities.ContainsKey(eid) |> TrueSomeFalseNone (entities.Item(eid))
 
     let ReplaceComponent (ecd:EntityComponentData) eid (newc:AbstractComponent) =
@@ -82,11 +82,11 @@ module Entity =
         | None -> ecd
         | Some ctl -> let newEntities = 
                           ctl 
-                          |> List.filter (fun ct -> ct.ComponentType<>newc.ComponentType) 
-                          |> List.append [newc]
+                          |> Array.filter (fun ct -> ct.ComponentType<>newc.ComponentType) 
+                          |> Array.append [|newc|]
                           |> Map_Replace ecd.Entities eid  
                       { Entities = newEntities; Components = ecd.Components; MaxEntityID = ecd.MaxEntityID } //Replacing component won't change the componentDictionary, so no work there
 
-    let TryGetComponent (entities:Map<uint32,AbstractComponent list>) componentType eid = 
+    let TryGetComponent (entities:Map<uint32,AbstractComponent[]>) componentType eid = 
         eid |> TryGet entities |> Option.bind (tryGetComponent componentType)
 

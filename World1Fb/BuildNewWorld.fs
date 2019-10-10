@@ -12,7 +12,7 @@ open EntityComponentManager
 let MakeMap ecd = 
     let mutable newecd = ecd
     
-    let AddTerrain x y = Entity.Create newecd [ TerrainComponent(TerrainType.Dirt, {X=x; Y=y}) ]
+    let AddTerrain x y = Entity.Create newecd [| TerrainComponent(TerrainType.Dirt, {X=x; Y=y}) |]
 
     for x in [0..MapWidth-1] do
         for y in [0..MapHeight-1] do
@@ -21,13 +21,13 @@ let MakeMap ecd =
 
 
 let MakeRabbit ecd x y = 
-    [
+    [|
         ControllerComponent() :> AbstractComponent
         FormComponent(true, "rabbit", 'r', {X=x;Y=y}) :> AbstractComponent
         MovementComponent(1) :> AbstractComponent
         //sight
         //health        
-    ] |> Entity.Create ecd
+    |] |> Entity.Create ecd
 
 
 let MakeRabbits ecd n = 

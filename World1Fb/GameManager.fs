@@ -64,7 +64,7 @@ type Game(ecd:EntityComponentData, renderer:Frame->unit) =
 
     do
         _frames <- [ {Frame.Empty with ECD=ecd} ] //Should just be empty frame after I change the the 0>1 frame step being the initial changes
-
+        
     let addFrame (data: {| ECD:EntityComponentData; ChangeLog:AbstractComponentChange[]; SumOfChanges:AbstractComponentChange[]; GameEvents:AbstractGameEvent[] |}) =
         _frames <- { Number=_frames.Head.Number + 1u; ECD=data.ECD; ChangeLog=data.ChangeLog; SumOfChanges=data.SumOfChanges; GameEvents=data.GameEvents } :: _frames
         _frames.Head

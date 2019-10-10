@@ -16,7 +16,7 @@ type FormSystem(game:Game, isActive:bool) =
     let onMovement (ge:AbstractGameEvent) =
         let m = ge :?> GameEvent_Movement
         _pendingChanges <- Array.append _pendingChanges [|FormComponent_Change(m.EntityID, None, None, { X=m.Direction.X_change; Y=m.Direction.Y_change })|]
-
+        
     let updateSumOfChanges (map:Map<uint32,FormComponent_Change>) (c:FormComponent_Change) =
         match map.ContainsKey(c.EntityID) with
         | false -> map.Add(c.EntityID,c)
