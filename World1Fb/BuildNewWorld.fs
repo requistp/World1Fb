@@ -10,7 +10,11 @@ open TerrainComponent
 
 let MakeMap = 
     let AddTerrain x y = 
-        [| [| TerrainComponent(TerrainType.Dirt, {X=x; Y=y}) :> AbstractComponent |] |]
+        let t = match random.Next(1,10) with
+                | 1 -> Rock
+                | _ -> Dirt
+
+        [| [| TerrainComponent(t, {X=x; Y=y}) :> AbstractComponent |] |]
     
     let mutable tmap = Array.empty<AbstractComponent[]>
 
@@ -35,7 +39,4 @@ let MakeRabbits n =
     match n with 
     | 0 -> Array.empty<AbstractComponent[]>
     | _ -> [1..n] |> List.toArray |> Array.map (fun i -> MakeRabbit (random.Next(0,MapWidth-1)) (random.Next(0,MapHeight-1)))
-           // let mutable newecd = ecd
-           //for x in [1..n] do
-           //    newecd <- MakeRabbit newecd (random.Next(0,MapWidth-1)) (random.Next(0,MapHeight-1))
-           //newecd
+
