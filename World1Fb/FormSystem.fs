@@ -16,18 +16,6 @@ type FormSystem(game:Game, isActive:bool) =
     let onMovement (ge:AbstractGameEvent) =
         let m = ge :?> GameEvent_Movement
         _pendingChanges <- Array.append _pendingChanges [|FormComponent_Change(m.EntityID, None, None, { X=m.Direction.X_change; Y=m.Direction.Y_change })|]
-        
-    let updateSumOfChanges (map:Map<uint32,AbstractComponentChange>) (c:AbstractComponentChange) =
-        match map.ContainsKey(c.EntityID) with
-        | false -> map.Add(c.EntityID,c)
-        | true -> let i = map.Item(c.EntityID)
-                  map.Remove(c.EntityID).Add(c.EntityID,i.AddChange(c))
-    
-    let sumOfPendingChanges (pc:AbstractComponentChange[]) = 
-        pc
-        |> Array.fold (fun map c -> updateSumOfChanges map c) Map.empty 
-        |> Map.toArray
-        |> Array.map (fun tup -> snd tup)
 
     let applyChanges (ecd:EntityComponentData) (c:AbstractComponentChange) =
         match c.EntityID |> Entity.TryGetComponent ecd.Entities c.ComponentType with
@@ -41,14 +29,16 @@ type FormSystem(game:Game, isActive:bool) =
         game.EventManager.RegisterListener Movement onMovement
 
     override this.Update (ecd:EntityComponentData, scl:SystemChangeLog)= 
-        let c = _pendingChanges |> Array.map (fun x -> x :> AbstractComponentChange)
+        let c = _pendingChanges |> Array.Parallel.map (fun x -> x :> AbstractComponentChange)
         _pendingChanges <- Array.empty
 
-        let s = sumOfPendingChanges c
+        let s = this.SumOfPendingChanges c
         
+        let scl = scl.Add(SystemChangeLog.New(c,s))
+
         let newecd = s |> Array.fold (fun e c -> applyChanges e c) ecd
 
-        (newecd, scl.Add(SystemChangeLog.New(c,s)))  
+        (newecd, scl)  
         
 
         

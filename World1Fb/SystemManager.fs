@@ -12,10 +12,10 @@ type SystemChangeLog =
             Items = Array.empty
             Sum = Array.empty
         }
-    static member New (c:'C,s:'S) =
+    static member New (c:AbstractComponentChange[],s:AbstractComponentChange[]) =
         {   
-            Items = c |> Array.Parallel.map (fun x -> x :> AbstractComponentChange)
-            Sum = s |> Array.Parallel.map (fun x -> x :> AbstractComponentChange)
+            Items = c //|> Array.Parallel.map (fun x -> x :> AbstractComponentChange)
+            Sum = s //|> Array.Parallel.map (fun x -> x :> AbstractComponentChange)
         }  
     member this.Add scl2 = 
         {
@@ -32,6 +32,18 @@ type AbstractSystem(isActive:bool) =
     member this.IsInitialized = _isInitialized
 
     member internal this.SetToInitialized = _isInitialized <- true
+
+    member private this.updateSumOfChanges (map:Map<uint32,AbstractComponentChange>) (c:AbstractComponentChange) =
+        match map.ContainsKey(c.EntityID) with
+        | false -> map.Add(c.EntityID,c)
+        | true -> let i = map.Item(c.EntityID)
+                  map.Remove(c.EntityID).Add(c.EntityID,i.AddChange(c))
+    
+    member internal this.SumOfPendingChanges (pc:AbstractComponentChange[]) = 
+        pc
+        |> Array.fold (fun map c -> this.updateSumOfChanges map c) Map.empty 
+        |> Map.toArray
+        |> Array.map (fun tup -> snd tup)
 
     abstract member Initialize : unit
     abstract member Update : EntityComponentData * SystemChangeLog -> EntityComponentData * SystemChangeLog
