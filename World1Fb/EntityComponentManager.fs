@@ -6,36 +6,36 @@ open System
 
 type EntityComponentData = {
     Entities : Map<uint32,AbstractComponent[]>
-    Components : Map<ComponentTypes,uint32 list>
+    Components : Map<ComponentTypes,uint32[]>
     MaxEntityID : uint32
     } with 
     static member Empty = { Entities=Map.empty; Components=Map.empty; MaxEntityID=0u}
 
     
 module Entity =
-    let private componentDictionary_AddComponent (cd:Map<ComponentTypes,uint32 list>) eid (ct:AbstractComponent) =
+    let private componentDictionary_AddComponent (cd:Map<ComponentTypes,uint32[]>) eid (ct:AbstractComponent) =
         match cd.ContainsKey(ct.ComponentType) with
-        | false -> cd.Add(ct.ComponentType,[eid])
-        | true -> let il = cd.Item(ct.ComponentType)
-                  cd.Remove(ct.ComponentType).Add(ct.ComponentType,eid::il)
-    let private componentDictionary_AddEntity (cd:Map<ComponentTypes,uint32 list>) eid (ctl:AbstractComponent[]) =
+        | false -> cd.Add(ct.ComponentType,[|eid|])
+        | true -> let il = [|eid|] |> Array.append (cd.Item(ct.ComponentType)) 
+                  cd.Remove(ct.ComponentType).Add(ct.ComponentType,il)
+    let private componentDictionary_AddEntity (cd:Map<ComponentTypes,uint32[]>) eid (ctl:AbstractComponent[]) =
         let mutable newcd = cd
         for ct in ctl do
             match newcd.ContainsKey(ct.ComponentType) with
-            | false -> newcd <- newcd.Add(ct.ComponentType,[eid])
-            | true -> let il = newcd.Item(ct.ComponentType)
-                      newcd <- newcd.Remove(ct.ComponentType).Add(ct.ComponentType,eid::il)
+            | false -> newcd <- newcd.Add(ct.ComponentType,[|eid|])
+            | true -> let il = [|eid|] |> Array.append (newcd.Item(ct.ComponentType))
+                      newcd <- newcd.Remove(ct.ComponentType).Add(ct.ComponentType,il)
         newcd
-    let private componentDictionary_RemoveComponent (cd:Map<ComponentTypes,uint32 list>) eid (ct:AbstractComponent) =
-        match cd.Item(ct.ComponentType) |> List.exists (fun x -> x=eid) with
+    let private componentDictionary_RemoveComponent (cd:Map<ComponentTypes,uint32[]>) eid (ct:AbstractComponent) =
+        match cd.Item(ct.ComponentType) |> Array.exists (fun x -> x=eid) with
         | false -> cd
-        | true -> let il = cd.Item(ct.ComponentType) |> List.filter (fun x -> x<>eid)
+        | true -> let il = cd.Item(ct.ComponentType) |> Array.filter (fun x -> x<>eid)
                   cd.Remove(ct.ComponentType).Add(ct.ComponentType,il)
-    let private componentDictionary_RemoveEntity (cd:Map<ComponentTypes,uint32 list>) eid (ctl:AbstractComponent[]) =
+    let private componentDictionary_RemoveEntity (cd:Map<ComponentTypes,uint32[]>) eid (ctl:AbstractComponent[]) =
         let mutable newcd = cd
         for ct in ctl do
-            match newcd.Item(ct.ComponentType) |> List.exists (fun x -> x=eid) with
-            | true -> let il = newcd.Item(ct.ComponentType) |> List.filter (fun x -> x<>eid)
+            match newcd.Item(ct.ComponentType) |> Array.exists (fun x -> x=eid) with
+            | true -> let il = newcd.Item(ct.ComponentType) |> Array.filter (fun x -> x<>eid)
                       newcd <- newcd.Remove(ct.ComponentType).Add(ct.ComponentType,il)
             | false -> ()
         newcd
@@ -47,7 +47,7 @@ module Entity =
     let AllWithComponent ecd componentType =
         match ecd.Components.ContainsKey(componentType) with
         | true -> ecd.Components.Item(componentType)
-        | false -> []
+        | false -> Array.empty
 
     let Create ecd ctl =
         let i = ecd.MaxEntityID + 1u

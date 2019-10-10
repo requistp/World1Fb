@@ -57,41 +57,41 @@ type Frame = {
         }
 
 type Game(ecd:EntityComponentData, renderer:Frame->unit) =
-    let mutable _frames = List.empty:Frame list
-    let mutable _systems = List.empty:AbstractSystem list
+    let mutable _frames = Array.empty:Frame[]
+    let mutable _systems = Array.empty:AbstractSystem[]
     let _eventManager = new EventManager()
     let _input = new InputHandler(_eventManager) //, _frames.Head.ECD)
 
     do
-        _frames <- [ {Frame.Empty with ECD=ecd} ] //Should just be empty frame after I change the the 0>1 frame step being the initial changes
+        _frames <- [| {Frame.Empty with ECD=ecd} |] //Should just be empty frame after I change the the 0>1 frame step being the initial changes
         
     let addFrame (data: {| ECD:EntityComponentData; ChangeLog:AbstractComponentChange[]; SumOfChanges:AbstractComponentChange[]; GameEvents:AbstractGameEvent[] |}) =
-        _frames <- { Number=_frames.Head.Number + 1u; ECD=data.ECD; ChangeLog=data.ChangeLog; SumOfChanges=data.SumOfChanges; GameEvents=data.GameEvents } :: _frames
-        _frames.Head
+        _frames <- Array.append _frames [|{ Number=(uint32 _frames.Length); ECD=data.ECD; ChangeLog=data.ChangeLog; SumOfChanges=data.SumOfChanges; GameEvents=data.GameEvents }|]
+        Array.last _frames
 
     let assignController =
-        match Controller |> Entity.AllWithComponent _frames.Head.ECD with
-        | [] -> None
-        | l -> Some l.Head
-
-    member _.ECD = _frames.Head.ECD
+        match Controller |> Entity.AllWithComponent (Array.last _frames).ECD with
+        | [||] -> None
+        | l -> Some l.[0]
+    
+    member _.Frame_Current = Array.last _frames
+    member this.ECD = this.Frame_Current.ECD
     member _.EventManager = _eventManager
-    member _.Systems_Active = _systems |> List.filter (fun s -> s.IsActive)
-    member this.Systems_ActiveAndInitialized = this.Systems_Active |> List.filter (fun s -> s.IsInitialized)
+    member _.Systems_Active = _systems |> Array.filter (fun s -> s.IsActive)
+    member this.Systems_ActiveAndInitialized = this.Systems_Active |> Array.filter (fun s -> s.IsInitialized)
 
-    member this.RegisterSystems (sl:AbstractSystem list) =
+    member this.RegisterSystems (sl:AbstractSystem[]) =
         _systems <- sl
-        this.Systems_Active |> List.iter (fun s -> s.Initialize)
+        this.Systems_Active |> Array.iter (fun s -> s.Initialize)
 
     member this.Start = 
-        let mutable z = 0
-        renderer _frames.Head
+        _frames |> Array.last |> renderer
 
         assignController |> _input.SetEntityID
 
         while _input.AwaitKeyboardInput do
             let gel = _eventManager.ProcessEvents
-            let (newecd,scl) = this.Systems_ActiveAndInitialized |> List.fold (fun d s -> s.Update d) (_frames.Head.ECD, SystemChangeLog.empty)
+            let (newecd,scl) = this.Systems_ActiveAndInitialized |> Array.fold (fun d s -> s.Update d) (this.Frame_Current.ECD, SystemChangeLog.empty)
             let f = addFrame {| ECD = newecd; ChangeLog = scl.Items; SumOfChanges = scl.Sum; GameEvents = gel |}
             renderer f
 

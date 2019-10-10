@@ -39,6 +39,3 @@ let RenderFrame f =
     System.Console.SetCursorPosition(MapWidth+1,MapHeight)
     System.Console.Write(sprintf "Frame #%i\n" f.Number)
 
-
-let RenderFrames fl =
-    fl |> List.iter RenderFrame
