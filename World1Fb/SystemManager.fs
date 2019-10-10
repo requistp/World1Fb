@@ -14,43 +14,57 @@ type SystemChangeLog =
         }
     static member New (c:AbstractComponentChange[],s:AbstractComponentChange[]) =
         {   
-            Items = c //|> Array.Parallel.map (fun x -> x :> AbstractComponentChange)
-            Sum = s //|> Array.Parallel.map (fun x -> x :> AbstractComponentChange)
+            Items = c
+            Sum = s
         }  
-    member this.Add scl2 = 
+    static member Add scl1 scl2 = 
         {
-            Items = scl2.Items |> Array.append this.Items
-            Sum = scl2.Sum |> Array.append this.Sum
+            Items = scl2.Items |> Array.append scl1.Items
+            Sum = scl2.Sum |> Array.append scl1.Sum
         }
 
 
 [<AbstractClass>]
 type AbstractSystem(isActive:bool) =
     let mutable _isInitialized = false
+    let mutable _pendingChanges = Array.empty<AbstractComponentChange>
 
-    member this.IsActive = isActive
-    member this.IsInitialized = _isInitialized
-
-    member internal this.SetToInitialized = _isInitialized <- true
-
-    member private this.updateSumOfChanges (map:Map<uint32,AbstractComponentChange>) (c:AbstractComponentChange) =
+    let updateSumOfChanges (map:Map<uint32,AbstractComponentChange>) (c:AbstractComponentChange) =
         match map.ContainsKey(c.EntityID) with
         | false -> map.Add(c.EntityID,c)
         | true -> let i = map.Item(c.EntityID)
                   map.Remove(c.EntityID).Add(c.EntityID,i.AddChange(c))
-    
-    member internal this.SumOfPendingChanges (pc:AbstractComponentChange[]) = 
+   
+    let sumOfPendingChanges (pc:AbstractComponentChange[]) = 
         pc
-        |> Array.fold (fun map c -> this.updateSumOfChanges map c) Map.empty 
+        |> Array.fold (fun map c -> updateSumOfChanges map c) Map.empty 
         |> Map.toArray
         |> Array.map (fun tup -> snd tup)
 
+    member this.IsActive = isActive
+    member this.IsInitialized = _isInitialized
+
+    member internal this.AppendChange a = _pendingChanges <- Array.append _pendingChanges [|a|]
+    member internal this.SetToInitialized = _isInitialized <- true
+    member internal this.ConsolidateChanges =
+        let c = _pendingChanges
+        _pendingChanges <- Array.empty
+        let s = sumOfPendingChanges c
+        SystemChangeLog.New(c,s)
+
     abstract member Initialize : unit
-    abstract member Update : EntityComponentData * SystemChangeLog -> EntityComponentData * SystemChangeLog
+    abstract member Update : SystemChangeLog
 
 
 type SystemManager() =
     let mutable _systems = Array.empty<AbstractSystem>
+
+    let applyChanges (ecd:EntityComponentData) (c:AbstractComponentChange) =
+        match c.EntityID |> Entity.TryGetComponent ecd.Entities c.ComponentType with
+        | None -> ecd
+        | Some a -> a
+                    |> c.AddChange
+                    |> Entity.ReplaceComponent ecd c.EntityID
 
     member private this.Active = _systems |> Array.filter (fun s -> s.IsActive)
     member private this.ActiveAndInitialized = _systems |> Array.filter (fun s -> s.IsActive && s.IsInitialized)
@@ -60,5 +74,12 @@ type SystemManager() =
         this.Active |> Array.iter (fun s -> s.Initialize)
 
     member this.UpdateSystems (ecd:EntityComponentData) =
-        this.ActiveAndInitialized |> Array.fold (fun d s -> s.Update d) (ecd, SystemChangeLog.empty)
+        let scl = 
+            this.ActiveAndInitialized 
+            |> Array.Parallel.map (fun x -> x.Update) 
+            |> Array.fold (fun scl c -> SystemChangeLog.Add scl c) SystemChangeLog.empty
+
+        let newecd = scl.Sum |> Array.fold (fun d s -> applyChanges d s) ecd
+
+        (newecd,scl)
 

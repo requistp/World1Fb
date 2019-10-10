@@ -24,6 +24,5 @@ type MovementSystem(game:Game, isActive:bool) =
         game.EventManager.RegisterListener Movement_KeyPressed onMovementKeyPressed
         ()
 
-    override _.Update (ecd:EntityComponentData, scl:SystemChangeLog) = 
-        (ecd,scl)
-
+    override this.Update = 
+        this.ConsolidateChanges
