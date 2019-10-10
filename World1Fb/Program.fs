@@ -1,14 +1,15 @@
-﻿open CommonGenericFunctions
-open LocationTypes
-open Renderer
-open GameManager
-open FormSystem
-open MovementSystem
-open TerrainSystem
-open TerrainComponent
-open FormComponent
-open BuildNewWorld
+﻿open BuildNewWorld
+open CommonGenericFunctions
 open EntityComponentManager
+open FormComponent
+open FormSystem
+open GameManager
+open LocationTypes
+open MovementSystem
+open Renderer
+open SystemManager
+open TerrainComponent
+open TerrainSystem
 
 let g = new Game((MakeRabbits (MakeMap Entity.EmptyECD) 1), RenderFrame)
 
@@ -19,7 +20,7 @@ let systems =
         TerrainSystem(g,true) :> AbstractSystem
     |]
 
-g.RegisterSystems systems
+g.SystemManager.RegisterSystems systems
 
 g.Start 
 

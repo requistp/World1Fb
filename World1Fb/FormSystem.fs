@@ -6,7 +6,7 @@ open GameManager
 open EntityComponentManager
 open EventManager
 open LocationTypes
-open System
+open SystemManager
 
 type FormSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 

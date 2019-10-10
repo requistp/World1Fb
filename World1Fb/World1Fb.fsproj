@@ -16,6 +16,7 @@
     <Compile Include="EntityComponentManager.fs" />
     <Compile Include="GameEvents.fs" />
     <Compile Include="EventManager.fs" />
+    <Compile Include="SystemManager.fs" />
     <Compile Include="InputHandler.fs" />
     <Compile Include="GameManager.fs" />
     <Compile Include="FormSystem.fs" />

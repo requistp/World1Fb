@@ -6,6 +6,7 @@ open GameManager
 open TerrainComponent
 open EntityComponentManager
 open EventManager
+open SystemManager
 
 type TerrainSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 

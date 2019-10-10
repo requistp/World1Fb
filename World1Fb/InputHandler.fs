@@ -23,6 +23,9 @@ type InputHandler(em:EventManager) =
         | ConsoleKey.RightArrow -> keyPressed_Movement East
         | _ -> ()  
 
+        while Console.KeyAvailable do //Might helpclear double movement keys entered in one turn
+            Console.ReadKey(true).Key |> ignore
+            
     member _.SetEntityID eid = _entityID <- eid
 
     member _.AwaitKeyboardInput =

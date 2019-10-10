@@ -8,6 +8,7 @@ open GameEvents
 open GameManager
 open MovementComponent
 open System
+open SystemManager
 
 type MovementSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
