@@ -4,10 +4,11 @@ open CommonGenericFunctions
 open System
 
 
-type EntityComponentData = {
-    Entities : Map<uint32,AbstractComponent[]>
-    Components : Map<ComponentTypes,uint32[]>
-    MaxEntityID : uint32
+type EntityComponentData = 
+    {
+        Entities : Map<uint32,AbstractComponent[]>
+        Components : Map<ComponentTypes,uint32[]>
+        MaxEntityID : uint32
     } with 
     static member Empty = { Entities=Map.empty; Components=Map.empty; MaxEntityID=0u}
 

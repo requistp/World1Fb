@@ -20,9 +20,8 @@ type MovementSystem(game:Game, isActive:bool) =
         game.EventManager.QueueEvent(GameEvent_Movement(m.EntityID,m.Direction))
 
     override _.Initialize = 
-        base.SetToInitialized
         game.EventManager.RegisterListener Movement_KeyPressed onMovementKeyPressed
-        ()
+        base.SetToInitialized
 
     override this.Update = 
-        base.PackageAndCloseChangeLog
+        base.ChangeLog_PackageAndClose

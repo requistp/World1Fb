@@ -24,6 +24,3 @@ type TerrainComponent(terrainType:TerrainType, location:LocationDataInt) =
         | Rock -> '#'
 
 
-//type TerrainComponent_Change = {
-//    Type : TerrainType option
-//    }

@@ -25,4 +25,4 @@ type FormSystem(game:Game, isActive:bool, initialForms:AbstractComponent[][]) =
         base.SetToInitialized
 
     override _.Update = 
-        base.PackageAndCloseChangeLog
+        base.ChangeLog_PackageAndClose

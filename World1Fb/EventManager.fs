@@ -9,18 +9,16 @@ type EventManager() =
     let mutable _listeners = Map.empty:Map<GameEventTypes,listenerCallback[]> 
     let mutable _pendingEvents = Array.empty<AbstractGameEvent>
 
-    let processCallbacks (ge:AbstractGameEvent) = 
-        match _listeners.ContainsKey(ge.GameEventType) with
-        | false -> ()
-        | true -> _listeners.Item(ge.GameEventType) |> Array.iter (fun cb -> cb ge)
-
     member private this.processEventBatch = 
+        let processCallbacks (ge:AbstractGameEvent) = 
+            match _listeners.ContainsKey(ge.GameEventType) with
+            | false -> ()
+            | true -> _listeners.Item(ge.GameEventType) |> Array.iter (fun cb -> cb ge)
+
         let processedEvents = _pendingEvents
         _pendingEvents <- Array.empty
         processedEvents |> Array.Parallel.iter (fun ge -> processCallbacks ge)
         processedEvents
-
-    member _.PendingCount = _pendingEvents.Length
 
     member this.ProcessEvents = 
         let mutable processedEvents = Array.empty<AbstractGameEvent>
