@@ -32,6 +32,8 @@ module Entity =
         match ctl |> Array.filter (fun c -> c.ComponentType=componentType) with
         | [||] -> None
         | l -> Some l.[0]
+//    let private eventQueueing (eid:uint32) (ctl:AbstractComponent[]) =
+  //      if ctl |> Array.exists (fun ct -> ct.ComponentType = Terrain)
 
     let AllWithComponent ecd componentType =
         match ecd.Components.ContainsKey(componentType) with
@@ -39,11 +41,12 @@ module Entity =
         | false -> Array.empty
 
     let Create ecd ctl =
-        let i = ecd.MaxEntityID + 1u
+        let eid = ecd.MaxEntityID + 1u
+    //    eventQueueing eid ctl
         {
-            Entities = ecd.Entities.Add(i,ctl)
-            Components = componentDictionary_AddEntity ecd.Components i ctl
-            MaxEntityID = i
+            Entities = ecd.Entities.Add(eid,ctl)
+            Components = componentDictionary_AddEntity ecd.Components eid ctl
+            MaxEntityID = eid
         }
 
     let EmptyECD = 

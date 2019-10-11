@@ -80,14 +80,12 @@ type SystemManager() =
         let applyNewEntities (scl:SystemChangeLog) (ecd:EntityComponentData)  = 
             let applyNewEntity (ecd:EntityComponentData) (ne:AbstractComponent[]) =
                 ne |> Entity.Create ecd 
-
             scl.NewEntities
             |> Array.fold (fun d ne -> applyNewEntity d ne) ecd
         let scl =
             this.ActiveAndInitialized 
             |> Array.Parallel.map (fun x -> x.Update) 
             |> Array.fold (fun scl c -> SystemChangeLog.Add scl c) SystemChangeLog.empty
-        
         (ecd |> applyComponentChanges scl |> applyNewEntities scl, scl)
 
     member this.RegisterSystems (sl:AbstractSystem[]) =
