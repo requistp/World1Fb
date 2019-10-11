@@ -20,13 +20,16 @@ type EntityManager(evm:EventManager) =
     //    if ctl |> Array.exists (fun ct -> ct.ComponentType = Terrain)
 
     member private this.onEntityCreate (age:AbstractGameEvent) =
-        let e = age :?> Event_Entity_Create
-        _maxEntityID <- _maxEntityID + 1u
-        _entitiesNext <- _entitiesNext.Add(_maxEntityID,e.Components)
+        let e = (age :?> Event_Entity_Creates).Components
+        let addNextEntity cs =
+            _maxEntityID <- _maxEntityID + 1u
+            _entitiesNext <- _entitiesNext.Add(_maxEntityID,cs)
+        e |> Array.iter (fun cs -> addNextEntity cs)
+
         //eventQueueing _maxEntityID ctl
 
     member this.onComponentChange (age:AbstractGameEvent) =
-        let e = (age :?> Event_Entity_ComponentChange).ComponentChange
+        let e = (age :?> Event_Entity_ComponentChanges).ComponentChange
 
         match e.ComponentType |> this.TryGetComponent e.EntityID with
         | None -> ()

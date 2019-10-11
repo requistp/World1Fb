@@ -66,16 +66,14 @@ type SystemManager(evm:EventManager, enm:EntityManager) =
                 ccs
                 |> Array.fold (fun map c -> compileChanges map c) Map.empty 
                 |> Map.toArray
-                |> Array.map (fun tup -> snd tup)    
+                |> Array.map (fun tup -> snd tup)   
+                
             scl.ComponentChanges
             |> sumOfComponentChanges
-            |> Array.iter (fun acc -> evm.QueueEvent(Event_Entity_ComponentChange(acc)))
+            //|> Array.iter (fun acc -> evm.QueueEvent(Event_Entity_ComponentChanges(acc)))
             
-        let applyCreateEntities = 
-            scl.NewEntities |> Array.iter (fun acs -> evm.QueueEvent(Event_Entity_Create(acs)))
-        
         applyComponentChanges
-        applyCreateEntities
+        evm.QueueEvent(Event_Entity_Creates(scl.NewEntities))
         scl
 
     member this.Initialize (ss:AbstractSystem[]) =

@@ -22,12 +22,12 @@ type Event_ComponentCreated_Terrain(eid:uint32, ct:TerrainComponent) =
     member _.Terrain = ct
 
 
-type Event_Entity_Create(acs:AbstractComponent[]) =
+type Event_Entity_Creates(acs:AbstractComponent[][]) =
     inherit AbstractGameEvent(Entity_Create)
     member _.Components = acs
 
 
-type Event_Entity_ComponentChange(acc:AbstractComponentChange) =
+type Event_Entity_ComponentChanges(acc:AbstractComponentChange) =
     inherit AbstractGameEvent(Entity_ComponentChange)
     member _.ComponentChange = acc
     
