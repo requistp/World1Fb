@@ -32,8 +32,6 @@ module Entity =
         match ctl |> Array.filter (fun c -> c.ComponentType=componentType) with
         | [||] -> None
         | l -> Some l.[0]
-//    let private eventQueueing (eid:uint32) (ctl:AbstractComponent[]) =
-  //      if ctl |> Array.exists (fun ct -> ct.ComponentType = Terrain)
 
     let AllWithComponent ecd componentType =
         match ecd.Components.ContainsKey(componentType) with
@@ -42,29 +40,14 @@ module Entity =
 
     let Create ecd ctl =
         let eid = ecd.MaxEntityID + 1u
-    //    eventQueueing eid ctl
         {
             Entities = ecd.Entities.Add(eid,ctl)
             Components = componentDictionary_AddEntity ecd.Components eid ctl
             MaxEntityID = eid
         }
 
-    let EmptyECD = 
-        {
-            Entities = Map.empty
-            Components = Map.empty
-            MaxEntityID = 0u 
-        }
-
     let GetComponent ecd componentType eid = 
         ecd.Entities.Item(eid) |> Array.find (fun x -> x.ComponentType=componentType)
-
-    let Remove ecd eid = 
-        {
-            Entities = ecd.Entities.Remove(eid)
-            Components = componentDictionary_RemoveEntity ecd.Components eid (ecd.Entities.Item(eid))
-            MaxEntityID = ecd.MaxEntityID
-        }
 
     let TryGet (entities:Map<uint32,AbstractComponent[]>) eid =
         entities.ContainsKey(eid) |> TrueSomeFalseNone (entities.Item(eid))
@@ -81,4 +64,48 @@ module Entity =
 
     let TryGetComponent (entities:Map<uint32,AbstractComponent[]>) componentType eid = 
         eid |> TryGet entities |> Option.bind (tryGetComponent componentType)
+
+type EntityManager() =
+    let mutable _componentDictionary = Map.empty<ComponentTypes,uint32[]>
+    let mutable _entitiesCurrent = Map.empty<uint32,AbstractComponent[]>
+    let mutable _entitiesNext = Map.empty<uint32,AbstractComponent[]>
+    let mutable _maxEntityID = 0u
+
+    let tryGetComponent ct (cts:AbstractComponent[]) = 
+        match cts |> Array.filter (fun c -> c.ComponentType = ct) with
+        | [||] -> None
+        | l -> Some l.[0]
+
+    //let private eventQueueing (eid:uint32) (ctl:AbstractComponent[]) =
+    //    if ctl |> Array.exists (fun ct -> ct.ComponentType = Terrain)
+
+    member this.GetAllWithComponent ct =
+        match _componentDictionary.ContainsKey(ct) with
+        | true -> _componentDictionary.Item(ct)
+        | false -> Array.empty
+        
+    member this.GetComponent ct eid = 
+        _entitiesCurrent.Item(eid) |> Array.find (fun x -> x.ComponentType = ct)
+    
+    member this.TryGet eid =
+        _entitiesCurrent.ContainsKey(eid) |> TrueSomeFalseNone (_entitiesCurrent.Item(eid))
+
+    member this.TryGetComponent ct eid = 
+        eid |> this.TryGet |> Option.bind (tryGetComponent ct)
+    
+    // Next frame Entities -------------------------------------------------------------------------------------
+
+    member this.CreateEntity cts =
+        _maxEntityID <- _maxEntityID + 1u
+        //eventQueueing _maxEntityID ctl
+        _entitiesNext <- _entitiesNext.Add(_maxEntityID,cts)
+        _entitiesNext
+
+    member this.ReplaceComponent eid (newc:AbstractComponent) =
+        match eid|>this.TryGet with
+        | None -> _entitiesNext
+        | Some cts -> cts 
+                      |> Array.filter (fun ct -> ct.ComponentType <> newc.ComponentType) 
+                      |> Array.append [|newc|]
+                      |> Map_Replace _entitiesNext eid  
 

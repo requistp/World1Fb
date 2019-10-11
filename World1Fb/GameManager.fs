@@ -24,6 +24,7 @@ type Frame =
 
 type Game(renderer:Frame->unit) =
     let mutable _frames = Array.empty:Frame[]
+    let _entityManager = new EntityManager()
     let _eventManager = new EventManager()
     let _systemManager = new SystemManager()
     let _input = new InputHandler(_eventManager)
