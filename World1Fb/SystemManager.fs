@@ -72,7 +72,8 @@ type SystemManager(evm:EventManager, enm:EntityManager) =
             |> sumOfComponentChanges
             //|> Array.iter (fun acc -> evm.QueueEvent(Event_Entity_ComponentChanges(acc)))
             
-        applyComponentChanges
+        //applyComponentChanges
+        evm.QueueEvent(Event_Entity_ComponentChanges(applyComponentChanges))
         evm.QueueEvent(Event_Entity_Creates(scl.NewEntities))
         scl
 

@@ -27,7 +27,7 @@ type Event_Entity_Creates(acs:AbstractComponent[][]) =
     member _.Components = acs
 
 
-type Event_Entity_ComponentChanges(acc:AbstractComponentChange) =
+type Event_Entity_ComponentChanges(acc:AbstractComponentChange[]) =
     inherit AbstractGameEvent(Entity_ComponentChange)
     member _.ComponentChange = acc
     

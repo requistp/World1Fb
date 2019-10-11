@@ -31,14 +31,17 @@ type EntityManager(evm:EventManager) =
     member this.onComponentChange (age:AbstractGameEvent) =
         let e = (age :?> Event_Entity_ComponentChanges).ComponentChange
 
-        match e.ComponentType |> this.TryGetComponent e.EntityID with
-        | None -> ()
-        | Some (oc:AbstractComponent) -> 
-            _entitiesNext <- _entitiesNext.Item(e.EntityID) 
-                             |> Array.filter (fun c -> c.ComponentType <> e.ComponentType) 
-                             |> Array.append [|e.AddChange oc|]
-                             |> Map_Replace _entitiesNext e.EntityID
-            
+        let doTheChange (acc:AbstractComponentChange) = 
+            match acc.ComponentType |> this.TryGetComponent acc.EntityID with
+            | None -> ()
+            | Some (oc:AbstractComponent) -> 
+                _entitiesNext <- _entitiesNext.Item(acc.EntityID) 
+                                 |> Array.filter (fun c -> c.ComponentType <> acc.ComponentType) 
+                                 |> Array.append [|acc.AddChange oc|]
+                                 |> Map_Replace _entitiesNext acc.EntityID
+        
+        e |> Array.iter (fun acc -> doTheChange acc)
+
     member private this.updatedComponentDictionary = 
         let addComponents (m:Map<ComponentTypes,uint32[]>) (cs:AbstractComponent[]) (eid:uint32) =
             cs |> Array.fold (fun m c -> Map_AppendValueToArray m c.ComponentType eid) m
