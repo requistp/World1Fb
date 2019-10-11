@@ -11,6 +11,7 @@ open TerrainComponent
 type TerrainSystem(game:Game, isActive:bool, initialTerrain:AbstractComponent[][]) =
     inherit AbstractSystem(isActive) 
 
+//    static member TerrainAtLocation 
     member private this.setInitialTerrain = 
         initialTerrain 
         |> Array.iter (fun ne -> this.ChangeLog_NewEntity ne)

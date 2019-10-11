@@ -41,6 +41,7 @@ type Game(renderer:Frame->unit) =
         | l -> Some l.[0]
     
     member this.Frame_Current = Array.last _frames
+    member this.Entities = this.Frame_Current.ECD.Entities
     member this.EventManager = _eventManager
     member this.SystemManager = _systemManager
 
