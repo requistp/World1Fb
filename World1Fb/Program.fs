@@ -17,7 +17,7 @@ let g = new Game(RenderFrame)
     MovementSystem(g, true) :> AbstractSystem
     TerrainSystem(g, true, MakeMap) :> AbstractSystem
 |]
-|> g.SystemManager.RegisterSystems
+|> g.SystemManager.Initialize
 
 g.Start 
 

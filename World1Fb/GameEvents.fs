@@ -1,31 +1,46 @@
 ﻿module GameEvents
+open AbstractComponent
 open MovementComponent
 open TerrainComponent
 
 type GameEventTypes =
-    | ComponentCreated_Terrain
+    | Component_Created_Terrain
+    | Entity_Create
+    | Entity_ReplaceComponent
     | Movement
     | Movement_KeyPressed
 
 
 [<AbstractClass>]
-type AbstractGameEvent(et:GameEventTypes, eid:uint32) =
+type AbstractGameEvent(et:GameEventTypes) =
     member _.GameEventType = et
+
+
+type Event_ComponentCreated_Terrain(eid:uint32, ct:TerrainComponent) =
+    inherit AbstractGameEvent(Component_Created_Terrain)
     member _.EntityID = eid
-
-
-type GameEvent_ComponentCreated_Terrain(eid:uint32, ct:TerrainComponent) =
-    inherit AbstractGameEvent(ComponentCreated_Terrain,eid)
     member _.Terrain = ct
 
 
-type GameEvent_Movement(eid:uint32, direction:MovementDirection) =
-    inherit AbstractGameEvent(Movement,eid)
+type Event_Entity_Create(acs:AbstractComponent[]) =
+    inherit AbstractGameEvent(Entity_Create)
+    member _.Components = acs
+
+
+type Event_Entity_ReplaceComponent(acc:AbstractComponentChange) =
+    inherit AbstractGameEvent(Entity_ReplaceComponent)
+    member _.ComponentChange = acc
+
+
+type Event_Movement(eid:uint32, direction:MovementDirection) =
+    inherit AbstractGameEvent(Movement)
     member _.Direction = direction
+    member _.EntityID = eid
     
 
-type GameEvent_KeyPressed_Movement(eid:uint32, direction:MovementDirection) =
-    inherit AbstractGameEvent(Movement_KeyPressed,eid)
+type Event_KeyPressed_Movement(eid:uint32, direction:MovementDirection) =
+    inherit AbstractGameEvent(Movement_KeyPressed)
     member _.Direction = direction
+    member _.EntityID = eid
 
 

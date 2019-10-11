@@ -22,7 +22,7 @@ type MovementSystem(game:Game, isActive:bool) =
             | true -> Some (dest,fc)
         let checkTerrainIsPassable (dest:LocationDataInt) =
             true
-        match eid |> Entity.TryGetComponent game.Entities Form with
+        match eid |> game.EntityManager.TryGetComponent Form with
         | None -> None
         | Some fco -> Some (fco :?> FormComponent)
         |> Option.bind (checkDestinationOnMap md)
@@ -36,10 +36,12 @@ type MovementSystem(game:Game, isActive:bool) =
         //true
 
     let onMovementKeyPressed (ge:AbstractGameEvent) = 
-        let m = ge :?> GameEvent_KeyPressed_Movement
+        let m = ge :?> Event_KeyPressed_Movement
         // I go through here because if the form listened for a movement keypress event, it could move without having a move component 
         // Also, maybe the entity is paralyzed, that would be filtered here and not trigger the movement event below
-        if (isMovementValid m.EntityID m.Direction) then game.EventManager.QueueEvent(GameEvent_Movement(m.EntityID,m.Direction))
+        match m.Direction|>isMovementValid m.EntityID with
+        | false -> ()
+        | true -> game.EventManager.QueueEvent(Event_Movement(m.EntityID,m.Direction))
 
     override _.Initialize = 
         game.EventManager.RegisterListener Movement_KeyPressed onMovementKeyPressed

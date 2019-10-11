@@ -1,6 +1,8 @@
 ﻿module SystemManager
 open AbstractComponent
 open EntityComponentManager
+open EventManager
+open GameEvents
 
 type SystemChangeLog = 
     {
@@ -48,50 +50,43 @@ type AbstractSystem(isActive:bool) =
     abstract member Update : SystemChangeLog
 
 
-type SystemManager() =
+type SystemManager(ev:EventManager, em:EntityManager) =
     let mutable _systems = Array.empty<AbstractSystem>
 
     member private this.Active = _systems |> Array.filter (fun s -> s.IsActive)
     member private this.ActiveAndInitialized = _systems |> Array.filter (fun s -> s.IsActive && s.IsInitialized)
-    member private this.ApplyChangeLogs (ecd:EntityComponentData) =
-        let applyComponentChanges (scl:SystemChangeLog) (ecd:EntityComponentData) = 
-            let applyComponentChange (ecd:EntityComponentData) (c:AbstractComponentChange) =
-                match c.EntityID |> Entity.TryGetComponent ecd.Entities c.ComponentType with
-                | None -> ecd
-                | Some a -> a
-                            |> c.AddChange
-                            |> Entity.ReplaceComponent ecd c.EntityID
+
+    member private this.ApplyChangeLogs =
+        let scl =
+            this.ActiveAndInitialized 
+            |> Array.map (fun x -> x.Update) 
+            |> Array.fold (fun scl c -> SystemChangeLog.Add scl c) SystemChangeLog.empty
+        let applyComponentChanges = 
             let sumOfComponentChanges (ccs:AbstractComponentChange[]) = 
-                let updateSumOfChanges (map:Map<uint32,AbstractComponentChange>) (c:AbstractComponentChange) =
+                let compileChanges (map:Map<uint32,AbstractComponentChange>) (c:AbstractComponentChange) =
                     match map.ContainsKey(c.EntityID) with
                     | false -> map.Add(c.EntityID,c)
                     | true -> let i = map.Item(c.EntityID)
                               map.Remove(c.EntityID).Add(c.EntityID,i.AddChange(c))
-
                 ccs
-                |> Array.fold (fun map c -> updateSumOfChanges map c) Map.empty 
+                |> Array.fold (fun map c -> compileChanges map c) Map.empty 
                 |> Map.toArray
                 |> Array.map (fun tup -> snd tup)    
-            
+
             scl.ComponentChanges
             |> sumOfComponentChanges
-            |> Array.sortBy (fun s -> s.EntityID)
-            |> Array.fold (fun d s -> applyComponentChange d s) ecd
-        let applyNewEntities (scl:SystemChangeLog) (ecd:EntityComponentData)  = 
-            let applyNewEntity (ecd:EntityComponentData) (ne:AbstractComponent[]) =
-                ne |> Entity.Create ecd 
-            scl.NewEntities
-            |> Array.fold (fun d ne -> applyNewEntity d ne) ecd
-        let scl =
-            this.ActiveAndInitialized 
-            |> Array.Parallel.map (fun x -> x.Update) 
-            |> Array.fold (fun scl c -> SystemChangeLog.Add scl c) SystemChangeLog.empty
-        (ecd |> applyComponentChanges scl |> applyNewEntities scl, scl)
+            |> Array.iter (fun acc -> ev.QueueEvent(Event_Entity_ReplaceComponent(acc)))
+        let applyCreateEntities = 
+            scl.NewEntities |> Array.iter (fun acs -> ev.QueueEvent(Event_Entity_Create(acs)))
 
-    member this.RegisterSystems (sl:AbstractSystem[]) =
-        _systems <- sl
+        applyComponentChanges
+        applyCreateEntities
+        scl
+
+    member this.Initialize (ss:AbstractSystem[]) =
+        _systems <- ss
         this.Active |> Array.iter (fun s -> s.Initialize)
 
-    member this.UpdateSystems (ecd:EntityComponentData) =
-        this.ApplyChangeLogs ecd
+    member this.UpdateSystems =
+        this.ApplyChangeLogs
 

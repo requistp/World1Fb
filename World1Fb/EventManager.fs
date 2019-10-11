@@ -17,7 +17,7 @@ type EventManager() =
 
         let processedEvents = _pendingEvents
         _pendingEvents <- Array.empty
-        processedEvents |> Array.Parallel.iter (fun ge -> processCallbacks ge)
+        processedEvents |> Array.iter (fun ge -> processCallbacks ge)
         processedEvents
 
     member this.ProcessEvents = 

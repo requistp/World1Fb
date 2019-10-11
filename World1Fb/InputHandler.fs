@@ -13,7 +13,7 @@ type InputHandler(em:EventManager) =
     let keyPressed_Movement d = 
         match _entityID with
         | None -> ()
-        | Some eid -> em.QueueEvent(GameEvent_KeyPressed_Movement(eid,d))
+        | Some eid -> em.QueueEvent(Event_KeyPressed_Movement(eid,d))
 
     let onKeyPressed k = 
         match k with 

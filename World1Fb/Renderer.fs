@@ -13,29 +13,29 @@ let private DrawAt (c:char) location =
     System.Console.Write(c)
 
 
-let private RenderTerrain f =
+let private RenderTerrain (em:EntityManager) =
     //let st = Timer.Start
-    for eid in Terrain |> Entity.AllWithComponent f.ECD do
-        let c = (eid |> Entity.GetComponent f.ECD Terrain) :?> TerrainComponent
+    for eid in Terrain |> em.GetAllWithComponent do
+        let c = (eid|>em.GetComponent Terrain) :?> TerrainComponent
         DrawAt c.Symbol c.Location
     //System.Console.SetCursorPosition(0,MapHeightInt+1)
     //Timer.End "render Terrain" st
 
 
-let private RenderForms f =
+let private RenderForms (em:EntityManager) =
     //let st = Timer.Start
-    for eid in Form |> Entity.AllWithComponent f.ECD do
-        let c = (eid |> Entity.GetComponent f.ECD Form) :?> FormComponent
+    for eid in Form |> em.GetAllWithComponent do
+        let c = (eid|>em.GetComponent Form) :?> FormComponent
         DrawAt c.Symbol c.Location
     //System.Console.SetCursorPosition(0,MapHeightInt+5)
     //Timer.End "render Forms" st
 
 
-let RenderFrame f =
+let RenderFrame (em:EntityManager) fn =
     System.Console.CursorVisible <- false 
-    RenderTerrain f
-    RenderForms f
+    RenderTerrain em
+    RenderForms em
 
     System.Console.SetCursorPosition(MapWidth+1,MapHeight)
-    System.Console.Write(sprintf "Frame #%i\n" f.Number)
+    System.Console.Write(sprintf "Frame #%i\n" fn)
 
