@@ -15,7 +15,7 @@
     <Compile Include="TerrainComponent.fs" />
     <Compile Include="GameEvents.fs" />
     <Compile Include="EventManager.fs" />
-    <Compile Include="EntityComponentManager.fs" />
+    <Compile Include="EntityManager.fs" />
     <Compile Include="SystemManager.fs" />
     <Compile Include="InputHandler.fs" />
     <Compile Include="GameManager.fs" />

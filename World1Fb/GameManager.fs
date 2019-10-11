@@ -1,7 +1,7 @@
 ﻿module GameManager
 open AbstractComponent
 open CommonGenericFunctions
-open EntityComponentManager
+open EntityManager
 open EventManager
 open GameEvents
 open InputHandler
@@ -39,15 +39,15 @@ type Game(renderer:EntityManager->int->unit) =
 
     member private this.assignController =
         match Controller |> _entityManager.GetAllWithComponent with
-        | [||] -> printf "no controller"; None
-        | l -> printfn "controller on:%A" l.[0]; Some l.[0]
+        | [||] -> None
+        | l -> Some l.[0]
     member private this.gameLoop =
         let gel0 = _eventManager.ProcessEvents
         let scl = _systemManager.UpdateSystems
         let gel = _eventManager.ProcessEvents |> Array.append gel0
         _entityManager.SetCurrentToNext
         let f = addFrame {| Entities = _entityManager.Entities; SCL=scl; GameEvents = gel |}
-        renderer _entityManager (int f.Number)
+        renderer _entityManager _frames.Length
     
     member this.Frame_Current = Array.last _frames
     member this.EventManager = _eventManager
@@ -56,19 +56,8 @@ type Game(renderer:EntityManager->int->unit) =
 
     member this.Start = 
         this.gameLoop
-
-        printfn "#:%i" _entityManager.Entities.Count
-
         this.assignController |> _input.SetEntityID
         
         while _input.AwaitKeyboardInput do
             this.gameLoop
             
-            //let gel = _eventManager.ProcessEvents
-            
-            //let (newecd,scl) = _systemManager.UpdateSystems 
-
-            //let f = addFrame {| ECD = newecd; SCL=scl; GameEvents = gel |}
-            
-            //renderer f
-

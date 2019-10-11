@@ -1,6 +1,6 @@
 ﻿open BuildNewWorld
 open CommonGenericFunctions
-open EntityComponentManager
+open EntityManager
 open FormSystem
 open GameManager
 open LocationTypes
@@ -9,15 +9,18 @@ open Renderer
 open SystemManager
 open TerrainSystem
 
+
+
 let g = new Game(RenderFrame)
 
+let ss =
+    [|
+        FormSystem(g, true, MakeRabbits 1) :> AbstractSystem
+        MovementSystem(g, true) :> AbstractSystem
+        TerrainSystem(g, true, MakeMap) :> AbstractSystem
+    |]
 
-[|
-    FormSystem(g, true, MakeRabbits 1) :> AbstractSystem
-    MovementSystem(g, true) :> AbstractSystem
-    TerrainSystem(g, true, MakeMap) :> AbstractSystem
-|]
-|> g.SystemManager.Initialize
+g.SystemManager.Initialize ss
 
 g.Start 
 

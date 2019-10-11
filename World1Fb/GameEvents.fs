@@ -6,7 +6,7 @@ open TerrainComponent
 type GameEventTypes =
     | Component_Created_Terrain
     | Entity_Create
-    | Entity_ReplaceComponent
+    | Entity_ComponentChange
     | Movement
     | Movement_KeyPressed
 
@@ -27,10 +27,10 @@ type Event_Entity_Create(acs:AbstractComponent[]) =
     member _.Components = acs
 
 
-type Event_Entity_ReplaceComponent(acc:AbstractComponentChange) =
-    inherit AbstractGameEvent(Entity_ReplaceComponent)
+type Event_Entity_ComponentChange(acc:AbstractComponentChange) =
+    inherit AbstractGameEvent(Entity_ComponentChange)
     member _.ComponentChange = acc
-
+    
 
 type Event_Movement(eid:uint32, direction:MovementDirection) =
     inherit AbstractGameEvent(Movement)

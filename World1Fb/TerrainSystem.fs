@@ -1,7 +1,7 @@
 ﻿module TerrainSystem
 open AbstractComponent
 open CommonGenericFunctions
-open EntityComponentManager
+open EntityManager
 open EventManager
 open GameManager
 open LocationTypes

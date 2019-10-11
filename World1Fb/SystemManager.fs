@@ -1,6 +1,6 @@
 ﻿module SystemManager
 open AbstractComponent
-open EntityComponentManager
+open EntityManager
 open EventManager
 open GameEvents
 
@@ -14,21 +14,15 @@ type SystemChangeLog =
             ComponentChanges = Array.empty
             NewEntities = Array.empty
         }
-    static member New (ccs:AbstractComponentChange[]) (nes:AbstractComponent[][]) =
-        {   
-            ComponentChanges = ccs
-            NewEntities = nes
-        }  
-    static member Add (scl1:SystemChangeLog) (scl2:SystemChangeLog) = 
+    member this.Append (scl:SystemChangeLog) = 
         {
-            ComponentChanges = scl2.ComponentChanges |> Array.append scl1.ComponentChanges
-            NewEntities = scl2.NewEntities |> Array.append scl1.NewEntities
+            ComponentChanges = scl.ComponentChanges |> Array.append this.ComponentChanges
+            NewEntities = scl.NewEntities |> Array.append this.NewEntities
         }
     member this.Add_ComponentChange (c:AbstractComponentChange) =
         { this with ComponentChanges = Array.append this.ComponentChanges [|c|] }
     member this.Add_NewEntity (ne:AbstractComponent[]) =
         { this with NewEntities = Array.append this.NewEntities [|ne|] }
-
 
 [<AbstractClass>]
 type AbstractSystem(isActive:bool) =
@@ -50,7 +44,7 @@ type AbstractSystem(isActive:bool) =
     abstract member Update : SystemChangeLog
 
 
-type SystemManager(ev:EventManager, em:EntityManager) =
+type SystemManager(evm:EventManager, enm:EntityManager) =
     let mutable _systems = Array.empty<AbstractSystem>
 
     member private this.Active = _systems |> Array.filter (fun s -> s.IsActive)
@@ -60,7 +54,8 @@ type SystemManager(ev:EventManager, em:EntityManager) =
         let scl =
             this.ActiveAndInitialized 
             |> Array.map (fun x -> x.Update) 
-            |> Array.fold (fun scl c -> SystemChangeLog.Add scl c) SystemChangeLog.empty
+            |> Array.fold (fun scl c -> c.Append scl) SystemChangeLog.empty
+            
         let applyComponentChanges = 
             let sumOfComponentChanges (ccs:AbstractComponentChange[]) = 
                 let compileChanges (map:Map<uint32,AbstractComponentChange>) (c:AbstractComponentChange) =
@@ -72,13 +67,13 @@ type SystemManager(ev:EventManager, em:EntityManager) =
                 |> Array.fold (fun map c -> compileChanges map c) Map.empty 
                 |> Map.toArray
                 |> Array.map (fun tup -> snd tup)    
-
             scl.ComponentChanges
             |> sumOfComponentChanges
-            |> Array.iter (fun acc -> ev.QueueEvent(Event_Entity_ReplaceComponent(acc)))
+            |> Array.iter (fun acc -> evm.QueueEvent(Event_Entity_ComponentChange(acc)))
+            
         let applyCreateEntities = 
-            scl.NewEntities |> Array.iter (fun acs -> ev.QueueEvent(Event_Entity_Create(acs)))
-
+            scl.NewEntities |> Array.iter (fun acs -> evm.QueueEvent(Event_Entity_Create(acs)))
+        
         applyComponentChanges
         applyCreateEntities
         scl

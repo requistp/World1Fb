@@ -3,7 +3,7 @@ open AbstractComponent
 open FormComponent
 open GameEvents
 open GameManager
-open EntityComponentManager
+open EntityManager
 open EventManager
 open LocationTypes
 open SystemManager

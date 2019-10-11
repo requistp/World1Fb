@@ -1,38 +1,38 @@
 ﻿module InputHandler
 open AbstractComponent
-open EntityComponentManager
+open EntityManager
 open EventManager
 open GameEvents
 open MovementComponent
 open System
 
 
-type InputHandler(em:EventManager) =
+type InputHandler(evm:EventManager) =
     let mutable _entityID = None
 
-    let keyPressed_Movement d = 
+    member private this.keyPressed_Movement d = 
         match _entityID with
         | None -> ()
-        | Some eid -> em.QueueEvent(Event_KeyPressed_Movement(eid,d))
+        | Some eid -> evm.QueueEvent(Event_KeyPressed_Movement(eid,d))
 
-    let onKeyPressed k = 
+    member private this.onKeyPressed k = 
         match k with 
-        | ConsoleKey.UpArrow -> keyPressed_Movement North 
-        | ConsoleKey.DownArrow -> keyPressed_Movement South
-        | ConsoleKey.LeftArrow -> keyPressed_Movement West 
-        | ConsoleKey.RightArrow -> keyPressed_Movement East
+        | ConsoleKey.UpArrow -> this.keyPressed_Movement North 
+        | ConsoleKey.DownArrow -> this.keyPressed_Movement South
+        | ConsoleKey.LeftArrow -> this.keyPressed_Movement West 
+        | ConsoleKey.RightArrow -> this.keyPressed_Movement East
         | _ -> ()  
 
         while Console.KeyAvailable do //Might helpclear double movement keys entered in one turn
             Console.ReadKey(true).Key |> ignore
             
-    member _.SetEntityID eid = _entityID <- eid
+    member this.SetEntityID eid = _entityID <- eid
 
-    member _.AwaitKeyboardInput =
+    member this.AwaitKeyboardInput =
         while not Console.KeyAvailable do
-            System.Threading.Thread.Sleep 250
+            System.Threading.Thread.Sleep 1
 
         match Console.ReadKey(true).Key with
         | ConsoleKey.Escape -> false
-        | k -> onKeyPressed k
+        | k -> this.onKeyPressed k
                true

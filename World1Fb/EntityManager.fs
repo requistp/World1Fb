@@ -1,4 +1,4 @@
-﻿module EntityComponentManager
+﻿module EntityManager
 open AbstractComponent
 open CommonGenericFunctions
 open EventManager
@@ -19,11 +19,22 @@ type EntityManager(evm:EventManager) =
     //let eventQueueing (eid:uint32) (ctl:AbstractComponent[]) =
     //    if ctl |> Array.exists (fun ct -> ct.ComponentType = Terrain)
 
-    member private this.onEntityCreate (ge:AbstractGameEvent) =
-        let ec = ge :?> Event_Entity_Create
+    member private this.onEntityCreate (age:AbstractGameEvent) =
+        let e = age :?> Event_Entity_Create
         _maxEntityID <- _maxEntityID + 1u
+        _entitiesNext <- _entitiesNext.Add(_maxEntityID,e.Components)
         //eventQueueing _maxEntityID ctl
-        _entitiesNext <- _entitiesNext.Add(_maxEntityID,ec.Components)
+
+    member this.onComponentChange (age:AbstractGameEvent) =
+        let e = (age :?> Event_Entity_ComponentChange).ComponentChange
+
+        match e.ComponentType |> this.TryGetComponent e.EntityID with
+        | None -> ()
+        | Some (oc:AbstractComponent) -> 
+            _entitiesNext <- _entitiesNext.Item(e.EntityID) 
+                             |> Array.filter (fun c -> c.ComponentType <> e.ComponentType) 
+                             |> Array.append [|e.AddChange oc|]
+                             |> Map_Replace _entitiesNext e.EntityID
             
     member private this.updatedComponentDictionary = 
         let addComponents (m:Map<ComponentTypes,uint32[]>) (cs:AbstractComponent[]) (eid:uint32) =
@@ -48,9 +59,10 @@ type EntityManager(evm:EventManager) =
     member this.TryGet eid =
         _entitiesCurrent.ContainsKey(eid) |> TrueSomeFalseNone (_entitiesCurrent.Item(eid))
 
-    member this.TryGetComponent ct eid = 
+    member this.TryGetComponent (eid:uint32) (ct:ComponentTypes) = 
         eid |> this.TryGet |> Option.bind (tryGetComponent ct)
     
     member this.Initialize =
+        evm.RegisterListener Entity_ComponentChange this.onComponentChange
         evm.RegisterListener Entity_Create this.onEntityCreate 
 

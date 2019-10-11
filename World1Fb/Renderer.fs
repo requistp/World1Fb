@@ -1,7 +1,7 @@
 ﻿module Renderer
 open CommonGenericFunctions
 open AbstractComponent
-open EntityComponentManager
+open EntityManager
 open GameManager
 open LocationTypes
 open TerrainComponent
