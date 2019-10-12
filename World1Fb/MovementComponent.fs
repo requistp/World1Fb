@@ -22,7 +22,12 @@ type MovementDirection =
         { X = location.X + this.X_change; Y = location.Y + this.Y_change }
 
 
-type MovementComponent(movesPerTurn:int) =
-    inherit AbstractComponent(Movement)
+type MovementComponent(eid:uint32, movesPerTurn:int) =
+    inherit AbstractComponent(eid,Movement)
+
     member _.MovesPerTurn = movesPerTurn
-    
+
+    override this.NewWithEID eid = MovementComponent(eid, this.MovesPerTurn) :> AbstractComponent
+
+    new(movesPerTurn:int) = MovementComponent(0u,movesPerTurn)
+

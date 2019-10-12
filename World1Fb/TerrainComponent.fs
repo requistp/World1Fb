@@ -9,8 +9,9 @@ type TerrainType =
     | Sand
 
 
-type TerrainComponent(terrainType:TerrainType, location:LocationDataInt) =
-    inherit AbstractComponent(Terrain)
+type TerrainComponent(eid:uint32, terrainType:TerrainType, location:LocationDataInt) =
+    inherit AbstractComponent(eid,Terrain)
+
     member _.Type = terrainType
     member _.Location = location  
     member _.IsPassable = 
@@ -23,4 +24,7 @@ type TerrainComponent(terrainType:TerrainType, location:LocationDataInt) =
         | Sand -> ','
         | Rock -> '#'
 
+    override this.NewWithEID eid = TerrainComponent(eid, this.Type, this.Location) :> AbstractComponent
 
+    new(terrainType:TerrainType, location:LocationDataInt) = TerrainComponent(0u, terrainType, location)
+    

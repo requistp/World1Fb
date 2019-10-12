@@ -3,6 +3,7 @@ open AbstractComponent
 open CommonGenericFunctions
 open EntityManager
 open EventManager
+open GameEvents
 open GameManager
 open LocationTypes
 open SystemManager

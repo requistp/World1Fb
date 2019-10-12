@@ -10,7 +10,7 @@ open TerrainComponent
 
 let MakeMap = 
     let AddTerrain x y = 
-        let t = match random.Next(1,10) with
+        let t = match random.Next(1,20) with
                 | 1 -> Rock
                 | _ -> Dirt
 
