@@ -19,18 +19,14 @@ type EntityManager(evm:EventManager) =
     //let eventQueueing (eid:uint32) (ctl:AbstractComponent[]) =
     //    if ctl |> Array.exists (fun ct -> ct.ComponentType = Terrain)
 
-    member private this.onEntityCreate (age:AbstractGameEvent) =
-        let e = (age :?> Event_Entity_Creates).Components
+    member private this.entityCreate (acs:AbstractComponent[][]) =
         let addNextEntity cs =
             _maxEntityID <- _maxEntityID + 1u
             _entitiesNext <- _entitiesNext.Add(_maxEntityID,cs)
-        e |> Array.iter (fun cs -> addNextEntity cs)
-
+        acs |> Array.iter (fun cs -> addNextEntity cs)
         //eventQueueing _maxEntityID ctl
 
-    member this.onComponentChange (age:AbstractGameEvent) =
-        let e = (age :?> Event_Entity_ComponentChanges).ComponentChange
-
+    member private this.componentChange (accs:AbstractComponentChange[]) =
         let doTheChange (acc:AbstractComponentChange) = 
             match acc.ComponentType |> this.TryGetComponent acc.EntityID with
             | None -> ()
@@ -39,8 +35,24 @@ type EntityManager(evm:EventManager) =
                                  |> Array.filter (fun c -> c.ComponentType <> acc.ComponentType) 
                                  |> Array.append [|acc.AddChange oc|]
                                  |> Map_Replace _entitiesNext acc.EntityID
-        
-        e |> Array.iter (fun acc -> doTheChange acc)
+        accs |> Array.iter (fun acc -> doTheChange acc)
+
+    member private this.onSystemChangeLog (age:AbstractGameEvent) =
+        let e = (age :?> Event_SystemChangeLog).SCL
+
+        let mapadd (map:Map<uint32*ComponentTypes,AbstractComponentChange>) (tup:uint32*ComponentTypes) (acc:AbstractComponentChange) =
+            match map.ContainsKey(tup) with
+            | false -> map.Add(tup,acc)
+            | true -> let newItem = map.Item(tup).AddChange acc
+                      map.Remove(tup).Add(tup,newItem)
+                
+        e.ComponentChanges
+        |> Array.fold (fun map acc -> mapadd map (acc.EntityID,acc.ComponentType) acc) Map.empty
+        |> Map.toArray
+        |> Array.map (fun tup -> snd tup)
+        |> this.componentChange
+
+        this.entityCreate e.NewEntities
 
     member private this.updatedComponentDictionary = 
         let addComponents (m:Map<ComponentTypes,uint32[]>) (cs:AbstractComponent[]) (eid:uint32) =
@@ -69,6 +81,5 @@ type EntityManager(evm:EventManager) =
         eid |> this.TryGet |> Option.bind (tryGetComponent ct)
     
     member this.Initialize =
-        evm.RegisterListener Entity_ComponentChange this.onComponentChange
-        evm.RegisterListener Entity_Create this.onEntityCreate 
+        evm.RegisterListener GameEvents.SystemChangeLog this.onSystemChangeLog 
 

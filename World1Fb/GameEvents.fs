@@ -9,6 +9,7 @@ type GameEventTypes =
     | Entity_ComponentChange
     | Movement
     | Movement_KeyPressed
+    | SystemChangeLog
 
 
 [<AbstractClass>]
@@ -44,3 +45,7 @@ type Event_KeyPressed_Movement(eid:uint32, direction:MovementDirection) =
     member _.EntityID = eid
 
 
+type Event_SystemChangeLog(scl:SystemChangeLog) =
+    inherit AbstractGameEvent(SystemChangeLog)
+    member _.SCL = scl
+    
