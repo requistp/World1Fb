@@ -24,13 +24,16 @@ type EntityManager(evm:EventManager) =
     member this.TryGet eid =
         _entitiesCurrent.ContainsKey(eid) |> TrueSomeFalseNone (_entitiesCurrent.Item(eid))
 
-    member this.TryGetComponent eid ct = 
+    member this.TryGetComponent (eid:uint32) (ct:ComponentTypes) = 
         let tryGetComponent (cts:AbstractComponent[]) = 
             match cts |> Array.filter (fun c -> c.ComponentType = ct) with
             | [||] -> None
             | l -> Some l.[0]
         eid |> this.TryGet |> Option.bind tryGetComponent
     
+    member this.TryGetComponents (eid:uint32) (cts:ComponentTypes[]) =
+        cts |> Array.map (fun ct -> this.TryGetComponent eid ct)
+
     member this.Initialize =
         ()
     

@@ -14,7 +14,12 @@ let MakeMap =
                 | 1 -> Rock
                 | _ -> Dirt
 
-        [| [| TerrainComponent(t, {X=x; Y=y}) :> AbstractComponent |] |]
+        [| 
+            [| 
+                FormComponent(t.IsPassable, t.ToString(), t.Symbol, {X=x;Y=y}) :> AbstractComponent
+                TerrainComponent(t) :> AbstractComponent 
+            |] 
+        |]
     
     let mutable tmap = Array.empty<AbstractComponent[]>
 
