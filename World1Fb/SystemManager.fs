@@ -24,18 +24,16 @@ type AbstractSystem(isActive:bool) =
     abstract member Update : SystemChangeLog
 
 
-type SystemManager(evm:EventManager, enm:EntityManager) =
+type SystemManager(evm:EventManager) =
     let mutable _systems = Array.empty<AbstractSystem>
 
     member private this.Active = _systems |> Array.filter (fun s -> s.IsActive)
     member private this.ActiveAndInitialized = _systems |> Array.filter (fun s -> s.IsActive && s.IsInitialized)
 
     member private this.ConsolidateChangeLogs =
-        let scl = this.ActiveAndInitialized 
-                  |> Array.map (fun x -> x.Update) 
-                  |> Array.fold (fun scl c -> c.Append scl) SystemChangeLog.empty
-        evm.QueueEvent(Event_SystemChangeLog(scl))
-        scl
+        this.ActiveAndInitialized 
+        |> Array.map (fun x -> x.Update) 
+        |> Array.fold (fun scl c -> c.Append scl) SystemChangeLog.empty
 
     member this.Initialize (ss:AbstractSystem[]) =
         _systems <- ss

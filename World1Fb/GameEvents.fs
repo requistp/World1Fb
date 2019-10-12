@@ -5,11 +5,8 @@ open TerrainComponent
 
 type GameEventTypes =
     | Component_Created_Terrain
-    | Entity_Create
-    | Entity_ComponentChange
     | Movement
     | Movement_KeyPressed
-    | SystemChangeLog
 
 
 [<AbstractClass>]
@@ -23,16 +20,6 @@ type Event_ComponentCreated_Terrain(eid:uint32, ct:TerrainComponent) =
     member _.Terrain = ct
 
 
-type Event_Entity_Creates(acs:AbstractComponent[][]) =
-    inherit AbstractGameEvent(Entity_Create)
-    member _.Components = acs
-
-
-type Event_Entity_ComponentChanges(acc:AbstractComponentChange[]) =
-    inherit AbstractGameEvent(Entity_ComponentChange)
-    member _.ComponentChange = acc
-    
-
 type Event_Movement(eid:uint32, direction:MovementDirection) =
     inherit AbstractGameEvent(Movement)
     member _.Direction = direction
@@ -44,8 +31,5 @@ type Event_KeyPressed_Movement(eid:uint32, direction:MovementDirection) =
     member _.Direction = direction
     member _.EntityID = eid
 
-
-type Event_SystemChangeLog(scl:SystemChangeLog) =
-    inherit AbstractGameEvent(SystemChangeLog)
-    member _.SCL = scl
     
+   
