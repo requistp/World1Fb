@@ -48,7 +48,7 @@ type EntityManager(evm:EventManager) =
                 | Terrain -> () //evm.QueueEvent(Event_TerrainCreated(ct :?> TerrainComponent))
                 | _ -> ()
             scl.NewEntities
-            |> Array.Parallel.iter (fun cts -> cts |> Array.iter (fun ct -> handleEvent ct))
+            |> Array.iter (fun cts -> cts |> Array.iter (fun ct -> handleEvent ct)) //maybe test parallel after I have events
 
         entDict.ProcessSystemChangeLog scl
         handleNewEntityEvents

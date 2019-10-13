@@ -27,7 +27,7 @@ let private RenderAll (enm:EntityManager) =
     renderMap nt
     
 
-let RenderFrame (enm:EntityManager) fn =
+let RenderFrame (enm:EntityManager) (fn:uint32) =
     System.Console.CursorVisible <- false 
 
     RenderAll enm

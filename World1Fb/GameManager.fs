@@ -23,51 +23,55 @@ type Frame =
             SCL = SystemChangeLog.empty
             GameEvents = Array.empty
         }
-    static member New(fnum:uint32, entities:Map<uint32,AbstractComponent[]>, maxEntityID:uint32, scl:SystemChangeLog, ges:AbstractGameEvent[]) = 
-        { 
-            Number = fnum
-            Entities = entities
-            MaxEntityID = maxEntityID
-            SCL = scl
-            GameEvents = ges
-        }
 
 
 type FrameManager() =
     let mutable _frames = [| Frame.empty |]
+    member this.AddFrame (entities:Map<uint32,AbstractComponent[]>) (maxEntityID:uint32) (scl:SystemChangeLog) (ges:AbstractGameEvent[]) =
+        let f = 
+            { 
+                Number = (uint32 _frames.Length)
+                Entities = entities
+                MaxEntityID = maxEntityID
+                SCL = scl
+                GameEvents = ges
+            } 
+        _frames <- Array.append _frames [|f|]
+        f
 
 
-type Game(renderer:EntityManager->int->unit) =
-    let mutable _frames = [| Frame.empty |]
-    let _evm = new EventManager()
-    let _enm = new EntityManager(_evm)
-    let _sm = new SystemManager(_evm)
-    let _inputHandler = new InputHandler(_evm)
+type Game(renderer:EntityManager->uint32->unit) =
+    let frameMan = new FrameManager()
+    let eventMan = new EventManager()
+    let entityMan = new EntityManager(eventMan)
+    let systemMan = new SystemManager(eventMan)
+    let inputMan = new InputHandler(eventMan)
  
-    member this.EventManager = _evm
-    member this.EntityManager = _enm
-    member this.SystemManager = _sm
+    member this.EventManager = eventMan
+    member this.EntityManager = entityMan
+    member this.SystemManager = systemMan
 
     member private this.assignController =
-        match Controller |> _enm.EntitiesWithComponent with
+        match Controller |> entityMan.EntitiesWithComponent with
         | [||] -> None
         | l -> Some l.[0]
+
     member private this.gameLoop =
-        let ges = _evm.ProcessEvents
-        let scl = _sm.UpdateSystems
-        let e,meid = _enm.ProcessSystemChangeLog scl
+        let ges = eventMan.ProcessEvents
+        let scl = systemMan.UpdateSystems
         //I don't know if I need this, not yet... let gel = _eventManager.ProcessEvents |> Array.append gel0
-        _frames <- [|Frame.New((uint32 _frames.Length), e, meid, scl, ges)|] |> Array.append _frames
-        renderer _enm _frames.Length
+        let e,meid = entityMan.ProcessSystemChangeLog scl
+        let f = frameMan.AddFrame e meid scl ges
+        renderer entityMan f.Number
     
     member this.Start (ss:AbstractSystem[]) = 
-        _enm.Initialize
-        _sm.Initialize ss
+        entityMan.Initialize
+        systemMan.Initialize ss
 
         this.gameLoop
 
-        this.assignController |> _inputHandler.SetEntityID
+        this.assignController |> inputMan.SetEntityID
 
-        while _inputHandler.AwaitKeyboardInput do
+        while inputMan.AwaitKeyboardInput do
             this.gameLoop
             
