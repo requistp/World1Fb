@@ -7,6 +7,7 @@ let MapWidth = 40
 [<Literal>]
 let MapHeight = 20
 
+[<Struct>]
 type LocationDataInt = {
     X : int
     Y : int

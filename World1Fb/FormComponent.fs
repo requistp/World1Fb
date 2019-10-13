@@ -12,10 +12,6 @@ type FormComponent(eid:uint32, isPassable:bool, name:string, symbol:char, locati
     member _.Symbol = symbol
     member _.Location = location
 
-    override this.NewWithEID eid = FormComponent(eid, this.IsPassable, this.Name, this.Symbol, this.Location) :> AbstractComponent
-
-    new(isPassable:bool, name:string, symbol:char, location:LocationDataInt) = FormComponent(0u, isPassable, name, symbol, location)
-
     
 type FormComponent_Change(eid:uint32, isPassable:bool option, symbol:char option, location:LocationDataInt) =
     inherit AbstractComponentChange(Form,eid)

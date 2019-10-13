@@ -22,7 +22,4 @@ type TerrainComponent(eid:uint32, terrainType:TerrainType) =
 
     member _.Type = terrainType
 
-    override this.NewWithEID eid = TerrainComponent(eid, this.Type) :> AbstractComponent
-
-    new(terrainType:TerrainType) = TerrainComponent(0u, terrainType)
     

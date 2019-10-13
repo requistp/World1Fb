@@ -2,22 +2,24 @@
 open AbstractComponent
 open CommonGenericFunctions
 open ControllerComponent
+open EntityManager
 open FormComponent
 open LocationTypes
 open MovementComponent
 open TerrainComponent
 
 
-let MakeMap = 
+let MakeMap (enm:EntityManager) = 
     let AddTerrain x y = 
+        let eid = enm.NewEntityID
         let t = match random.Next(1,20) with
                 | 1 -> Rock
                 | _ -> Dirt
 
         [| 
             [| 
-                FormComponent(t.IsPassable, t.ToString(), t.Symbol, {X=x;Y=y}) :> AbstractComponent
-                TerrainComponent(t) :> AbstractComponent 
+                FormComponent(eid, t.IsPassable, t.ToString(), t.Symbol, {X=x;Y=y}) :> AbstractComponent
+                TerrainComponent(eid, t) :> AbstractComponent 
             |] 
         |]
     
@@ -30,18 +32,19 @@ let MakeMap =
     tmap
 
 
-let MakeRabbit x y = 
+let MakeRabbit (enm:EntityManager) x y = 
+    let eid = enm.NewEntityID
     [|
-        ControllerComponent() :> AbstractComponent
-        FormComponent(true, "rabbit", 'r', {X=x;Y=y}) :> AbstractComponent
-        MovementComponent(1) :> AbstractComponent
+        ControllerComponent(eid) :> AbstractComponent
+        FormComponent(eid, true, "rabbit", 'r', {X=x;Y=y}) :> AbstractComponent
+        MovementComponent(eid, 1) :> AbstractComponent
         //sight
         //health        
     |] 
 
 
-let MakeRabbits n = 
+let MakeRabbits (enm:EntityManager) n = 
     match n with 
     | 0 -> Array.empty<AbstractComponent[]>
-    | _ -> [1..n] |> List.toArray |> Array.map (fun i -> MakeRabbit (random.Next(0,MapWidth-1)) (random.Next(0,MapHeight-1)))
+    | _ -> [1..n] |> List.toArray |> Array.map (fun i -> MakeRabbit enm (random.Next(0,MapWidth-1)) (random.Next(0,MapHeight-1)))
 

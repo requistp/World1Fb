@@ -24,7 +24,9 @@ type MovementSystem(game:Game, isActive:bool) =
                 | false -> None
                 | true -> Some (dest,fc)
             let checkTerrainIsPassable (dest:LocationDataInt, fc:FormComponent) =
-                Some 1
+                match game.EntityManager.LocationIsPassable dest with
+                | false -> None
+                | true -> Some (dest,fc)
             match Form |> game.EntityManager.TryGetComponent eid with
             | None -> None
             | Some fco -> Some (fco :?> FormComponent)

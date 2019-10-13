@@ -13,8 +13,6 @@ type AbstractComponent(eid:uint32, componentType:ComponentTypes) =
     member _.ComponentType = componentType
     member _.EntityID = eid
 
-    abstract member NewWithEID : uint32 -> AbstractComponent
-
 
 [<AbstractClass>]
 type AbstractComponentChange(componentType:ComponentTypes, eid:uint32) =

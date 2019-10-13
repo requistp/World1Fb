@@ -27,7 +27,3 @@ type MovementComponent(eid:uint32, movesPerTurn:int) =
 
     member _.MovesPerTurn = movesPerTurn
 
-    override this.NewWithEID eid = MovementComponent(eid, this.MovesPerTurn) :> AbstractComponent
-
-    new(movesPerTurn:int) = MovementComponent(0u,movesPerTurn)
-

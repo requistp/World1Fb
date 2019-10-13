@@ -6,17 +6,11 @@ open TerrainComponent
 type GameEventTypes =
     | Movement
     | Movement_KeyPressed
-    //| TerrainCreated
 
 
 [<AbstractClass>]
 type AbstractGameEvent(et:GameEventTypes) =
     member _.GameEventType = et
-
-
-//type Event_TerrainCreated(ct:TerrainComponent) =
-//    inherit AbstractGameEvent(TerrainCreated)
-//    member _.Terrain = ct
 
 
 type Event_Movement(eid:uint32, direction:MovementDirection) =

@@ -13,9 +13,9 @@ let g = new Game(RenderFrame)
 
 let ss =
     [|
-        FormSystem(g,true,MakeRabbits 1) :> AbstractSystem
-        MovementSystem(g,true) :> AbstractSystem
-        TerrainSystem(g,true,MakeMap) :> AbstractSystem
+        FormSystem(g, true, MakeRabbits g.EntityManager 1) :> AbstractSystem
+        MovementSystem(g, true) :> AbstractSystem
+        TerrainSystem(g, true, MakeMap g.EntityManager) :> AbstractSystem
     |]
 
 g.Start ss

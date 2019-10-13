@@ -34,32 +34,33 @@ type Frame =
 
 type Game(renderer:EntityManager->int->unit) =
     let mutable _frames = [| Frame.empty |]
-    let _eventManager = new EventManager()
-    let _entityManager = new EntityManager(_eventManager)
-    let _systemManager = new SystemManager(_eventManager)
-    let _inputHandler = new InputHandler(_eventManager)
+    let _evm = new EventManager()
+    let _enm = new EntityManager(_evm)
+    let _sm = new SystemManager(_evm)
+    let _inputHandler = new InputHandler(_evm)
  
-    member this.EventManager = _eventManager
-    member this.EntityManager = _entityManager
-    member this.SystemManager = _systemManager
+    member this.EventManager = _evm
+    member this.EntityManager = _enm
+    member this.SystemManager = _sm
 
     member private this.assignController =
-        match Controller |> _entityManager.GetAllWithComponent with
+        match Controller |> _enm.GetAllWithComponent with
         | [||] -> None
         | l -> Some l.[0]
     member private this.gameLoop =
-        let ges = _eventManager.ProcessEvents
-        let scl = _systemManager.UpdateSystems
-        let e,meid = _entityManager.ProcessSystemChangeLog scl
+        let ges = _evm.ProcessEvents
+        let scl = _sm.UpdateSystems
+        let e,meid = _enm.ProcessSystemChangeLog scl
         //I don't know if I need this, not yet... let gel = _eventManager.ProcessEvents |> Array.append gel0
         _frames <- [|Frame.New((uint32 _frames.Length), e, meid, scl, ges)|] |> Array.append _frames
-        renderer _entityManager _frames.Length
+        renderer _enm _frames.Length
     
     member this.Start (ss:AbstractSystem[]) = 
-        _entityManager.Initialize
-        _systemManager.Initialize ss
+        _enm.Initialize
+        _sm.Initialize ss
 
         this.gameLoop
+
         this.assignController |> _inputHandler.SetEntityID
 
         while _inputHandler.AwaitKeyboardInput do
