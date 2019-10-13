@@ -48,7 +48,7 @@ type NextEntityDictionary() =
                                      |> Array.filter (fun c -> c.ComponentType <> acc.ComponentType) 
                                      |> Array.append [|acc.AddChange oc|]
                                      |> Map_Replace _entities acc.EntityID
-                accs |> Array.iter (fun acc -> doTheChange acc)
+                accs |> Array.iter (fun acc -> doTheChange acc) // Can't Parallel
             scl.ComponentChanges
             |> Array.fold (fun m acc -> sumOfChangesDistinctByEntityAndComponent m (acc.EntityID,acc.ComponentType) acc) Map.empty<uint32*ComponentTypes,AbstractComponentChange>
             |> Map.toArray
@@ -81,15 +81,15 @@ type EntityDictionary() =
     member this.Locations = locDict.Locations
     member this.MaxEntityID = nextEnts.MaxEntityID
     member this.NewEntityID = nextEnts.NewEntityID
-
+    
     member this.GetComponent (ct:ComponentTypes) (eid:uint32) = 
         _entities.Item(eid) |> Array.find (fun x -> x.ComponentType = ct)
 
     member this.GetAllAndComponent (ct:ComponentTypes) =
-        this.GetAllWithComponent ct
+        this.EntitiesWithComponent ct
         |> Array.Parallel.map (fun eid -> this.GetComponent ct eid)
 
-    member this.GetAllWithComponent (ct:ComponentTypes) =
+    member this.EntitiesWithComponent (ct:ComponentTypes) =
         match compDict.Components.ContainsKey(ct) with
         | true -> compDict.Components.Item(ct)
         | false -> Array.empty
@@ -97,4 +97,4 @@ type EntityDictionary() =
     member internal this.ProcessSystemChangeLog (scl:SystemChangeLog) =
         _entities <- nextEnts.ProcessSystemChangeLog scl
         compDict.UpdateComponentDictionary _entities
-        locDict.UpdateLocationDictionary ((this.GetAllAndComponent Form) |> Array.Parallel.map (fun ac -> ac :?> FormComponent))
+        locDict.UpdateLocationDictionary (this.GetAllAndComponent Form |> Array.Parallel.map (fun ac -> ac :?> FormComponent))

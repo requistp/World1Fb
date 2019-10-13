@@ -32,6 +32,11 @@ type Frame =
             GameEvents = ges
         }
 
+
+type FrameManager() =
+    let mutable _frames = [| Frame.empty |]
+
+
 type Game(renderer:EntityManager->int->unit) =
     let mutable _frames = [| Frame.empty |]
     let _evm = new EventManager()
@@ -44,7 +49,7 @@ type Game(renderer:EntityManager->int->unit) =
     member this.SystemManager = _sm
 
     member private this.assignController =
-        match Controller |> _enm.GetAllWithComponent with
+        match Controller |> _enm.EntitiesWithComponent with
         | [||] -> None
         | l -> Some l.[0]
     member private this.gameLoop =

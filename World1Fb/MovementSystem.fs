@@ -17,32 +17,29 @@ type MovementSystem(game:Game, isActive:bool) =
     member private this.onMovementKeyPressed (ge:AbstractGameEvent) = 
         let m = ge :?> Event_KeyPressed_Movement
 
-        let isMovementValid (eid:uint32) (md:MovementDirection) = 
-            let checkDestinationOnMap (md:MovementDirection) (fc:FormComponent) =
-                let dest = md.AddToLocation fc.Location
+        let isMovementValid = 
+            let someIfDestinationOnMap (fc:FormComponent) =
+                let dest = m.Direction.AddToLocation fc.Location
                 match dest.IsOnMap with
                 | false -> None
                 | true -> Some (dest,fc)
-            let checkTerrainIsPassable (dest:LocationDataInt, fc:FormComponent) =
-                match game.EntityManager.LocationIsPassable dest with
-                | false -> None
-                | true -> Some (dest,fc)
-            match Form |> game.EntityManager.TryGetComponent eid with
+
+            let someIfTerrainIsPassable (dest:LocationDataInt, fc:FormComponent) =
+                let impassableFormAtLocation = 
+                    game.EntityManager.FormsAtLocation dest
+                    |> Array.exists (fun f -> not f.IsPassable)
+                match impassableFormAtLocation with
+                | true -> None
+                | false -> Some (dest,fc)
+
+            match Form |> game.EntityManager.TryGetComponent m.EntityID with
             | None -> None
             | Some fco -> Some (fco :?> FormComponent)
-            |> Option.bind (checkDestinationOnMap md)
-            |> Option.bind checkTerrainIsPassable 
+            |> Option.bind someIfDestinationOnMap
+            |> Option.bind someIfTerrainIsPassable 
             |> Option.isSome
 
-            //Terrain Is Passable
-
-            //Form at location? is it and I not passable?
-
-            //true
-
-        // I go through here because if the form listened for a movement keypress event, it could move without having a move component 
-        // Also, maybe the entity is paralyzed, that would be filtered here and not trigger the movement event below
-        match m.Direction|>isMovementValid m.EntityID with
+        match isMovementValid with
         | false -> ()
         | true -> game.EventManager.QueueEvent(Event_Movement(m.EntityID,m.Direction))
 
@@ -51,4 +48,6 @@ type MovementSystem(game:Game, isActive:bool) =
         base.SetToInitialized
 
     override this.Update = 
-        base.ChangeLog_PackageAndClose
+        this.ChangeLog.PackageAndClose
+
+    

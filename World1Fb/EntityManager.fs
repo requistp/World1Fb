@@ -12,17 +12,19 @@ type EntityManager(evm:EventManager) =
 
     member this.ComponentDictionary = entDict.Components
     member this.Entities = entDict.Entities
-    member this.GetAllWithComponent (ct:ComponentTypes) = entDict.GetAllWithComponent ct
+    member this.EntitiesAtLocation (l:LocationDataInt) = 
+        match entDict.Locations.ContainsKey(l) with
+        | true -> entDict.Locations.Item(l)
+        | false -> Array.empty
+    member this.EntitiesWithComponent (ct:ComponentTypes) = entDict.EntitiesWithComponent ct
+    member this.GetComponent ct eid = entDict.GetComponent ct eid
     member this.LocationDictionary = entDict.Locations
     member this.MaxEntityID = entDict.MaxEntityID
     member this.NewEntityID = entDict.NewEntityID
-
-    member this.LocationIsPassable (l:LocationDataInt) =
-        let impassableFormAtLocation = 
-            //|> Array.map (fun ac -> (ac :?> FormComponent))
-            //|> Array.exists (fun f -> not f.IsPassable)
-            false
-        not impassableFormAtLocation
+    
+    member this.FormsAtLocation (l:LocationDataInt) =
+        this.EntitiesAtLocation l
+        |> Array.Parallel.map (fun eid -> (this.GetComponent Form eid) :?> FormComponent)
 
     member this.TryGet eid =
         entDict.Entities.ContainsKey(eid) |> TrueSomeFalseNone (entDict.Entities.Item(eid))
@@ -46,7 +48,7 @@ type EntityManager(evm:EventManager) =
                 | Terrain -> () //evm.QueueEvent(Event_TerrainCreated(ct :?> TerrainComponent))
                 | _ -> ()
             scl.NewEntities
-            |> Array.iter (fun cts -> cts |> Array.iter (fun ct -> handleEvent ct))
+            |> Array.Parallel.iter (fun cts -> cts |> Array.iter (fun ct -> handleEvent ct))
 
         entDict.ProcessSystemChangeLog scl
         handleNewEntityEvents

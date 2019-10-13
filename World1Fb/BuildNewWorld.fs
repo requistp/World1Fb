@@ -18,7 +18,7 @@ let MakeMap (enm:EntityManager) =
 
         [| 
             [| 
-                FormComponent(eid, t.IsPassable, t.ToString(), t.Symbol, {X=x;Y=y}) :> AbstractComponent
+                FormComponent(eid, t.IsPassable, t.ToString(), t.Symbol, {X=x;Y=y;Z=0}) :> AbstractComponent
                 TerrainComponent(eid, t) :> AbstractComponent 
             |] 
         |]
@@ -36,7 +36,7 @@ let MakeRabbit (enm:EntityManager) x y =
     let eid = enm.NewEntityID
     [|
         ControllerComponent(eid) :> AbstractComponent
-        FormComponent(eid, true, "rabbit", 'r', {X=x;Y=y}) :> AbstractComponent
+        FormComponent(eid, true, "rabbit", 'r', {X=x;Y=y;Z=0}) :> AbstractComponent
         MovementComponent(eid, 1) :> AbstractComponent
         //sight
         //health        

@@ -17,6 +17,7 @@ type TerrainType =
         | Sand -> ','
         | Rock -> '#'
 
+
 type TerrainComponent(eid:uint32, terrainType:TerrainType) =
     inherit AbstractComponent(eid,Terrain)
 

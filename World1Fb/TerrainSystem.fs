@@ -14,11 +14,11 @@ type TerrainSystem(game:Game, isActive:bool, initialTerrain:AbstractComponent[][
 
     member private this.setInitialTerrain = 
         initialTerrain 
-        |> Array.iter (fun ne -> this.ChangeLog_NewEntity ne)
+        |> Array.iter (fun ne -> this.ChangeLog.NewEntity ne) // Cannot Parallel
 
     override this.Initialize = 
         this.setInitialTerrain
         base.SetToInitialized
         
     override this.Update = 
-        base.ChangeLog_PackageAndClose
+        this.ChangeLog.PackageAndClose

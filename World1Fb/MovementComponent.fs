@@ -18,8 +18,11 @@ type MovementDirection =
         | East | West -> 0
         | North -> -1
         | South -> 1
-    member this.AddToLocation (location:LocationDataInt) =
-        { X = location.X + this.X_change; Y = location.Y + this.Y_change }
+    member this.Z_change = 
+        match this with
+        | _ -> 0
+    member this.AddToLocation (l:LocationDataInt) =
+        { X = l.X + this.X_change; Y = l.Y + this.Y_change; Z = l.Z + this.Z_change}
 
 
 type MovementComponent(eid:uint32, movesPerTurn:int) =
