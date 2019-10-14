@@ -9,20 +9,13 @@ open LocationTypes
 
 type EntityManager(evm:EventManager) =
     let entDict = new EntityDictionary()
-
-    member this.Components = entDict.Components
-    member this.Entities = entDict.Entities
-
+    
     member this.EntitiesWithComponent (ct:ComponentTypes) = entDict.EntitiesWithComponent ct
     member this.FormsAtLocation (l:LocationDataInt) = entDict.FormsAtLocation l
-    member this.GetComponent ct eid = entDict.GetComponent ct eid
-    member this.Locations = entDict.Locations
+    member this.FormImpassableAtLocation (l:LocationDataInt) = entDict.FormImpassableAtLocation l
     member this.NewEntityID = entDict.NewEntityID
-    member this.TryGet eid = entDict.TryGet eid
     member this.TryGetComponent (eid:uint32) (ct:ComponentTypes) = entDict.TryGetComponent eid ct
-    
-    member this.TryGetComponents (eid:uint32) (cts:ComponentTypes[]) =
-        cts |> Array.map (fun ct -> this.TryGetComponent eid ct) // Parallel worked but seemed to make it slower. rty later with timing in liver environment
+    member this.TryGetComponents (eid:uint32) (cts:ComponentTypes[]) = entDict.TryGetComponents eid cts
 
     member internal this.ProcessSystemChangeLog (scl:SystemChangeLog) =
         let handleNewEntityEvents =
@@ -41,3 +34,11 @@ type EntityManager(evm:EventManager) =
 
     member this.Initialize =
         ()
+
+
+    //member this.Components = entDict.Components
+    //member this.Entities = entDict.Entities
+    //member this.GetComponent ct eid = entDict.GetComponent ct eid
+    //member this.Locations = entDict.Locations
+    //member this.TryGet eid = entDict.TryGet eid
+

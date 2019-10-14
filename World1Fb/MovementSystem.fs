@@ -23,15 +23,11 @@ type MovementSystem(game:Game, isActive:bool) =
                 match dest.IsOnMap with
                 | false -> None
                 | true -> Some (dest,fc)
-
             let someIfTerrainIsPassable (dest:LocationDataInt, fc:FormComponent) =
-                let impassableFormAtLocation = 
-                    game.EntityManager.FormsAtLocation dest
-                    |> Array.exists (fun f -> not f.IsPassable)
-                match impassableFormAtLocation with
+                match game.EntityManager.FormImpassableAtLocation dest with
                 | true -> None
                 | false -> Some (dest,fc)
-
+                
             match Form |> game.EntityManager.TryGetComponent m.EntityID with
             | None -> None
             | Some fco -> Some (fco :?> FormComponent)
