@@ -19,24 +19,22 @@ type MovementSystem(game:Game, isActive:bool) =
 
         let isMovementValid = 
             let someIfDestinationOnMap (fc:FormComponent) =
-                let dest = m.Direction.AddToLocation fc.Location
-                match dest.IsOnMap with
-                | false -> None
-                | true -> Some (dest,fc)
-            let someIfTerrainIsPassable (dest:LocationDataInt, fc:FormComponent) =
-                match game.EntityManager.FormImpassableAtLocation dest with
-                | true -> None
-                | false -> Some (dest,fc)
-                
+                 let dest = m.Direction.AddToLocation fc.Location
+                 match dest.IsOnMap with
+                 | false -> None
+                 | true -> Some (dest,fc)
+        
+            // This should only handle things that prevent movement within the context of the movement system (map size, being paralyzed, etc.)
+            // Or maybe other systems can listen for this event, and mark the event invalid?
+
             match Form |> game.EntityManager.TryGetComponent m.EntityID with
             | None -> None
-            | Some fco -> Some (fco :?> FormComponent)
+            | Some fc -> Some (fc :?> FormComponent)
             |> Option.bind someIfDestinationOnMap
-            |> Option.bind someIfTerrainIsPassable 
             |> Option.isSome
 
         match isMovementValid with
-        | false -> ()
+        | false -> () // Record rejected event? Maybe some day
         | true -> game.EventManager.QueueEvent(Event_Movement(m.EntityID,m.Direction))
 
     override this.Initialize = 

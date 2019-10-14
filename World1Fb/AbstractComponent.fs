@@ -10,16 +10,17 @@ type ComponentTypes =
 
 [<AbstractClass>]
 type AbstractComponent(eid:uint32, componentType:ComponentTypes) =
-    member _.ComponentType = componentType
-    member _.EntityID = eid
+    member this.ComponentType = componentType
+    member this.EntityID = eid
     
 
 [<AbstractClass>]
-type AbstractComponentChange(componentType:ComponentTypes, eid:uint32) =
-    member _.ComponentType = componentType
-    member _.EntityID = eid
+type AbstractComponentChange(componentType:ComponentTypes, eid:uint32, invalid:string option) =
+    member this.ComponentType = componentType
+    member this.EntityID = eid
+    member this.Invalid = invalid
 
-    abstract member AddChange : AbstractComponentChange -> AbstractComponentChange
+    //abstract member AddChange : AbstractComponentChange -> AbstractComponentChange
     abstract member AddChange : AbstractComponent -> AbstractComponent
 
 

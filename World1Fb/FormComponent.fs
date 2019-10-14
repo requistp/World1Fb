@@ -13,21 +13,22 @@ type FormComponent(eid:uint32, isPassable:bool, name:string, symbol:char, locati
     member _.Location = location
 
     
-type FormComponent_Change(eid:uint32, isPassable:bool option, symbol:char option, location:LocationDataInt) =
-    inherit AbstractComponentChange(Form,eid)
+type FormComponent_Change(eid:uint32, invalid:string option, isPassable:bool option, symbol:char option, location:LocationDataInt) =
+    inherit AbstractComponentChange(Form,eid,invalid)
     member _.IsPassable = isPassable
     member _.Symbol = symbol
     member _.Location = location
 
-    member this.AddChangeToForm (c:FormComponent) =
-        FormComponent(eid, Option.defaultValue c.IsPassable this.IsPassable, c.Name, Option.defaultValue c.Symbol this.Symbol, location.Add c.Location)
+    //override this.AddChange (c:FormComponent) =
+    //    FormComponent(eid, Option.defaultValue c.IsPassable this.IsPassable, c.Name, Option.defaultValue c.Symbol this.Symbol, location.Add c.Location)
 
     override this.AddChange (a:AbstractComponent) =
         let c = a :?> FormComponent
-        (this.AddChangeToForm c)  :> AbstractComponent
+        //(this.AddChangeToForm c) :> AbstractComponent
+        FormComponent(eid, Option.defaultValue c.IsPassable this.IsPassable, c.Name, Option.defaultValue c.Symbol this.Symbol, location.Add c.Location) :> AbstractComponent
 
-    override this.AddChange (a:AbstractComponentChange) =
-        let c = a :?> FormComponent_Change
-        FormComponent_Change(eid, ResolveCombiningTwoOptions isPassable c.IsPassable, ResolveCombiningTwoOptions symbol c.Symbol, location.Add c.Location) :> AbstractComponentChange
+    //override this.AddChange (a:AbstractComponentChange) =
+    //    let c = a :?> FormComponent_Change
+    //    FormComponent_Change(eid, ResolveCombiningTwoOptions isPassable c.IsPassable, ResolveCombiningTwoOptions symbol c.Symbol, location.Add c.Location) :> AbstractComponentChange
 
         
