@@ -122,10 +122,10 @@ type NextEntityDictionary() =
                           |> Array.fold (fun m f -> Map_AppendValueToArray m f.Location f.EntityID) Map.empty<LocationDataInt,uint32[]>)
     member private this.SecondaryChangeChecks (acc:AbstractComponentChange) =
         match acc.ComponentType with
-        | Form -> true
-            //let f = (acc :?> FormComponent_Change)
-            //printfn "%A" f.Location
-            //not (this.FormImpassableAtLocation f.Location)
+        | Form -> 
+            let fc = (acc :?> FormComponent_Change)
+            let f = (fc.EntityID |> this.GetComponent Form) :?> FormComponent
+            not (this.FormImpassableAtLocation (fc.AddChangeToForm f).Location)
         | _ -> true
 
 
