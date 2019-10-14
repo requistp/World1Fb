@@ -19,7 +19,6 @@ type EntityManager(evm:EventManager) =
     member this.EntitiesWithComponent (ct:ComponentTypes) = entDict.EntitiesWithComponent ct
     member this.GetComponent ct eid = entDict.GetComponent ct eid
     member this.LocationDictionary = entDict.Locations
-    member this.MaxEntityID = entDict.MaxEntityID
     member this.NewEntityID = entDict.NewEntityID
     
     member this.FormsAtLocation (l:LocationDataInt) =
@@ -52,7 +51,7 @@ type EntityManager(evm:EventManager) =
 
         entDict.ProcessSystemChangeLog scl
         handleNewEntityEvents
-        (entDict.Entities,this.MaxEntityID)
+        (entDict.Entities, entDict.MaxEntityID)
 
     member this.Initialize =
         ()

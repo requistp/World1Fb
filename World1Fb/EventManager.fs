@@ -15,34 +15,35 @@ type EventListenerDictionary() =
 
 type PendingEventsDictionary() =
     let mutable _pending = Array.empty<AbstractGameEvent>
-    member this.CollectAndClear = 
+    
+    member this.ProcessEvents (listeners:EventListenerDictionary) = 
+        let mutable processedEvents = Array.empty<AbstractGameEvent>
+        while (_pending.Length > 0) do
+            processedEvents <- Array.append processedEvents (this.processEventBatch listeners)
+        processedEvents   
+    member this.QueueEvent ge = 
+        _pending <- Array.append _pending [|ge|]
+        
+    member private this.collectAndClearPending = 
         let p = _pending
         _pending <- Array.empty
-        p
-    member this.IsEmpty = (_pending.Length = 0)
-    member this.QueueEvent ge = _pending <- Array.append _pending [|ge|]
+        p    
+    member private this.processEventBatch (listeners:EventListenerDictionary) = 
+        let processCallbacks (ge:AbstractGameEvent) = 
+            match listeners.ContainsKey ge.GameEventType with
+            | false -> ()
+            | true -> listeners.Item ge.GameEventType |> Array.iter (fun cb -> cb ge) // Seems risky to Parallel since I don't know what the callbacks will do
+
+        let processed = this.collectAndClearPending
+        processed |> Array.iter (fun ge -> processCallbacks ge) // Seems risky to Parallel since I don't know what the callbacks will do
+        processed
 
 
 type EventManager() =
     let listeners = new EventListenerDictionary() 
     let pending = new PendingEventsDictionary()
 
-    member private this.processEventBatch = 
-        let processCallbacks (ge:AbstractGameEvent) = 
-            match listeners.ContainsKey ge.GameEventType with
-            | false -> ()
-            | true -> listeners.Item ge.GameEventType |> Array.iter (fun cb -> cb ge) // Seems risky to Parallel since I don't know what the callbacks will do
-
-        let processed = pending.CollectAndClear
-        processed |> Array.iter (fun ge -> processCallbacks ge) // Seems risky to Parallel since I don't know what the callbacks will do
-        processed
-
-    member this.ProcessEvents = 
-        let mutable processedEvents = Array.empty<AbstractGameEvent>
-        while (not pending.IsEmpty) do
-            processedEvents <- Array.append processedEvents this.processEventBatch
-        processedEvents
-
-    member this.RegisterListener et callback = listeners.RegisterListener et callback
+    member this.ProcessEvents = pending.ProcessEvents listeners
     member this.QueueEvent ge = pending.QueueEvent ge
-
+    member this.RegisterListener et callback = listeners.RegisterListener et callback
+    
