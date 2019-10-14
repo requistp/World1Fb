@@ -5,39 +5,26 @@ open FormComponent
 open LocationTypes
 
 
-type ComponentDictionary() = 
-    let mutable _compDict = Map.empty<ComponentTypes,uint32[]>
-    member this.Components = _compDict
-    member internal this.Set d = _compDict <- d
-        
-
-type LocationDictionary() =
-    let mutable _locDict = Map.empty<LocationDataInt,uint32[]>
-    member this.Locations = _locDict
-    member internal this.Set d = _locDict <- d
-
-
 type DictionaryType = Current | Next
 
 [<AbstractClass>]
 type AbstractEntityDictionary(myType:DictionaryType) =
     let mutable _entities = Map.empty<uint32,AbstractComponent[]>
-
-    let compDict = new ComponentDictionary()
-    let locDict = new LocationDictionary()
+    let mutable _compDict = Map.empty<ComponentTypes,uint32[]>
+    let mutable _locDict = Map.empty<LocationDataInt,uint32[]>
 
     member this.GetComponent (ct:ComponentTypes) (eid:uint32) = 
         _entities.Item(eid) |> Array.find (fun x -> x.ComponentType = ct)    
-    member this.Components = compDict.Components
+    member this.Components = _compDict
     member this.Entities = _entities
-    member this.Locations = locDict.Locations
+    member this.Locations = _locDict
     member this.EntitiesAtLocation (l:LocationDataInt) = 
-        match locDict.Locations.ContainsKey(l) with
-        | true -> locDict.Locations.Item(l)
+        match _locDict.ContainsKey(l) with
+        | true -> _locDict.Item(l)
         | false -> Array.empty
     member this.EntitiesWithComponent (ct:ComponentTypes) =
-        match compDict.Components.ContainsKey(ct) with
-        | true -> compDict.Components.Item(ct)
+        match _compDict.ContainsKey(ct) with
+        | true -> _compDict.Item(ct)
         | false -> Array.empty
     member this.FormsAtLocation (l:LocationDataInt) =
         this.EntitiesAtLocation l
@@ -54,9 +41,6 @@ type AbstractEntityDictionary(myType:DictionaryType) =
             | l -> Some l.[0]
         eid |> this.TryGet |> Option.bind tryGetComponent
 
-    member internal this.CompDict = compDict
-    member internal this.LocDict = locDict
-
     member internal this.AddEntity (eid:uint32) (acs:AbstractComponent[]) = 
         match myType with
         | Current -> ()
@@ -70,8 +54,16 @@ type AbstractEntityDictionary(myType:DictionaryType) =
         | Next -> ()
         | Current -> 
             _entities <- aed.Entities
-            compDict.Set aed.Components
-            locDict.Set aed.Locations
+            _compDict <- aed.Components
+            _locDict <- aed.Locations
+    member internal this.SetCompDict d =
+        match myType with
+        | Current -> ()
+        | Next -> _compDict <- d
+    member internal this.SetLocDict d =
+        match myType with
+        | Current -> ()
+        | Next -> _locDict <- d
 
 
 type NextEntityDictionary() =
@@ -81,11 +73,11 @@ type NextEntityDictionary() =
     member internal this.NewEntityID = _maxEntityID <- _maxEntityID + 1u; _maxEntityID
 
     member private this.SetAuxDictionaries =
-        this.CompDict.Set (this.Entities |> Map.fold (fun m k v -> v |> Array.fold (fun m c -> Map_AppendValueToArray m c.ComponentType k) m ) Map.empty<ComponentTypes,uint32[]>)
+        this.SetCompDict (this.Entities |> Map.fold (fun m k v -> v |> Array.fold (fun m c -> Map_AppendValueToArray m c.ComponentType k) m ) Map.empty<ComponentTypes,uint32[]>)
 
-        this.LocDict.Set (Form 
+        this.SetLocDict (Form 
                           |> this.GetAllAndComponent 
-                          |> Array.map (fun ac -> ac :?> FormComponent) // test Parallel
+                          |> Array.Parallel.map (fun ac -> ac :?> FormComponent)
                           |> Array.fold (fun m f -> Map_AppendValueToArray m f.Location f.EntityID) Map.empty<LocationDataInt,uint32[]>)
         
 
