@@ -12,12 +12,17 @@ open TerrainSystem
 
 let g = new Game(RenderFrame)
 
+let startingEntities = 
+    MakeMap g.EntityManager
+    |> Array.append (MakeGrasses g.EntityManager 40)
+    |> Array.append (MakeRabbits g.EntityManager 1)
+
 let ss =
     [|
         FoodSystem(g, true) :> AbstractSystem
-        FormSystem(g, true, MakeRabbits g.EntityManager 1) :> AbstractSystem
+        FormSystem(g, true, startingEntities) :> AbstractSystem
         MovementSystem(g, true) :> AbstractSystem
-        TerrainSystem(g, true, MakeMap g.EntityManager) :> AbstractSystem
+        TerrainSystem(g, true) :> AbstractSystem
     |]
 
 g.Start ss

@@ -9,6 +9,11 @@ type FoodTypes =
     | Carrot
     | Grass
     | Meat_Rabbit
+    member this.Calories = // This is calories per Quantity
+        match this with 
+        | Carrot -> 2
+        | Grass -> 1
+        | Meat_Rabbit -> 3
     member this.Classification =
         match this with
         | Carrot | Grass -> Plant
@@ -20,7 +25,7 @@ type FoodTypes =
 
 
 type FoodComponent(eid:uint32, foodType:FoodTypes, quantity:int) = 
-    inherit AbstractComponent(eid,Form)
+    inherit AbstractComponent(eid,Food)
 
     member _.FoodType = foodType
     member _.Quantity = quantity

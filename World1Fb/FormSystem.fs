@@ -11,8 +11,7 @@ type FormSystem(game:Game, isActive:bool, initialForms:AbstractComponent[][]) =
     inherit AbstractSystem(isActive) 
 
     member private this.setInitialForms = 
-        initialForms 
-        |> Array.Parallel.iter (fun ne -> this.ChangeLog.NewEntity ne)
+        initialForms |> this.ChangeLog.NewEntities
 
     member private this.onMovement (ge:AbstractGameEvent) =
         let m = ge :?> Event_Movement

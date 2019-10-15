@@ -38,9 +38,10 @@ type FrameManager() =
             } 
         _frames <- Array.append _frames [|f|]
         f
+    member this.Count = _frames.Length
 
 
-type Game(renderer:EntityManager->uint32->unit) =
+type Game(renderer:EntityManager->int->uint32->unit) =
     let frameMan = new FrameManager()
     let eventMan = new EventManager()
     let entityMan = new EntityManager(eventMan)
@@ -62,7 +63,7 @@ type Game(renderer:EntityManager->uint32->unit) =
         //I don't know if I need this, not yet... let gel = _eventManager.ProcessEvents |> Array.append gel0
         let finalSCL = entityMan.ProcessSystemChangeLog scl
         let f = frameMan.AddFrame entityMan.Entities entityMan.MaxEntityID ges finalSCL
-        renderer entityMan f.Number
+        renderer entityMan frameMan.Count f.Number
     
     member this.Start (ss:AbstractSystem[]) = 
         entityMan.Initialize

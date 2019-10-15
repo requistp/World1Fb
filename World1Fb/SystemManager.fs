@@ -13,8 +13,8 @@ type ChangeLogManager() =
         }
     member this.AddComponentChange (c:AbstractComponentChange) =
         _systemChangeLog <- {_systemChangeLog with ComponentChanges = Array.append _systemChangeLog.ComponentChanges [|c|] }
-    member this.NewEntity (ne:AbstractComponent[]) = 
-        _systemChangeLog <- { _systemChangeLog with NewEntities = Array.append _systemChangeLog.NewEntities [|ne|] }
+    member this.NewEntities (nes:AbstractComponent[][]) = 
+        _systemChangeLog <- { _systemChangeLog with NewEntities = Array.append _systemChangeLog.NewEntities nes }
     member this.PackageAndClose =
         let scl = _systemChangeLog
         _systemChangeLog <- SystemChangeLog.empty
@@ -35,10 +35,8 @@ type AbstractSystem(isActive:bool) =
     abstract member Initialize : unit
     
     abstract member Update : SystemChangeLog
-    default this.Update = 
-        this.ChangeLog.PackageAndClose
-
-
+    default this.Update = this.ChangeLog.PackageAndClose
+    
 
 type SystemManager(evm:EventManager) =
     let mutable _systems = Array.empty<AbstractSystem>
