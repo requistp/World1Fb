@@ -52,25 +52,32 @@ type AbstractEntityDictionary(myType:DictionaryType) =
         match myType with
         | Current -> ()
         | Next -> _entities <- _entities.Add(eid,acs)
-    member internal this.ReplaceComponent (eid:uint32) (acs:AbstractComponent[]) = 
+    member internal this.ReplaceComponent (eid:uint32) (ac:AbstractComponent) = 
         match myType with
         | Current -> ()
-        | Next -> _entities <- Map_Replace _entities eid acs
-    member internal this.SetEntities (aed:AbstractEntityDictionary) = 
+        | Next -> _entities <- _entities.Item(eid)
+                               |> Array.filter (fun c -> c.ComponentType <> ac.ComponentType) 
+                               |> Array.append [|ac|]
+                               |> Map_Replace _entities eid
+    member internal this.SetEntities (aed:AbstractEntityDictionary) =
         match myType with
         | Next -> ()
-        | Current -> 
-            _entities <- aed.Entities
-            _compDict <- aed.Components
-            _locDict <- aed.Locations
-    member internal this.SetCompDict d =
+        | Current -> _entities <- aed.Entities
+                     _compDict <- aed.Components
+                     _locDict <- aed.Locations
+
+    member internal this.UpdateComponentDictionary =
         match myType with
         | Current -> ()
-        | Next -> _compDict <- d
-    member internal this.SetLocDict d =
+        | Next -> _compDict <- _entities 
+                               |> Map.fold (fun m k v -> v |> Array.fold (fun m c -> Map_AppendValueToArray m c.ComponentType k) m ) Map.empty<ComponentTypes,uint32[]>
+    member internal this.UpdateLocationDictionary =
         match myType with
         | Current -> ()
-        | Next -> _locDict <- d
+        | Next -> _locDict <- Form 
+                              |> this.GetAllAndComponent 
+                              |> Array.Parallel.map (fun ac -> ac :?> FormComponent)
+                              |> Array.fold (fun m f -> Map_AppendValueToArray m f.Location f.EntityID) Map.empty<LocationDataInt,uint32[]>
 
 
 type NextEntityDictionary() =
@@ -83,50 +90,45 @@ type NextEntityDictionary() =
         let addEntities =
             scl.NewEntities 
             |> Array.filter (fun acs -> acs.Length > 0)
-            |> Array.iter (fun acs -> this.AddEntity acs.[0].EntityID acs) // Can't Parallel            
+            |> Array.iter (fun acs -> this.AddEntity acs.[0].EntityID acs) // Can't Parallel      
             this.SetAuxDictionaries
+        
         let componentChanges =
-            let sumOfChangesDistinctByEntityAndComponent (map:Map<uint32*ComponentTypes,AbstractComponentChange>) (tup:uint32*ComponentTypes) (acc:AbstractComponentChange) =
-                match map.ContainsKey(tup) with
-                | false -> map.Add(tup,acc)
-                | true -> let newItem = map.Item(tup).AddChange acc
-                          map.Remove(tup).Add(tup,newItem)
             let applyChange (acc:AbstractComponentChange) = 
                 match acc.ComponentType |> this.TryGetComponent acc.EntityID with
-                | None -> ()
+                | None -> acc.Invalidate "Cannot locate EnitityID"
                 | Some (ac:AbstractComponent) -> 
-                    this.Entities.Item(acc.EntityID) 
-                    |> Array.filter (fun c -> c.ComponentType <> acc.ComponentType) 
-                    |> Array.append [|acc.AddChange ac|]
-                    |> this.ReplaceComponent acc.EntityID
-
-            scl.ComponentChanges
-            |> Array.fold (fun m acc -> sumOfChangesDistinctByEntityAndComponent m (acc.EntityID,acc.ComponentType) acc) Map.empty<uint32*ComponentTypes,AbstractComponentChange>
-            |> Map.toArray
-            |> Array.Parallel.map (fun tup -> snd tup)
-            |> Array.filter (fun c -> this.SecondaryChangeChecks c)
-            |> Array.sortBy (fun c -> c.EntityID)
-            |> Array.iter (fun acc -> applyChange acc) // Can't Parallel
-            this.SetAuxDictionaries 
+                    let changedc = acc.AddChange ac
+                    match this.ValidateComponentChange changedc with
+                    | Some s -> acc.Invalidate s
+                    | None -> this.ReplaceComponent acc.EntityID changedc
+                              acc
+            let results = 
+                scl.ComponentChanges
+                |> Array.sortBy (fun c -> c.EntityID)
+                |> Array.map (fun acc -> applyChange acc) // Can't Parallel
+            this.SetAuxDictionaries
+            { scl with ChangeResults = results }
 
         addEntities
         componentChanges
-        this
 
     member private this.SetAuxDictionaries =
-        this.SetCompDict (this.Entities |> Map.fold (fun m k v -> v |> Array.fold (fun m c -> Map_AppendValueToArray m c.ComponentType k) m ) Map.empty<ComponentTypes,uint32[]>)
+        this.UpdateComponentDictionary
+        this.UpdateLocationDictionary
+    member private this.ValidateComponentChange (newc:AbstractComponent) =
+        let testForImpassableFormAtLocation z =
+            match newc.ComponentType=Form && this.FormImpassableAtLocation (newc:?>FormComponent).Location with
+            | true -> Some "Object at location"
+            | false -> None
 
-        this.SetLocDict (Form 
-                          |> this.GetAllAndComponent 
-                          |> Array.Parallel.map (fun ac -> ac :?> FormComponent)
-                          |> Array.fold (fun m f -> Map_AppendValueToArray m f.Location f.EntityID) Map.empty<LocationDataInt,uint32[]>)
-    member private this.SecondaryChangeChecks (acc:AbstractComponentChange) =
-        match acc.ComponentType with
-        | Form -> 
-            let fc = (acc :?> FormComponent_Change)
-            let f = (fc.EntityID |> this.GetComponent Form) :?> FormComponent
-            not (this.FormImpassableAtLocation (fc.AddChangeToForm f).Location)
-        | _ -> true
+        None
+        |> OptionBindNone testForImpassableFormAtLocation
+        //|> OptionBindNone testForImpassableFormAtLocation
+        //|> OptionBindNone testForImpassableFormAtLocation
+        //|> OptionBindNone testForImpassableFormAtLocation
+        //|> OptionBindNone testForImpassableFormAtLocation
+        // Additional test here
 
 
 type EntityDictionary() =
@@ -137,5 +139,8 @@ type EntityDictionary() =
     member this.NewEntityID = nextDict.NewEntityID
 
     member this.ProcessSystemChangeLog (scl:SystemChangeLog) =
-        this.SetEntities (nextDict.ProcessSystemChangeLog scl)
+        let finalSCL = nextDict.ProcessSystemChangeLog scl
+        this.SetEntities nextDict
+        finalSCL
+
 

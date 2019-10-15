@@ -31,6 +31,12 @@ let Map_AppendValueToArray (map:Map<'K,'V[]>) (key:'K) (newValue:'V) =
               map.Remove(key).Add(key,a)
 
 
+let OptionBindNone (noneFx:'T option->'T option) (last:'T option) =
+    match last with
+    | None -> noneFx None
+    | Some _ -> last
+
+
 let ResolveCombiningTwoOptions (o1:'T option) (o2:'T option) =
     match o1 with
     | None -> o2
@@ -56,3 +62,6 @@ module Timer =
 
 //let (>>=) twoTrackInput switchFunction = 
 //    bind switchFunction twoTrackInput 
+
+
+

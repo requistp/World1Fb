@@ -27,7 +27,7 @@ type Frame =
 
 type FrameManager() =
     let mutable _frames = [| Frame.empty |]
-    member this.AddFrame (entities:Map<uint32,AbstractComponent[]>) (maxEntityID:uint32) (scl:SystemChangeLog) (ges:AbstractGameEvent[]) =
+    member this.AddFrame (entities:Map<uint32,AbstractComponent[]>) (maxEntityID:uint32) (ges:AbstractGameEvent[]) (scl:SystemChangeLog) =
         let f = 
             { 
                 Number = (uint32 _frames.Length)
@@ -60,8 +60,8 @@ type Game(renderer:EntityManager->uint32->unit) =
         let ges = eventMan.ProcessEvents
         let scl = systemMan.UpdateSystems
         //I don't know if I need this, not yet... let gel = _eventManager.ProcessEvents |> Array.append gel0
-        let e,meid = entityMan.ProcessSystemChangeLog scl
-        let f = frameMan.AddFrame e meid scl ges
+        let finalSCL = entityMan.ProcessSystemChangeLog scl
+        let f = frameMan.AddFrame entityMan.Entities entityMan.MaxEntityID ges finalSCL
         renderer entityMan f.Number
     
     member this.Start (ss:AbstractSystem[]) = 

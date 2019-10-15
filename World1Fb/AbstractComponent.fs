@@ -20,18 +20,20 @@ type AbstractComponentChange(componentType:ComponentTypes, eid:uint32, invalid:s
     member this.EntityID = eid
     member this.Invalid = invalid
 
-    //abstract member AddChange : AbstractComponentChange -> AbstractComponentChange
     abstract member AddChange : AbstractComponent -> AbstractComponent
+    abstract member Invalidate : string -> AbstractComponentChange
 
 
 type SystemChangeLog = 
     {
         ComponentChanges : AbstractComponentChange[]
+        ChangeResults : AbstractComponentChange[]
         NewEntities : AbstractComponent[][]
     } with 
     static member empty = 
         { 
             ComponentChanges = Array.empty
+            ChangeResults = Array.empty
             NewEntities = Array.empty
         }
 

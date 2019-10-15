@@ -8,6 +8,7 @@ type ChangeLogManager() =
     static member AppendLogs (scl1:SystemChangeLog) (scl2:SystemChangeLog) = 
         {
             ComponentChanges = Array.append scl1.ComponentChanges scl2.ComponentChanges
+            ChangeResults = Array.append scl1.ChangeResults scl2.ChangeResults
             NewEntities = Array.append scl1.NewEntities scl2.NewEntities
         }
     member this.AddComponentChange (c:AbstractComponentChange) =

@@ -19,16 +19,19 @@ type FormComponent_Change(eid:uint32, invalid:string option, isPassable:bool opt
     member _.Symbol = symbol
     member _.Location = location
 
-    //override this.AddChange (c:FormComponent) =
-    //    FormComponent(eid, Option.defaultValue c.IsPassable this.IsPassable, c.Name, Option.defaultValue c.Symbol this.Symbol, location.Add c.Location)
-
     override this.AddChange (a:AbstractComponent) =
         let c = a :?> FormComponent
-        //(this.AddChangeToForm c) :> AbstractComponent
         FormComponent(eid, Option.defaultValue c.IsPassable this.IsPassable, c.Name, Option.defaultValue c.Symbol this.Symbol, location.Add c.Location) :> AbstractComponent
 
+    override this.Invalidate (reason:string) =
+        FormComponent_Change(this.EntityID, Some reason, this.IsPassable, this.Symbol, this.Location) :> AbstractComponentChange
+        
+
+
+
+    //override this.AddChange (c:FormComponent) =
+    //    FormComponent(eid, Option.defaultValue c.IsPassable this.IsPassable, c.Name, Option.defaultValue c.Symbol this.Symbol, location.Add c.Location)
     //override this.AddChange (a:AbstractComponentChange) =
     //    let c = a :?> FormComponent_Change
     //    FormComponent_Change(eid, ResolveCombiningTwoOptions isPassable c.IsPassable, ResolveCombiningTwoOptions symbol c.Symbol, location.Add c.Location) :> AbstractComponentChange
-
         
