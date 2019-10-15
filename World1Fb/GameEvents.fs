@@ -5,6 +5,7 @@ open TerrainComponent
 
 
 type GameEventTypes =
+    | Eaten
     | Movement
     | Movement_KeyPressed
 
@@ -13,6 +14,13 @@ type GameEventTypes =
 type AbstractGameEvent(et:GameEventTypes) =
     member _.GameEventType = et
 
+
+type Event_Eaten(eid:uint32, eatorID:uint32, quantity:int) =
+    inherit AbstractGameEvent(Eaten)
+    member _.EatorID = eatorID
+    member _.EntityID = eid
+    member _.Quantity = quantity
+    
 
 type Event_Movement(eid:uint32, direction:MovementDirection) =
     inherit AbstractGameEvent(Movement)
