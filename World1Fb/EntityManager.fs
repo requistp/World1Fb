@@ -10,14 +10,12 @@ open LocationTypes
 type EntityManager(evm:EventManager) =
     let entDict = new EntityDictionary()
     
-    member this.Entities = entDict.Entities
-    member this.EntitiesWithComponent (ct:ComponentTypes) = entDict.EntitiesWithComponent ct
-    member this.FormsAtLocation (l:LocationDataInt) = entDict.FormsAtLocation l
-    member this.FormImpassableAtLocation (l:LocationDataInt) = entDict.FormImpassableAtLocation l
-    member this.MaxEntityID = entDict.MaxEntityID
-    member this.NewEntityID = entDict.NewEntityID
-    member this.TryGetComponent (eid:uint32) (ct:ComponentTypes) = entDict.TryGetComponent eid ct
-    member this.TryGetComponents (eid:uint32) (cts:ComponentTypes[]) = entDict.TryGetComponents eid cts
+    member _.Entities = entDict.Entities
+    member _.EntitiesWithComponent (ct:ComponentTypes) = entDict.EntitiesWithComponent ct
+    member _.MaxEntityID = entDict.MaxEntityID
+    member _.NewEntityID = entDict.NewEntityID
+    member _.TryGetComponent (ct:ComponentTypes) (eid:uint32) = entDict.TryGetComponent ct eid
+    member _.TryGetComponents (cts:ComponentTypes[]) (eid:uint32) = entDict.TryGetComponents cts eid
 
     member internal this.ProcessSystemChangeLog (scl:SystemChangeLog) =
         //let handleNewEntityEvents (newscl:SystemChangeLog) =

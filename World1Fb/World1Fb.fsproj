@@ -10,6 +10,7 @@
     <Compile Include="LocationTypes.fs" />
     <Compile Include="AbstractComponent.fs" />
     <Compile Include="ControllerComponent.fs" />
+    <Compile Include="EatingComponent.fs" />
     <Compile Include="FoodComponent.fs" />
     <Compile Include="FormComponent.fs" />
     <Compile Include="MovementComponent.fs" />
@@ -21,6 +22,7 @@
     <Compile Include="SystemManager.fs" />
     <Compile Include="InputHandler.fs" />
     <Compile Include="GameManager.fs" />
+    <Compile Include="EatingSystem.fs" />
     <Compile Include="FoodSystem.fs" />
     <Compile Include="FormSystem.fs" />
     <Compile Include="MovementSystem.fs" />

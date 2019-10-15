@@ -2,6 +2,7 @@
 
 
 type ComponentTypes =
+    | Eating
     | Food
     | Form
     | Controller

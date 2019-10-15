@@ -27,7 +27,7 @@ type MovementSystem(game:Game, isActive:bool) =
             // This should only handle things that prevent movement within the context of the movement system (map size, being paralyzed, etc.)
             // Or maybe other systems can listen for this event, and mark the event invalid?
 
-            match Form |> game.EntityManager.TryGetComponent m.EntityID with
+            match game.EntityManager.TryGetComponent Form m.EntityID with
             | None -> None
             | Some fc -> Some (fc :?> FormComponent)
             |> Option.bind someIfDestinationOnMap
@@ -38,7 +38,7 @@ type MovementSystem(game:Game, isActive:bool) =
         | true -> game.EventManager.QueueEvent(Event_Movement(m.EntityID,m.Direction))
 
     override this.Initialize = 
-        game.EventManager.RegisterListener Movement_KeyPressed this.onMovementKeyPressed
+        game.EventManager.RegisterListener KeyPressed_Movement this.onMovementKeyPressed
         base.SetToInitialized
 
     //override this.Update = 

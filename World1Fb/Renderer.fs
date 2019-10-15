@@ -23,8 +23,9 @@ let private RenderAll (enm:EntityManager) =
             |> Array.iter (fun f -> render (f.Value :?> FormComponent))
         m |> Map.iter (fun k v -> renderForms v)
     let t,nt = 
-        enm.EntitiesWithComponent Form 
-        |> Array.fold (fun (m:Map<uint32,AbstractComponent option[]>) eid -> m.Add(eid,enm.TryGetComponents eid [| Form; Terrain |]) ) Map.empty
+        Form
+        |> enm.EntitiesWithComponent
+        |> Array.fold (fun (m:Map<uint32,AbstractComponent option[]>) eid -> m.Add(eid,enm.TryGetComponents [|Form;Terrain|] eid)) Map.empty
         |> Map.partition (fun k v -> v |> Array.exists (fun aco -> aco.IsSome && aco.Value.ComponentType = Terrain))
     renderMap t
     renderMap nt
