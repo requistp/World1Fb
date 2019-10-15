@@ -20,5 +20,4 @@ type TerrainSystem(game:Game, isActive:bool, initialTerrain:AbstractComponent[][
         this.setInitialTerrain
         base.SetToInitialized
         
-    override this.Update = 
-        this.ChangeLog.PackageAndClose
+    //override this.Update = 

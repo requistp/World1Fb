@@ -41,7 +41,6 @@ type MovementSystem(game:Game, isActive:bool) =
         game.EventManager.RegisterListener Movement_KeyPressed this.onMovementKeyPressed
         base.SetToInitialized
 
-    override this.Update = 
-        this.ChangeLog.PackageAndClose
+    //override this.Update = 
 
     

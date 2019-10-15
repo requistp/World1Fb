@@ -33,7 +33,11 @@ type AbstractSystem(isActive:bool) =
     member this.SetToInitialized = _isInitialized <- true
 
     abstract member Initialize : unit
+    
     abstract member Update : SystemChangeLog
+    default this.Update = 
+        this.ChangeLog.PackageAndClose
+
 
 
 type SystemManager(evm:EventManager) =
@@ -41,7 +45,6 @@ type SystemManager(evm:EventManager) =
 
     member private this.Active = _systems |> Array.filter (fun s -> s.IsActive)
     member private this.ActiveAndInitialized = _systems |> Array.filter (fun s -> s.IsActive && s.IsInitialized)
-
     member private this.ConsolidateChangeLogs =
         this.ActiveAndInitialized 
         |> Array.map (fun s -> s.Update) // Parallel seems risky as I don't know what that updates might do

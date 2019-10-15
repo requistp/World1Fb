@@ -23,5 +23,4 @@ type FormSystem(game:Game, isActive:bool, initialForms:AbstractComponent[][]) =
         game.EventManager.RegisterListener Movement this.onMovement
         base.SetToInitialized
 
-    override this.Update = 
-        this.ChangeLog.PackageAndClose
+    //override this.Update = 
