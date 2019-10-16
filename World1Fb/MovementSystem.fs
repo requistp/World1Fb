@@ -1,7 +1,7 @@
 ﻿module MovementSystem
 open AbstractComponent
 open ControllerComponent
-open EntityManager
+open EntityDictionary
 open EventManager
 open FormComponent
 open GameEvents
@@ -15,7 +15,7 @@ type MovementSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
 
 
-    member private this.onMovementKeyPressed (ge:AbstractGameEvent) : Result<string option,string>= 
+    member private this.onMovementKeyPressed (next:NextEntityDictionary) (ge:AbstractGameEvent) : Result<string option,string>= 
         let m = ge :?> Event_Action_Movement
 
         let form = (game.EntityManager.GetComponent Form m.EntityID) :?> FormComponent
@@ -27,15 +27,26 @@ type MovementSystem(game:Game, isActive:bool) =
                  | false -> Error "onMovementKeyPressed: Destination is not on map"
                  | true -> Ok None
         
+            //let testForImpassableFormAtLocation z =
+            //    let formImpassableAtLocation (l:LocationDataInt) =
+            //        l
+            //        |> this.EntitiesAtLocation
+            //        |> Array.Parallel.map (fun eid -> (this.GetComponent Form eid) :?> FormComponent)
+            //        |> Array.exists (fun f -> not f.IsPassable)
+            //    match newc.ComponentType=Form && formImpassableAtLocation (newc:?>FormComponent).Location with
+            //    | true -> Some "Object at location"
+            //    | false -> None
+
             checkIfDestinationOnMap
+            //|> Result.bind 
 
 
         match isMovementValid with
         | Error s -> Error s
-        | Ok s -> this.doMovement (FormComponent(m.EntityID, form.IsPassable, form.Name, form.Symbol, dest))
+        | Ok s -> this.doMovement next (FormComponent(m.EntityID, form.IsPassable, form.Name, form.Symbol, dest))
 
-        member private this.doMovement (f:AbstractComponent) =
-            game.EntityManager.ReplaceComponent f.EntityID f
+        member private this.doMovement (next:NextEntityDictionary) (f:AbstractComponent) =
+            next.ReplaceComponent f.EntityID f
 
 
     override this.Initialize = 

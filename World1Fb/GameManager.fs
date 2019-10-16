@@ -45,8 +45,8 @@ type FrameManager() =
 
 type Game(renderer:EntityManager->int->uint32->unit) =
     let frameMan = new FrameManager()
-    let eventMan = new EventManager()
-    let entityMan = new EntityManager(eventMan)
+    let entityMan = new EntityManager()
+    let eventMan = new EventManager(entityMan)
     let systemMan = new SystemManager(eventMan)
     let inputMan = new InputHandler(eventMan,entityMan)
  
