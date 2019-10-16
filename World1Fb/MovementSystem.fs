@@ -15,7 +15,7 @@ type MovementSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
 
 
-    member private this.onMovementKeyPressed (next:NextEntityDictionary) (ge:AbstractGameEvent) : Result<string option,string>= 
+    member private this.onMovementKeyPressed (next:NextEntityDictionary) (ge:AbstractGameEvent) : Result<string option,string> =
         let m = ge :?> Event_Action_Movement
 
         let form = (game.EntityManager.GetComponent Form m.EntityID) :?> FormComponent
@@ -27,28 +27,25 @@ type MovementSystem(game:Game, isActive:bool) =
                  | false -> Error "onMovementKeyPressed: Destination is not on map"
                  | true -> Ok None
         
-            //let testForImpassableFormAtLocation z =
-            //    let formImpassableAtLocation (l:LocationDataInt) =
-            //        l
-            //        |> this.EntitiesAtLocation
-            //        |> Array.Parallel.map (fun eid -> (this.GetComponent Form eid) :?> FormComponent)
-            //        |> Array.exists (fun f -> not f.IsPassable)
-            //    match newc.ComponentType=Form && formImpassableAtLocation (newc:?>FormComponent).Location with
-            //    | true -> Some "Object at location"
-            //    | false -> None
+            let testForImpassableFormAtLocation junk =
+                let formImpassableAtLocation =
+                    dest
+                    |> next.EntitiesAtLocation
+                    |> Array.filter (fun e -> e <> m.EntityID)
+                    |> Array.Parallel.map (fun eid -> (next.GetComponent Form eid) :?> FormComponent)
+                    |> Array.exists (fun f -> not f.IsPassable)
+                match formImpassableAtLocation with
+                | true -> Error "Something at location"
+                | false -> Ok None
 
             checkIfDestinationOnMap
-            //|> Result.bind 
+            |> Result.bind testForImpassableFormAtLocation
 
 
         match isMovementValid with
         | Error s -> Error s
-        | Ok s -> this.doMovement next (FormComponent(m.EntityID, form.IsPassable, form.Name, form.Symbol, dest))
-
-        member private this.doMovement (next:NextEntityDictionary) (f:AbstractComponent) =
-            next.ReplaceComponent f.EntityID f
-
-
+        | Ok _ -> next.ReplaceComponent (FormComponent(m.EntityID, form.IsPassable, form.Name, form.Symbol, dest))
+                
     override this.Initialize = 
         game.EventManager.RegisterListener Action_Movement this.onMovementKeyPressed
         base.SetToInitialized

@@ -40,11 +40,11 @@ type AbstractEntityDictionary() =
                    this.UpdateComponentDictionary
                    this.UpdateLocationDictionary
                    Ok None
-    member internal this.ReplaceComponent (eid:uint32) (ac:AbstractComponent) : Result<string option,string> = 
-        _entities <- _entities.Item(eid)
+    member internal this.ReplaceComponent (ac:AbstractComponent) : Result<string option,string> = 
+        _entities <- _entities.Item(ac.EntityID)
                     |> Array.filter (fun c -> c.ComponentType <> ac.ComponentType) 
                     |> Array.append [|ac|]
-                    |> Map_Replace _entities eid
+                    |> Map_Replace _entities ac.EntityID
         //this.UpdateComponentDictionary Shouldn't have to update on a 1:1 component swap
         this.UpdateLocationDictionary
         Ok None
@@ -66,7 +66,7 @@ type AbstractEntityDictionary() =
 
 type NextEntityDictionary() =
     inherit AbstractEntityDictionary()
-
+    
     let mutable _maxEntityID = 0u
 
     member internal this.MaxEntityID = _maxEntityID
@@ -80,11 +80,9 @@ type EntityDictionary() =
 
     let nextDict = new NextEntityDictionary()
 
-    member this.MaxEntityID = nextDict.MaxEntityID
-    member this.NewEntityID = nextDict.NewEntityID
     member this.NextEntityDictionary = nextDict
 
     member internal this.CreateEntity (cts:AbstractComponent[]) = Error "CreateEntity: Called against Current entity dictionary"
-    member internal this.ReplaceComponent (eid:uint32) (ac:AbstractComponent) = Error "ReplaceComponent: Called against Current entity dictionary"
+    member internal this.ReplaceComponent (ac:AbstractComponent) = Error "ReplaceComponent: Called against Current entity dictionary"
     member internal this.Set = base.Set nextDict
 
