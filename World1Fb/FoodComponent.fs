@@ -32,7 +32,7 @@ type FoodComponent(eid:uint32, foodType:FoodTypes, quantity:int) =
 
     
 type FoodComponent_Change(eid:uint32, invalid:string option, quantity:int) =
-    inherit AbstractComponentChange(Form,eid,invalid)
+    inherit AbstractComponentChange(Food,eid,invalid)
 
     member _.Quantity = quantity
 
@@ -42,3 +42,6 @@ type FoodComponent_Change(eid:uint32, invalid:string option, quantity:int) =
 
     override this.Invalidate (reason:string) =
         FoodComponent_Change(this.EntityID, Some reason, this.Quantity) :> AbstractComponentChange
+
+    new (eid:uint32, quantity:int) = FoodComponent_Change(eid, None, quantity)
+

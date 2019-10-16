@@ -17,16 +17,16 @@ type AbstractGameEvent(et:GameEventTypes) =
     member _.GameEventType = et
 
 
-type Event_Eat(eid:uint32, eatorID:uint32) =
-    inherit AbstractGameEvent(Eaten)
-    member _.EatorID = eatorID
-    member _.EntityID = eid
+type Event_Eat(eaterID:uint32, eateeID:uint32) =
+    inherit AbstractGameEvent(Eat)
+    member _.EaterID = eaterID
+    member _.EateeID = eateeID
     
 
-type Event_Eaten(eid:uint32, eatorID:uint32, quantity:int) =
+type Event_Eaten(eateeID:uint32, eaterID:uint32, quantity:int) =
     inherit AbstractGameEvent(Eaten)
-    member _.EatorID = eatorID
-    member _.EntityID = eid
+    member _.EaterID = eaterID
+    member _.EateeID = eateeID
     member _.Quantity = quantity
     
 

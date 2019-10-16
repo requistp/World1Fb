@@ -2,6 +2,7 @@
 open AbstractComponent
 open CommonGenericFunctions
 open ControllerComponent
+open EatingComponent
 open EntityManager
 open FoodComponent
 open FormComponent
@@ -45,11 +46,13 @@ let MakeMap (enm:EntityManager) =
             tmap <- tmap |> Array.append [| AddTerrain x y |]
     tmap
 
+
 let MakeRabbits (enm:EntityManager) n = 
     let MakeRabbit x y = 
         let eid = enm.NewEntityID
         [|
             ControllerComponent(eid) :> AbstractComponent
+            EatingComponent(eid, 1, [|Carrot;Grass|], 10, 5) :> AbstractComponent
             FormComponent(eid, true, "rabbit", 'r', {X=x;Y=y;Z=0}) :> AbstractComponent
             MovementComponent(eid, 1) :> AbstractComponent
             //sight

@@ -15,7 +15,7 @@ type FormSystem(game:Game, isActive:bool, initialForms:AbstractComponent[][]) =
 
     member private this.onMovement (ge:AbstractGameEvent) =
         let m = ge :?> Event_Movement
-        this.ChangeLog.AddComponentChange (FormComponent_Change(m.EntityID, None, None, None, { X = m.Direction.X_change; Y = m.Direction.Y_change; Z = m.Direction.Z_change }))
+        this.ChangeLog.AddComponentChange (FormComponent_Change(m.EntityID, None, None, { X = m.Direction.X_change; Y = m.Direction.Y_change; Z = m.Direction.Z_change }))
 
     override this.Initialize = 
         this.setInitialForms

@@ -25,4 +25,6 @@ type FormComponent_Change(eid:uint32, invalid:string option, isPassable:bool opt
     override this.Invalidate (reason:string) =
         FormComponent_Change(this.EntityID, Some reason, this.IsPassable, this.Symbol, this.Location) :> AbstractComponentChange
         
-        
+    new (eid:uint32, isPassable:bool option, symbol:char option, location:LocationDataInt) =
+        FormComponent_Change(eid, None, isPassable, symbol, location)
+

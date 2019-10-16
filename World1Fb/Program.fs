@@ -1,5 +1,6 @@
 ﻿open BuildNewWorld
 open CommonGenericFunctions
+open EatingSystem
 open EntityManager
 open FoodSystem
 open FormSystem
@@ -14,11 +15,12 @@ let g = new Game(RenderFrame)
 
 let startingEntities = 
     MakeMap g.EntityManager
-    |> Array.append (MakeGrasses g.EntityManager 40)
+    |> Array.append (MakeGrasses g.EntityManager 1)
     |> Array.append (MakeRabbits g.EntityManager 1)
 
 let ss =
     [|
+        EatingSystem(g, true) :> AbstractSystem
         FoodSystem(g, true) :> AbstractSystem
         FormSystem(g, true, startingEntities) :> AbstractSystem
         MovementSystem(g, true) :> AbstractSystem

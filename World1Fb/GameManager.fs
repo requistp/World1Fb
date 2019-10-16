@@ -3,6 +3,8 @@ open AbstractComponent
 open CommonGenericFunctions
 open EntityManager
 open EventManager
+open EatingComponent
+open FoodComponent
 open GameEvents
 open InputHandler
 open SystemManager
@@ -46,7 +48,7 @@ type Game(renderer:EntityManager->int->uint32->unit) =
     let eventMan = new EventManager()
     let entityMan = new EntityManager(eventMan)
     let systemMan = new SystemManager(eventMan)
-    let inputMan = new InputHandler(eventMan)
+    let inputMan = new InputHandler(eventMan,entityMan)
  
     member this.EventManager = eventMan
     member this.EntityManager = entityMan
@@ -57,6 +59,18 @@ type Game(renderer:EntityManager->int->uint32->unit) =
         | [||] -> None
         | l -> Some l.[0]
 
+    member private this.PrintGrass =
+        let f = 
+            (entityMan.EntitiesWithComponent Food).[0]
+            |> (entityMan.GetComponent Food) :?> FoodComponent
+
+        let e = 
+            (entityMan.EntitiesWithComponent Eating).[0]
+            |> (entityMan.GetComponent Eating) :?> EatingComponent
+
+        printfn "Quanity:%i     " f.Quantity
+        printfn "Calories:%i    " e.Calories_Current
+
     member private this.gameLoop =
         let ges = eventMan.ProcessEvents
         let scl = systemMan.UpdateSystems
@@ -64,7 +78,8 @@ type Game(renderer:EntityManager->int->uint32->unit) =
         let finalSCL = entityMan.ProcessSystemChangeLog scl
         let f = frameMan.AddFrame entityMan.Entities entityMan.MaxEntityID ges finalSCL
         renderer entityMan frameMan.Count f.Number
-    
+        this.PrintGrass
+
     member this.Start (ss:AbstractSystem[]) = 
         entityMan.Initialize
         systemMan.Initialize ss

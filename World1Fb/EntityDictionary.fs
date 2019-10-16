@@ -13,11 +13,8 @@ type AbstractEntityDictionary(myType:DictionaryType) =
     let mutable _compDict = Map.empty<ComponentTypes,uint32[]>
     let mutable _locDict = Map.empty<LocationDataInt,uint32[]>
 
-    member this.GetComponent (ct:ComponentTypes) (eid:uint32) = 
-        _entities.Item(eid) |> Array.find (fun x -> x.ComponentType = ct)    
     member this.Components = _compDict
     member this.Entities = _entities
-    member this.Locations = _locDict
     member this.EntitiesAtLocation (l:LocationDataInt) = 
         match _locDict.ContainsKey(l) with
         | true -> _locDict.Item(l)
@@ -26,6 +23,9 @@ type AbstractEntityDictionary(myType:DictionaryType) =
         match _compDict.ContainsKey(ct) with
         | true -> _compDict.Item(ct)
         | false -> Array.empty
+    member this.GetComponent (ct:ComponentTypes) (eid:uint32) = 
+        _entities.Item(eid) |> Array.find (fun x -> x.ComponentType = ct)    
+    member this.Locations = _locDict
     member this.TryGet eid =
         _entities.ContainsKey(eid) |> TrueSomeFalseNone (_entities.Item(eid))
     member this.TryGetComponent (ct:ComponentTypes) (eid:uint32) = 
@@ -34,8 +34,6 @@ type AbstractEntityDictionary(myType:DictionaryType) =
             | [||] -> None
             | l -> Some l.[0]
         eid |> this.TryGet |> Option.bind tryGetComponent
-    member this.TryGetComponents (cts:ComponentTypes[]) (eid:uint32) =
-        cts |> Array.Parallel.map (fun ct -> this.TryGetComponent ct eid)
 
     member internal this.AddEntity (eid:uint32) (acs:AbstractComponent[]) = 
         match myType with

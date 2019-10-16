@@ -10,8 +10,8 @@
     <Compile Include="LocationTypes.fs" />
     <Compile Include="AbstractComponent.fs" />
     <Compile Include="ControllerComponent.fs" />
-    <Compile Include="EatingComponent.fs" />
     <Compile Include="FoodComponent.fs" />
+    <Compile Include="EatingComponent.fs" />
     <Compile Include="FormComponent.fs" />
     <Compile Include="MovementComponent.fs" />
     <Compile Include="TerrainComponent.fs" />
