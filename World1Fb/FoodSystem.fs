@@ -6,17 +6,17 @@ open GameManager
 open SystemManager
 
 
-type FoodSystem(game:Game, isActive:bool) =
-    inherit AbstractSystem(isActive) 
+//type FoodSystem(game:Game, isActive:bool) =
+//    inherit AbstractSystem(isActive) 
 
-    member private this.onEaten (ge:AbstractGameEvent) =
-        let e = ge :?> Event_Eaten
+//    member private this.onEaten (ge:AbstractGameEvent) =
+//        let e = ge :?> Event_Eaten
         
-        this.ChangeLog.AddComponentChange (FoodComponent_Change(e.EateeID, -e.Quantity))
+//        this.ChangeLog.AddComponentChange (FoodComponent_Change(e.EateeID, -e.Quantity))
 
-    override this.Initialize = 
-        game.EventManager.RegisterListener Eaten this.onEaten
-        base.SetToInitialized
+//    override this.Initialize = 
+//        game.EventManager.RegisterListener Eaten this.onEaten
+//        base.SetToInitialized
 
     //override this.Update = 
 

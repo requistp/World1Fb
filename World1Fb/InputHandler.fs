@@ -17,15 +17,15 @@ type InputHandler(evm:EventManager, enm:EntityManager) =
                       | false -> None
                       | true -> Some eid
 
-    member private this.keyPressed_Eat =
-        match this.HasRequiredComponents [|ComponentTypes.Eating|] with
-        | None -> ()
-        | Some eid -> evm.QueueEvent(Event_KeyPressed_Eat(eid))
+    //member private this.keyPressed_Eat =
+    //    match this.HasRequiredComponents [|ComponentTypes.Eating|] with
+    //    | None -> ()
+    //    | Some eid -> evm.QueueEvent(Event_KeyPressed_Eat(eid))
 
     member private this.keyPressed_Movement d = 
         match this.HasRequiredComponents [|ComponentTypes.Movement|] with
         | None -> ()
-        | Some eid -> evm.QueueEvent(Event_KeyPressed_Movement(eid,d))
+        | Some eid -> evm.QueueEvent(Event_Action_Movement(eid,d))
 
     member private this.onKeyPressed k = 
         match k with 
@@ -33,7 +33,7 @@ type InputHandler(evm:EventManager, enm:EntityManager) =
         | ConsoleKey.DownArrow -> this.keyPressed_Movement South
         | ConsoleKey.LeftArrow -> this.keyPressed_Movement West 
         | ConsoleKey.RightArrow -> this.keyPressed_Movement East
-        | ConsoleKey.E -> this.keyPressed_Eat
+        //| ConsoleKey.E -> this.keyPressed_Eat
         | _ -> ()  
 
         while Console.KeyAvailable do //Might helpclear double movement keys entered in one turn

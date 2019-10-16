@@ -31,17 +31,17 @@ type FoodComponent(eid:uint32, foodType:FoodTypes, quantity:int) =
     member _.Quantity = quantity
 
     
-type FoodComponent_Change(eid:uint32, invalid:string option, quantity:int) =
-    inherit AbstractComponentChange(Food,eid,invalid)
+//type FoodComponent_Change(eid:uint32, invalid:string option, quantity:int) =
+//    inherit AbstractComponentChange(Food,eid,invalid)
 
-    member _.Quantity = quantity
+//    member _.Quantity = quantity
 
-    override this.AddChange (a:AbstractComponent) =
-        let c = a :?> FoodComponent
-        FoodComponent(eid, c.FoodType, this.Quantity + c.Quantity) :> AbstractComponent
+//    override this.AddChange (a:AbstractComponent) =
+//        let c = a :?> FoodComponent
+//        FoodComponent(eid, c.FoodType, this.Quantity + c.Quantity) :> AbstractComponent
 
-    override this.Invalidate (reason:string) =
-        FoodComponent_Change(this.EntityID, Some reason, this.Quantity) :> AbstractComponentChange
+//    override this.Invalidate (reason:string) =
+//        FoodComponent_Change(this.EntityID, Some reason, this.Quantity) :> AbstractComponentChange
 
-    new (eid:uint32, quantity:int) = FoodComponent_Change(eid, None, quantity)
+//    new (eid:uint32, quantity:int) = FoodComponent_Change(eid, None, quantity)
 

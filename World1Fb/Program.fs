@@ -20,12 +20,12 @@ let startingEntities =
 
 let ss =
     [|
-        EatingSystem(g, true) :> AbstractSystem
-        FoodSystem(g, true) :> AbstractSystem
-        FormSystem(g, true, startingEntities) :> AbstractSystem
+        //EatingSystem(g, true) :> AbstractSystem
+        //FoodSystem(g, true) :> AbstractSystem
+        FormSystem(g, true) :> AbstractSystem
         MovementSystem(g, true) :> AbstractSystem
         TerrainSystem(g, true) :> AbstractSystem
     |]
 
-g.Start ss
+g.Start ss startingEntities
 

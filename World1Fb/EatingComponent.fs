@@ -14,17 +14,17 @@ type EatingComponent(eid:uint32, quantityPerAction:int, foods:FoodTypes[], calor
 
 
     
-type EatingComponent_Change(eid:uint32, invalid:string option, calories:int) =
-    inherit AbstractComponentChange(Eating,eid,invalid)
+//type EatingComponent_Change(eid:uint32, invalid:string option, calories:int) =
+//    inherit AbstractComponentChange(Eating,eid,invalid)
     
-    member _.Calories = calories
+//    member _.Calories = calories
 
-    override this.AddChange (a:AbstractComponent) =
-        let c = a :?> EatingComponent
-        EatingComponent(eid, c.QuantityPerAction, c.Foods, c.Calories_Max, Math.Clamp(this.Calories+c.Calories_Current,0,c.Calories_Max)) :> AbstractComponent
+//    override this.AddChange (a:AbstractComponent) =
+//        let c = a :?> EatingComponent
+//        EatingComponent(eid, c.QuantityPerAction, c.Foods, c.Calories_Max, Math.Clamp(this.Calories+c.Calories_Current,0,c.Calories_Max)) :> AbstractComponent
 
-    override this.Invalidate (reason:string) =
-        EatingComponent_Change(this.EntityID, Some reason, this.Calories) :> AbstractComponentChange
+//    override this.Invalidate (reason:string) =
+//        EatingComponent_Change(this.EntityID, Some reason, this.Calories) :> AbstractComponentChange
     
-    new (eid:uint32, calories:int) = EatingComponent_Change(eid, None, calories)
+//    new (eid:uint32, calories:int) = EatingComponent_Change(eid, None, calories)
         

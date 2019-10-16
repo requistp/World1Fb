@@ -3,11 +3,12 @@ open CommonGenericFunctions
 open GameEvents
 
 
-type listenerCallback = AbstractGameEvent -> unit
-
+type listenerCallback = AbstractGameEvent -> Result<string option,string>
+type GameEventResult = (AbstractGameEvent * Result<string option,string>)
 
 type EventListenerDictionary() =
-    let mutable _listeners = Map.empty:Map<GameEventTypes,listenerCallback[]> 
+    let mutable _listeners = Map.empty:Map<GameEventTypes,listenerCallback[]>
+
     member this.ContainsKey et = _listeners.ContainsKey et
     member this.Item et = _listeners.Item et
     member this.RegisterListener et callback = _listeners <- Map_AppendValueToArray _listeners et callback
@@ -17,27 +18,25 @@ type PendingEventsDictionary() =
     let mutable _pending = Array.empty<AbstractGameEvent>
     
     member this.ProcessEvents (listeners:EventListenerDictionary) = 
-        let mutable processedEvents = Array.empty<AbstractGameEvent>
+        let mutable processedEvents = Array.empty<GameEventResult>
         while (_pending.Length > 0) do
             processedEvents <- Array.append processedEvents (this.processEventBatch listeners)
-        processedEvents   
+        processedEvents
+
     member this.QueueEvent ge = 
         _pending <- Array.append _pending [|ge|]
         
     member private this.collectAndClearPending = 
         let p = _pending
         _pending <- Array.empty
-        p    
+        p
+
     member private this.processEventBatch (listeners:EventListenerDictionary) = 
         let processCallbacks (ge:AbstractGameEvent) = 
             match listeners.ContainsKey ge.GameEventType with
-            | false -> ()
-            | true -> listeners.Item ge.GameEventType |> Array.iter (fun cb -> cb ge) // Seems risky to Parallel since I don't know what the callbacks will do
-
-        let processed = this.collectAndClearPending
-        processed |> Array.iter (fun ge -> processCallbacks ge) // Seems risky to Parallel since I don't know what the callbacks will do
-        processed
-
+            | false -> [| (ge, Error "No listeners") |]
+            | true -> listeners.Item ge.GameEventType |> Array.map (fun cb -> (ge,cb ge)) // Can't Parallel
+        this.collectAndClearPending |> Array.collect (fun ge -> processCallbacks ge) // Can't Parallel
 
 type EventManager() =
     let listeners = new EventListenerDictionary() 

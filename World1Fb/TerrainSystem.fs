@@ -15,5 +15,6 @@ type TerrainSystem(game:Game, isActive:bool) =
     override this.Initialize = 
         base.SetToInitialized
         
-    //override this.Update = 
+    override this.Update = 
+        ()
 

@@ -2,6 +2,7 @@
 open AbstractComponent
 open CommonGenericFunctions
 open FormComponent
+open EventManager
 open LocationTypes
 
 
@@ -35,12 +36,15 @@ type AbstractEntityDictionary(myType:DictionaryType) =
             | l -> Some l.[0]
         eid |> this.TryGet |> Option.bind tryGetComponent
 
-    member internal this.AddEntity (eid:uint32) (acs:AbstractComponent[]) = 
+    member internal this.CreateEntity (cts:AbstractComponent[]) : Result<string option,string> = 
         match myType with
-        | Current -> ()
-        | Next -> _entities <- _entities.Add(eid,acs)
-                  this.UpdateComponentDictionary
-                  this.UpdateLocationDictionary
+        | Current -> Error "CreateEntity: Called against Current entity dictionary"
+        | Next -> match _entities.ContainsKey(cts.[0].EntityID) with
+                  | true -> Error "CreateEntity: Entity already in dictionary"
+                  | false -> _entities <- _entities.Add(cts.[0].EntityID,cts)
+                             this.UpdateComponentDictionary
+                             this.UpdateLocationDictionary
+                             Ok None
     member internal this.ReplaceComponent (eid:uint32) (ac:AbstractComponent) = 
         match myType with
         | Current -> ()
@@ -50,12 +54,13 @@ type AbstractEntityDictionary(myType:DictionaryType) =
                                |> Map_Replace _entities eid
                   this.UpdateComponentDictionary
                   this.UpdateLocationDictionary
-    member internal this.SetEntities (aed:AbstractEntityDictionary) =
+    member internal this.SetCurrentToNext (aed:AbstractEntityDictionary) : Result<string option,string> =
         match myType with
-        | Next -> ()
+        | Next -> Error "SetCurrentToNext: Called on Next Dictionary"
         | Current -> _entities <- aed.Entities
                      _compDict <- aed.Components
                      _locDict <- aed.Locations
+                     Ok None
 
     member private this.UpdateComponentDictionary =
         _compDict <- _entities 
@@ -74,42 +79,46 @@ type NextEntityDictionary() =
 
     member internal this.MaxEntityID = _maxEntityID
     member internal this.NewEntityID = _maxEntityID <- _maxEntityID + 1u; _maxEntityID
-    member internal this.ProcessSystemChangeLog (scl:SystemChangeLog) =
-        let addEntities =
-            scl.NewEntities 
-            |> Array.filter (fun acs -> acs.Length > 0)
-            |> Array.iter (fun acs -> this.AddEntity acs.[0].EntityID acs) // Can't Parallel      
-        let componentChanges =
-            let applyChange (acc:AbstractComponentChange) = 
-                match this.TryGetComponent acc.ComponentType acc.EntityID with
-                | None -> acc.Invalidate "Cannot locate EnitityID"
-                | Some (ac:AbstractComponent) -> 
-                    let changedc = acc.AddChange ac
-                    match this.ValidateComponentChange changedc with
-                    | Some s -> acc.Invalidate s
-                    | None -> this.ReplaceComponent acc.EntityID changedc
-                              acc
-            let results = 
-                scl.ComponentChanges
-                |> Array.sortBy (fun c -> c.EntityID)
-                |> Array.map (fun acc -> applyChange acc) // Can't Parallel
-            { scl with ChangeResults = results }
-        addEntities
-        componentChanges
 
-    member private this.ValidateComponentChange (newc:AbstractComponent) =
-        let testForImpassableFormAtLocation z =
-            let formImpassableAtLocation (l:LocationDataInt) =
-                l
-                |> this.EntitiesAtLocation
-                |> Array.Parallel.map (fun eid -> (this.GetComponent Form eid) :?> FormComponent)
-                |> Array.exists (fun f -> not f.IsPassable)
-            match newc.ComponentType=Form && formImpassableAtLocation (newc:?>FormComponent).Location with
-            | true -> Some "Object at location"
-            | false -> None
+    //member internal this.CreateEntity (cts:AbstractComponent[]) : Result<string option,string> = 
+      //  this.CreateEntity cts
+    //member internal this.CreateEntity (cts:AbstractComponent[]) = this.CreateEntity cts
+    //member internal this.ProcessSystemChangeLog (scl:SystemChangeLog) =
+    //    let addEntities =
+    //        scl.NewEntities 
+    //        |> Array.filter (fun acs -> acs.Length > 0)
+    //        |> Array.iter (fun acs -> this.AddEntity acs.[0].EntityID acs) // Can't Parallel      
+    //    let componentChanges =
+    //        let applyChange (acc:AbstractComponentChange) = 
+    //            match this.TryGetComponent acc.ComponentType acc.EntityID with
+    //            | None -> acc.Invalidate "Cannot locate EnitityID"
+    //            | Some (ac:AbstractComponent) -> 
+    //                let changedc = acc.AddChange ac
+    //                match this.ValidateComponentChange changedc with
+    //                | Some s -> acc.Invalidate s
+    //                | None -> this.ReplaceComponent acc.EntityID changedc
+    //                          acc
+    //        let results = 
+    //            scl.ComponentChanges
+    //            |> Array.sortBy (fun c -> c.EntityID)
+    //            |> Array.map (fun acc -> applyChange acc) // Can't Parallel
+    //        { scl with ChangeResults = results }
+    //    addEntities
+    //    componentChanges
 
-        None
-        |> OptionBindNone testForImpassableFormAtLocation
+    //member private this.ValidateComponentChange (newc:AbstractComponent) =
+    //    let testForImpassableFormAtLocation z =
+    //        let formImpassableAtLocation (l:LocationDataInt) =
+    //            l
+    //            |> this.EntitiesAtLocation
+    //            |> Array.Parallel.map (fun eid -> (this.GetComponent Form eid) :?> FormComponent)
+    //            |> Array.exists (fun f -> not f.IsPassable)
+    //        match newc.ComponentType=Form && formImpassableAtLocation (newc:?>FormComponent).Location with
+    //        | true -> Some "Object at location"
+    //        | false -> None
+
+    //    None
+    //    |> OptionBindNone testForImpassableFormAtLocation
         //|> OptionBindNone testForImpassableFormAtLocation
         //|> OptionBindNone testForImpassableFormAtLocation
         //|> OptionBindNone testForImpassableFormAtLocation
@@ -122,11 +131,13 @@ type EntityDictionary() =
 
     let nextDict = new NextEntityDictionary()
 
+    member this.CreateEntity cts = nextDict.CreateEntity cts
     member this.MaxEntityID = nextDict.MaxEntityID
     member this.NewEntityID = nextDict.NewEntityID
+    member this.SetCurrentToNext = base.SetCurrentToNext nextDict
 
-    member this.ProcessSystemChangeLog (scl:SystemChangeLog) =
-        let finalSCL = nextDict.ProcessSystemChangeLog scl
-        this.SetEntities nextDict
-        finalSCL
+    //member this.ProcessSystemChangeLog (scl:SystemChangeLog) =
+    //    let finalSCL = nextDict.ProcessSystemChangeLog scl
+    //    this.SetEntities nextDict
+    //    finalSCL
 
