@@ -18,6 +18,8 @@ type EntityManager(evm:EventManager) =
     member _.Locations = entDict.Locations
     member _.MaxEntityID = entDict.MaxEntityID
     member _.NewEntityID = entDict.NewEntityID
+    member _.ReplaceComponent eid ct = entDict.ReplaceComponent eid ct
+    member _.SetToNext = entDict.SetToNext
     member _.TryGet eid = entDict.TryGet eid
     member _.TryGetComponent ct eid = entDict.TryGetComponent ct eid
 
@@ -35,6 +37,12 @@ type EntityManager(evm:EventManager) =
         |> Array.filter (fun aco -> aco.IsSome)
         |> Array.Parallel.map (fun aco -> aco.Value)
 
+    member this.Initialize =
+        evm.RegisterListener CreateEntity this.onCreateEntity
+
+
+
+
     //member internal this.ProcessSystemChangeLog (scl:SystemChangeLog) =
         //let handleNewEntityEvents (newscl:SystemChangeLog) =
         //    let handleEvent (ct:AbstractComponent) =
@@ -46,9 +54,3 @@ type EntityManager(evm:EventManager) =
         //    newscl
         //entDict.ProcessSystemChangeLog scl
         //|> handleNewEntityEvents
-
-    member this.Initialize =
-        evm.RegisterListener CreateEntity this.onCreateEntity
-
-    member this.SetToNext = entDict.SetCurrentToNext
-

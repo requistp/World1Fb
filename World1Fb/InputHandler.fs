@@ -23,9 +23,9 @@ type InputHandler(evm:EventManager, enm:EntityManager) =
     //    | Some eid -> evm.QueueEvent(Event_KeyPressed_Eat(eid))
 
     member private this.keyPressed_Movement d = 
-        match this.HasRequiredComponents [|ComponentTypes.Movement|] with
+        match this.HasRequiredComponents [| ComponentTypes.Form; ComponentTypes.Movement |] with
         | None -> ()
-        | Some eid -> evm.QueueEvent(Event_Action_Movement(eid,d))
+        | Some eid -> evm.QueueEvent (Event_Action_Movement(eid,d))
 
     member private this.onKeyPressed k = 
         match k with 

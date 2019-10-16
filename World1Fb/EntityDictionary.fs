@@ -45,16 +45,17 @@ type AbstractEntityDictionary(myType:DictionaryType) =
                              this.UpdateComponentDictionary
                              this.UpdateLocationDictionary
                              Ok None
-    member internal this.ReplaceComponent (eid:uint32) (ac:AbstractComponent) = 
+    member internal this.ReplaceComponent (eid:uint32) (ac:AbstractComponent) : Result<string option,string> = 
         match myType with
-        | Current -> ()
+        | Current -> Error "ReplaceComponent: Called against Current entity dictionary"
         | Next -> _entities <- _entities.Item(eid)
                                |> Array.filter (fun c -> c.ComponentType <> ac.ComponentType) 
                                |> Array.append [|ac|]
                                |> Map_Replace _entities eid
                   this.UpdateComponentDictionary
                   this.UpdateLocationDictionary
-    member internal this.SetCurrentToNext (aed:AbstractEntityDictionary) : Result<string option,string> =
+                  Ok None
+    member internal this.Set (aed:AbstractEntityDictionary) : Result<string option,string> =
         match myType with
         | Next -> Error "SetCurrentToNext: Called on Next Dictionary"
         | Current -> _entities <- aed.Entities
@@ -131,11 +132,12 @@ type EntityDictionary() =
 
     let nextDict = new NextEntityDictionary()
 
-    member this.CreateEntity cts = nextDict.CreateEntity cts
     member this.MaxEntityID = nextDict.MaxEntityID
     member this.NewEntityID = nextDict.NewEntityID
-    member this.SetCurrentToNext = base.SetCurrentToNext nextDict
 
+    member internal this.CreateEntity cts = nextDict.CreateEntity cts
+    member internal this.ReplaceComponent eid ac = nextDict.ReplaceComponent eid ac
+    member internal this.SetToNext = base.Set nextDict
     //member this.ProcessSystemChangeLog (scl:SystemChangeLog) =
     //    let finalSCL = nextDict.ProcessSystemChangeLog scl
     //    this.SetEntities nextDict

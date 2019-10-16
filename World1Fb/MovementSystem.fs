@@ -14,31 +14,32 @@ open SystemManager
 type MovementSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
 
-    //member private this.onMovementKeyPressed (ge:AbstractGameEvent) = 
-    //    let m = ge :?> Event_Action_Movement
 
-    //    let isMovementValid = 
-    //        let someIfDestinationOnMap (fc:FormComponent) =
-    //             let dest = m.Direction.AddToLocation fc.Location
-    //             match dest.IsOnMap with
-    //             | false -> None
-    //             | true -> Some (dest,fc)
+    member private this.onMovementKeyPressed (ge:AbstractGameEvent) : Result<string option,string>= 
+        let m = ge :?> Event_Action_Movement
+
+        let form = (game.EntityManager.GetComponent Form m.EntityID) :?> FormComponent
+        let dest = m.Direction.AddToLocation form.Location
+
+        let isMovementValid = 
+            let checkIfDestinationOnMap =
+                 match dest.IsOnMap with
+                 | false -> Error "onMovementKeyPressed: Destination is not on map"
+                 | true -> Ok None
         
-    //        // This should only handle things that prevent movement within the context of the movement system (map size, being paralyzed, etc.)
-    //        // Or maybe other systems can listen for this event, and mark the event invalid?
+            checkIfDestinationOnMap
 
-    //        match game.EntityManager.TryGetComponent Form m.EntityID with
-    //        | None -> None
-    //        | Some fc -> Some (fc :?> FormComponent)
-    //        |> Option.bind someIfDestinationOnMap
-    //        |> Option.isSome
 
-    //    match isMovementValid with
-    //    | false -> () // Record rejected event? Maybe some day
-    //    | true -> game.EventManager.QueueEvent(Event_Movement(m.EntityID,m.Direction))
+        match isMovementValid with
+        | Error s -> Error s
+        | Ok s -> this.doMovement (FormComponent(m.EntityID, form.IsPassable, form.Name, form.Symbol, dest))
+
+        member private this.doMovement (f:AbstractComponent) =
+            game.EntityManager.ReplaceComponent f.EntityID f
+
 
     override this.Initialize = 
-        //game.EventManager.RegisterListener Action_Movement this.onMovementKeyPressed
+        game.EventManager.RegisterListener Action_Movement this.onMovementKeyPressed
         base.SetToInitialized
 
     override this.Update = 
