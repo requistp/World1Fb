@@ -21,17 +21,17 @@ type AbstractEntityDictionary() =
         match _compDict.ContainsKey(ct) with
         | true -> _compDict.Item(ct)
         | false -> Array.empty
-    member this.GetComponent (ct:ComponentTypes) (eid:uint32) = 
-        _entities.Item(eid) |> Array.find (fun x -> x.ComponentType = ct)    
+    member this.GetComponent<'T> (eid:uint32) : 'T =
+        (_entities.Item(eid) |> Array.find (fun x -> x.GetType() = typeof<'T>)) :?> 'T
     member this.Locations = _locDict
     member this.TryGet eid =
         _entities.ContainsKey(eid) |> TrueSomeFalseNone (_entities.Item(eid))
-    member this.TryGetComponent (ct:ComponentTypes) (eid:uint32) = 
-        let tryGetComponent (cts:AbstractComponent[]) = 
-            match cts |> Array.filter (fun c -> c.ComponentType = ct) with
-            | [||] -> None
-            | l -> Some l.[0]
-        eid |> this.TryGet |> Option.bind tryGetComponent
+    member this.TryGetComponent<'T> (eid:uint32) : Option<'T> = 
+        match this.TryGet eid with
+        | None -> None
+        | Some cts -> match cts |> Array.filter (fun c -> c.GetType() = typeof<'T>) with
+                      | [||] -> None
+                      | l -> Some (l.[0] :?> 'T)
 
     member internal this.CreateEntity (cts:AbstractComponent[]) : Result<string option,string> = 
         match _entities.ContainsKey(cts.[0].EntityID) with
@@ -58,9 +58,9 @@ type AbstractEntityDictionary() =
         _compDict <- _entities 
                      |> Map.fold (fun m k v -> v |> Array.fold (fun m c -> Map_AppendValueToArray m c.ComponentType k) m ) Map.empty<ComponentTypes,uint32[]>
     member private this.UpdateLocationDictionary =
-        _locDict <- Form
+        _locDict <- FormComponent.Type
                     |> this.EntitiesWithComponent 
-                    |> Array.Parallel.map (fun eid -> (this.GetComponent Form eid) :?> FormComponent)
+                    |> Array.Parallel.map (fun eid -> this.GetComponent<FormComponent> eid)
                     |> Array.fold (fun m f -> Map_AppendValueToArray m f.Location f.EntityID) Map.empty<LocationDataInt,uint32[]>
 
 
@@ -85,4 +85,6 @@ type EntityDictionary() =
     member internal this.CreateEntity (cts:AbstractComponent[]) = Error "CreateEntity: Called against Current entity dictionary"
     member internal this.ReplaceComponent (ac:AbstractComponent) = Error "ReplaceComponent: Called against Current entity dictionary"
     member internal this.Set = base.Set nextDict
+
+
 

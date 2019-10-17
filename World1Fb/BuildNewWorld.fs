@@ -15,8 +15,8 @@ let MakeGrasses (enm:EntityManager) n =
     let MakeGrass x y =
         let eid = enm.NewEntityID
         [| 
-            //FoodComponent(eid, Grass, 20) :> AbstractComponent
-            FormComponent(eid, true, "grass", Grass.Symbol.Value, {X=x;Y=y;Z=0}) :> AbstractComponent
+            FoodComponent(eid, Food_Grass, 20) :> AbstractComponent
+            FormComponent(eid, true, "grass", Food_Grass.Symbol.Value, {X=x;Y=y;Z=0}) :> AbstractComponent
         |] 
     match n with 
     | 0 -> Array.empty<AbstractComponent[]>
@@ -52,7 +52,7 @@ let MakeRabbits (enm:EntityManager) n =
         let eid = enm.NewEntityID
         [|
             ControllerComponent(eid) :> AbstractComponent
-           // EatingComponent(eid, 1, [|Carrot;Grass|], 10, 5) :> AbstractComponent
+            EatingComponent(eid, [|Food_Carrot;Food_Grass|], 5, 10, 1, 250) :> AbstractComponent
             FormComponent(eid, true, "rabbit", 'r', {X=x;Y=y;Z=0}) :> AbstractComponent
             MovementComponent(eid, 1) :> AbstractComponent
             //sight

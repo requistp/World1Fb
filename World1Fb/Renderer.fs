@@ -14,21 +14,24 @@ let private DrawAt (c:char) location =
 
 
 let private RenderAll (enm:EntityManager) =
-    let render (f:FormComponent) =
+    let render (eid:uint32) (fs:FormComponent[]) =
+        let f = fs |> Array.find (fun e -> e.EntityID = eid)
         DrawAt f.Symbol f.Location
-    let renderMap (m:Map<uint32,AbstractComponent option[]>) =
-        let renderForms (aco:AbstractComponent option[]) = 
-            aco
-            |> Array.filter (fun aco -> aco.IsSome && aco.Value.ComponentType = Form) 
-            |> Array.iter (fun f -> render (f.Value :?> FormComponent))
-        m |> Map.iter (fun k v -> renderForms v)
-    let t,nt = 
-        Form
+
+    let fs = 
+        FormComponent.Type
         |> enm.EntitiesWithComponent
-        |> Array.fold (fun (m:Map<uint32,AbstractComponent option[]>) eid -> m.Add(eid,enm.TryGetComponents [|Form;Terrain|] eid)) Map.empty
-        |> Map.partition (fun k v -> v |> Array.exists (fun aco -> aco.IsSome && aco.Value.ComponentType = Terrain))
-    renderMap t
-    renderMap nt
+        |> Array.map (fun eid -> enm.TryGetComponent<FormComponent> eid)
+        |> Array.collect (fun fo -> fo |> Option.toArray)
+    let ts =
+        TerrainComponent.Type
+        |> enm.EntitiesWithComponent
+        |> Array.map (fun eid -> enm.TryGetComponent<TerrainComponent> eid)
+        |> Array.collect (fun fo -> fo |> Option.toArray)
+
+    ts |> Array.iter (fun t -> render t.EntityID fs)
+    fs |> Array.filter (fun f-> not (ts |> Array.exists (fun t -> t.EntityID=f.EntityID))) |> Array.iter (fun f -> render f.EntityID fs)
+    
     
 
 let RenderFrame (enm:EntityManager) (fc:int) (fn:uint32) =

@@ -1,6 +1,6 @@
 ﻿module MovementSystem
 open AbstractComponent
-open ControllerComponent
+open AbstractSystem
 open EntityDictionary
 open EventManager
 open FormComponent
@@ -12,13 +12,12 @@ open System
 open SystemManager
 
 type MovementSystem(game:Game, isActive:bool) =
-    inherit AbstractSystem(isActive) 
-
+    inherit AbstractSystem(Sys_Movement, isActive) 
 
     member private this.onMovementKeyPressed (next:NextEntityDictionary) (ge:AbstractGameEvent) : Result<string option,string> =
         let m = ge :?> Event_Action_Movement
 
-        let form = (game.EntityManager.GetComponent Form m.EntityID) :?> FormComponent
+        let form = game.EntityManager.GetComponent<FormComponent> m.EntityID
         let dest = m.Direction.AddToLocation form.Location
 
         let isMovementValid = 
@@ -32,7 +31,7 @@ type MovementSystem(game:Game, isActive:bool) =
                     dest
                     |> next.EntitiesAtLocation
                     |> Array.filter (fun e -> e <> m.EntityID)
-                    |> Array.Parallel.map (fun eid -> (next.GetComponent Form eid) :?> FormComponent)
+                    |> Array.Parallel.map (fun eid -> next.GetComponent<FormComponent> eid)
                     |> Array.exists (fun f -> not f.IsPassable)
                 match formImpassableAtLocation with
                 | true -> Error "Something at location"
@@ -41,7 +40,6 @@ type MovementSystem(game:Game, isActive:bool) =
             checkIfDestinationOnMap
             |> Result.bind testForImpassableFormAtLocation
 
-
         match isMovementValid with
         | Error s -> Error s
         | Ok _ -> next.ReplaceComponent (FormComponent(m.EntityID, form.IsPassable, form.Name, form.Symbol, dest))
@@ -49,7 +47,3 @@ type MovementSystem(game:Game, isActive:bool) =
     override this.Initialize = 
         game.EventManager.RegisterListener Action_Movement this.onMovementKeyPressed
         base.SetToInitialized
-
-    override this.Update = 
-        ()
-    

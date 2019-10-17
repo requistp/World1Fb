@@ -1,5 +1,5 @@
 ﻿module FormSystem
-open AbstractComponent
+open AbstractSystem
 open FormComponent
 open GameEvents
 open GameManager
@@ -8,10 +8,5 @@ open SystemManager
 
 
 type FormSystem(game:Game, isActive:bool) =
-    inherit AbstractSystem(isActive) 
+    inherit AbstractSystem(Sys_Form, isActive) 
 
-    override this.Initialize = 
-        base.SetToInitialized
-
-    override this.Update = 
-        ()

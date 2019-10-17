@@ -1,4 +1,5 @@
-﻿open BuildNewWorld
+﻿open AbstractSystem
+open BuildNewWorld
 open CommonGenericFunctions
 open EatingSystem
 open EntityManager
@@ -20,8 +21,8 @@ let startingEntities =
 
 let ss =
     [|
-        //EatingSystem(g, true) :> AbstractSystem
-        //FoodSystem(g, true) :> AbstractSystem
+        EatingSystem(g, true) :> AbstractSystem
+        FoodSystem(g, true) :> AbstractSystem
         FormSystem(g, true) :> AbstractSystem
         MovementSystem(g, true) :> AbstractSystem
         TerrainSystem(g, true) :> AbstractSystem

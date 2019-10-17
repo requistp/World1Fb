@@ -2,12 +2,12 @@
 
 
 type ComponentTypes =
-    | Eating
-    | Food
-    | Form
-    | Controller
-    | Movement
-    | Terrain
+    | Comp_Eating
+    | Comp_Food
+    | Comp_Form
+    | Comp_Controller
+    | Comp_Movement
+    | Comp_Terrain
 
 
 [<AbstractClass>]
