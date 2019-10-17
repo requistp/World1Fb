@@ -64,7 +64,8 @@ type Game(renderer:EntityManager->int->uint32->unit) =
     member private this.PrintGrass =
         let f = (entityMan.EntitiesWithComponent FoodComponent.Type).[0] |> entityMan.GetComponent<FoodComponent>
         let e = (entityMan.EntitiesWithComponent EatingComponent.Type).[0] |> entityMan.GetComponent<EatingComponent>
-        printfn "Quanity:%i     " f.Quantity
+        printfn "Food Quantity :%i     " f.Quantity
+        printfn "Eater Quantity:%i     " e.Quantity
         printfn "Calories:%i    " e.Calories
 
     member private this.setInitialForms (initialForms:AbstractComponent[][]) = 

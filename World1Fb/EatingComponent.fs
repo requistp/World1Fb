@@ -13,5 +13,7 @@ type EatingComponent(eid:uint32, foods:FoodTypes[], quantity:int, quantityMax:in
     member _.QuantityMax = quantityMax
     member _.QuantityPerAction = quantityPerAction
 
+    member this.QuantityRemaining = quantityMax - quantity
+
     static member Type = Comp_Eating
    

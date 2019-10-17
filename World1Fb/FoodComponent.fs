@@ -26,11 +26,12 @@ type FoodTypes =
         | Meat -> None
 
 
-type FoodComponent(eid:uint32, foodType:FoodTypes, quantity:int) = 
+type FoodComponent(eid:uint32, foodType:FoodTypes, quantity:int, quantityMax:int) = 
     inherit AbstractComponent(eid,Comp_Food)
 
     member _.FoodType = foodType
     member _.Quantity = quantity
+    member _.QuantityMax = quantityMax
 
     static member Type = Comp_Food
 

@@ -1,37 +1,25 @@
 ﻿module FoodSystem
 open AbstractSystem
+open EntityDictionary
 open FoodComponent
 open GameEvents
 open GameManager
 open SystemManager
-
+open System
 
 type FoodSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(Sys_Food, isActive) 
     
+    member private this.onEaten (next:NextEntityDictionary) (ge:AbstractGameEvent) =
+        let e = ge :?> Event_Eaten
+
+        let food = game.EntityManager.GetComponent<FoodComponent> e.EateeID
+
+        next.ReplaceComponent (FoodComponent(e.EateeID, food.FoodType, Math.Clamp(food.Quantity-e.Quantity,0,food.QuantityMax), food.QuantityMax))
 
 
+    override this.Initialize = 
+        game.EventManager.RegisterListener Eaten this.onEaten
+        base.SetToInitialized
 
-        //game.EventManager.RegisterListener Eaten this.onEaten
-    //member private this.onEaten (ge:AbstractGameEvent) =
-    //    let e = ge :?> Event_Eaten
-        
-    //    this.ChangeLog.AddComponentChange (FoodComponent_Change(e.EateeID, -e.Quantity))
 
-(*
-        
-//type FoodComponent_Change(eid:uint32, invalid:string option, quantity:int) =
-//    inherit AbstractComponentChange(Food,eid,invalid)
-        
-//    member _.Quantity = quantity
-        
-//    override this.AddChange (a:AbstractComponent) =
-//        let c = a :?> FoodComponent
-//        FoodComponent(eid, c.FoodType, this.Quantity + c.Quantity) :> AbstractComponent
-        
-//    override this.Invalidate (reason:string) =
-//        FoodComponent_Change(this.EntityID, Some reason, this.Quantity) :> AbstractComponentChange
-        
-//    new (eid:uint32, quantity:int) = FoodComponent_Change(eid, None, quantity)
-        
-*)
