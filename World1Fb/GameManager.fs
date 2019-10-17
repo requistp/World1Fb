@@ -6,43 +6,10 @@ open EntityManager
 open EventManager
 open EatingComponent
 open FoodComponent
-open FormComponent
+open FrameManager
 open GameEvents
 open InputHandler
 open SystemManager
-
-type Frame = 
-    {
-        Number : uint32
-        Entities : Map<uint32,AbstractComponent[]>
-        MaxEntityID : uint32 
-        GEResults : (AbstractGameEvent * Result<string option,string>)[]
-        SetResult : Result<string option,string>
-    } with 
-    static member empty = 
-        { 
-            Number = 0u
-            Entities = Map.empty
-            MaxEntityID = 0u
-            GEResults = Array.empty
-            SetResult = Ok None
-        }
-
-
-type FrameManager() =
-    let mutable _frames = [| Frame.empty |]
-    member this.AddFrame (entities:Map<uint32,AbstractComponent[]>) (maxEntityID:uint32) (geResults:(AbstractGameEvent * Result<string option,string>)[]) (setResult:Result<string option,string>) =
-        let f = 
-            { 
-                Number = (uint32 _frames.Length)
-                Entities = entities
-                MaxEntityID = maxEntityID
-                GEResults = geResults
-                SetResult = setResult
-            } 
-        _frames <- Array.append _frames [|f|]
-        f
-    member this.Count = _frames.Length
 
 
 type Game(renderer:EntityManager->int->uint32->unit) =
@@ -55,6 +22,7 @@ type Game(renderer:EntityManager->int->uint32->unit) =
     member this.EventManager = eventMan
     member this.EntityManager = entityMan
     member this.SystemManager = systemMan
+    member this.Round = frameMan.Count - 1
 
     member private this.assignController =
         match ControllerComponent.Type |> entityMan.EntitiesWithComponent with
@@ -73,7 +41,7 @@ type Game(renderer:EntityManager->int->uint32->unit) =
         |> Array.iter (fun cts -> eventMan.QueueEvent (Event_CreateEntity(cts))) // Can't Parallel
 
     member private this.gameLoop =
-        systemMan.UpdateSystems
+        systemMan.UpdateSystems (this.Round)
         let geResults = eventMan.ProcessEvents
         let setResult = entityMan.SetToNext
         let f = frameMan.AddFrame entityMan.Entities entityMan.MaxEntityID geResults setResult
@@ -84,9 +52,7 @@ type Game(renderer:EntityManager->int->uint32->unit) =
         entityMan.Initialize
         systemMan.Initialize ss
         this.setInitialForms initialForms
-
-        //let f0 = entityMan.TestGet<FormComponent> 0u 
-
+        
         this.gameLoop
 
         this.assignController |> inputMan.SetEntityID

@@ -23,6 +23,9 @@ type AbstractEntityDictionary() =
         | false -> Array.empty
     member this.GetComponent<'T> (eid:uint32) : 'T =
         (_entities.Item(eid) |> Array.find (fun x -> x.GetType() = typeof<'T>)) :?> 'T
+    member this.GetComponent<'T> (eids:uint32[]) : 'T[] = 
+        eids
+        |> Array.map (fun e -> this.GetComponent<'T> e)
     member this.Locations = _locDict
     member this.TryGet eid =
         _entities.ContainsKey(eid) |> TrueSomeFalseNone (_entities.Item(eid))
@@ -40,14 +43,14 @@ type AbstractEntityDictionary() =
                    this.UpdateComponentDictionary
                    this.UpdateLocationDictionary
                    Ok None
-    member internal this.ReplaceComponent (ac:AbstractComponent) : Result<string option,string> = 
+    member internal this.ReplaceComponent (ac:AbstractComponent) (changes:string option) : Result<string option,string> = 
         _entities <- _entities.Item(ac.EntityID)
                     |> Array.filter (fun c -> c.ComponentType <> ac.ComponentType) 
                     |> Array.append [|ac|]
                     |> Map_Replace _entities ac.EntityID
         //this.UpdateComponentDictionary Shouldn't have to update on a 1:1 component swap
         this.UpdateLocationDictionary
-        Ok None
+        Ok changes
     member internal this.Set (aed:AbstractEntityDictionary) : Result<string option,string> =
         _entities <- aed.Entities
         _compDict <- aed.Components

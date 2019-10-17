@@ -8,5 +8,5 @@ open SystemManager
 
 
 type FormSystem(game:Game, isActive:bool) =
-    inherit AbstractSystem(Sys_Form, isActive) 
+    inherit AbstractSystem(isActive) 
 

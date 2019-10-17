@@ -1,5 +1,6 @@
 ﻿module BuildNewWorld
 open AbstractComponent
+open CalendarTimings
 open CommonGenericFunctions
 open ControllerComponent
 open EatingComponent
@@ -52,7 +53,7 @@ let MakeRabbits (enm:EntityManager) n =
         let eid = enm.NewEntityID
         [|
             ControllerComponent(eid) :> AbstractComponent
-            EatingComponent(eid, [|Food_Carrot;Food_Grass|], 1, 25, 1, 250) :> AbstractComponent
+            EatingComponent(eid, [|Food_Carrot;Food_Grass|], 150, 150, 1, 300, 300, TimingOffset(EatingComponent.CaloricCheckFrequency)) :> AbstractComponent
             FormComponent(eid, true, "rabbit", 'r', {X=x;Y=y;Z=0}) :> AbstractComponent
             MovementComponent(eid, 1) :> AbstractComponent
             //sight

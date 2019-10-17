@@ -1,5 +1,6 @@
 ﻿module FoodComponent
 open AbstractComponent
+open System
 
 
 type FoodClassifications =
@@ -29,10 +30,11 @@ type FoodTypes =
 type FoodComponent(eid:uint32, foodType:FoodTypes, quantity:int, quantityMax:int) = 
     inherit AbstractComponent(eid,Comp_Food)
 
-    member _.FoodType = foodType
-    member _.Quantity = quantity
-    member _.QuantityMax = quantityMax
-
     static member Type = Comp_Food
 
-    
+    member _.FoodType = foodType
+    member _.Quantity = Math.Clamp(quantity,0,quantityMax)
+    member _.QuantityMax = quantityMax
+
+    member this.Update (newQuantity:int) =
+        FoodComponent(eid, foodType, Math.Clamp(newQuantity,0,quantityMax), quantityMax)

@@ -23,6 +23,7 @@
     <Compile Include="AbstractSystem.fs" />
     <Compile Include="SystemManager.fs" />
     <Compile Include="InputHandler.fs" />
+    <Compile Include="FrameManager.fs" />
     <Compile Include="GameManager.fs" />
     <Compile Include="EatingSystem.fs" />
     <Compile Include="FoodSystem.fs" />

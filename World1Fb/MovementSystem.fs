@@ -1,18 +1,13 @@
 ﻿module MovementSystem
-open AbstractComponent
 open AbstractSystem
 open EntityDictionary
-open EventManager
 open FormComponent
 open GameEvents
 open GameManager
-open LocationTypes
-open MovementComponent
-open System
-open SystemManager
+
 
 type MovementSystem(game:Game, isActive:bool) =
-    inherit AbstractSystem(Sys_Movement, isActive) 
+    inherit AbstractSystem(isActive) 
 
     member private this.onMovementKeyPressed (next:NextEntityDictionary) (ge:AbstractGameEvent) : Result<string option,string> =
         let m = ge :?> Event_Action_Movement
@@ -39,10 +34,12 @@ type MovementSystem(game:Game, isActive:bool) =
 
             checkIfDestinationOnMap
             |> Result.bind testForImpassableFormAtLocation
+        
+        let result = sprintf "Destination:%A" dest.ToString
 
         match isMovementValid with
         | Error s -> Error s
-        | Ok _ -> next.ReplaceComponent (FormComponent(m.EntityID, form.IsPassable, form.Name, form.Symbol, dest))
+        | Ok _ -> next.ReplaceComponent (FormComponent(m.EntityID, form.IsPassable, form.Name, form.Symbol, dest)) (Some result)
                 
     override this.Initialize = 
         game.EventManager.RegisterListener Action_Movement this.onMovementKeyPressed
