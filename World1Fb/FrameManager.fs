@@ -37,4 +37,9 @@ type FrameManager() =
         f
     
     member this.Count = _frames.Length
+    member this.Frames = _frames
+    member this.GameEventsAll = 
+        _frames 
+        |> Array.sortBy (fun f -> f.Number)
+        |> Array.collect (fun f -> f.GEResults)
 

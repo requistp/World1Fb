@@ -17,7 +17,7 @@ type Game(renderer:EntityManager->int->uint32->unit) =
     let entityMan = new EntityManager()
     let eventMan = new EventManager(entityMan)
     let systemMan = new SystemManager(eventMan)
-    let inputMan = new InputHandler(eventMan, entityMan, systemMan)
+    let inputMan = new InputHandler(eventMan, entityMan, frameMan, systemMan)
  
     member this.EventManager = eventMan
     member this.EntityManager = entityMan
@@ -58,6 +58,6 @@ type Game(renderer:EntityManager->int->uint32->unit) =
         this.assignController |> inputMan.SetEntityID
 
         while inputMan.AwaitKeyboardInput do
-            this.gameLoop
+             this.gameLoop
             
 

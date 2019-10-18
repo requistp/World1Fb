@@ -18,7 +18,7 @@ type MovementSystem(game:Game, isActive:bool) =
         let isMovementValid = 
             let checkIfDestinationOnMap =
                  match dest.IsOnMap with
-                 | false -> Error "onMovementKeyPressed: Destination is not on map"
+                 | false -> Error (sprintf "Not on map %s" dest.Print)
                  | true -> Ok None
         
             let testForImpassableFormAtLocation junk =
@@ -29,13 +29,13 @@ type MovementSystem(game:Game, isActive:bool) =
                     |> Array.Parallel.map (fun eid -> next.GetComponent<FormComponent> eid)
                     |> Array.exists (fun f -> not f.IsPassable)
                 match formImpassableAtLocation with
-                | true -> Error "Something at location"
+                | true -> Error (sprintf "Form at location %s" dest.Print)
                 | false -> Ok None
 
             checkIfDestinationOnMap
             |> Result.bind testForImpassableFormAtLocation
         
-        let result = sprintf "Destination:%A" dest.ToString
+        let result = sprintf "Location %s" dest.Print
 
         match isMovementValid with
         | Error s -> Error s

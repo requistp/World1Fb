@@ -5,6 +5,7 @@ open EntityManager
 open EventManager
 open FoodComponent
 open FormComponent
+open FrameManager
 open GameEvents
 open LocationTypes
 open MovementComponent
@@ -12,7 +13,7 @@ open System
 open SystemManager
 
 
-type InputHandler(evm:EventManager, enm:EntityManager, sysm:SystemManager) =
+type InputHandler(evm:EventManager, enm:EntityManager, fman:FrameManager, sysm:SystemManager) =
     let mutable _entityID = None
 
     member private this.HasRequiredComponents (cts:ComponentTypes[]) =
@@ -68,5 +69,16 @@ type InputHandler(evm:EventManager, enm:EntityManager, sysm:SystemManager) =
 
         match Console.ReadKey(true).Key with
         | ConsoleKey.Escape -> false
-        | k -> this.onKeyPressed k
-               true
+        | ConsoleKey.F12 -> this.DisplayGameEvents; true
+        | k -> this.onKeyPressed k; true
+
+    member private this.DisplayGameEvents =
+        let printRes (res:Result<string option,string>) =
+            match res with
+            | Error s -> sprintf "Err (%s):" s
+            | Ok o -> match o with
+                      | None -> "Ok  :"
+                      | Some s -> sprintf "Ok  (%s):" s
+        let printGER ((age,res):GameEventResult) = 
+            printfn "%s: %s" (printRes res) age.Print
+        fman.GameEventsAll |> Array.iter (fun ger -> printGER ger)

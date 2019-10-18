@@ -37,7 +37,6 @@ let convertAmountByFrequency (amountPerFreq:int) (frequnecyOfAmount:FrequencyTyp
    
 
 let ExecuteTiming (frequency:int) (offset:int) (round:int) = 
-    printfn "F:%i O:%i R:%i" frequency offset round
     match frequency with
     | 0 -> false
     | _ -> (round % frequency = offset)
