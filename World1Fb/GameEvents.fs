@@ -7,8 +7,11 @@ type GameEventTypes =
     | Action_Movement
     | CreateEntity
     | Eaten
+    | Food_AllEaten
+    | Kill_AllEaten
     | Metabolize
     | Movement
+    | Starving
 
 [<AbstractClass>]
 type AbstractGameEvent(et:GameEventTypes) =
@@ -34,6 +37,14 @@ type Event_Eaten(eaterID:uint32, eateeID:uint32, quantity:int) =
     member _.EateeID = eateeID
     member _.Quantity = quantity    
 
+type Event_Food_AllEaten(eid:uint32) =
+    inherit AbstractGameEvent(Food_AllEaten)
+    member _.EntityID = eid           
+
+type Event_Kill_AllEaten(eid:uint32) =
+    inherit AbstractGameEvent(Kill_AllEaten)
+    member _.EntityID = eid           
+
 type Event_Metabolize(eid:uint32) =
     inherit AbstractGameEvent(Metabolize)
     member _.EntityID = eid           
@@ -43,6 +54,10 @@ type Event_Movement(eid:uint32, direction:MovementDirection) =
     member _.Direction = direction
     member _.EntityID = eid
     
+type Event_Starving(eid:uint32) =
+    inherit AbstractGameEvent(Starving)
+    member _.EntityID = eid           
+
 
 
     

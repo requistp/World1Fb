@@ -2,11 +2,9 @@
 open AbstractComponent
 open System
 
-
 type FoodClassifications =
     | Meat
     | Plant
-
 
 type FoodTypes =
     | Food_Carrot
@@ -21,6 +19,10 @@ type FoodTypes =
         match this with
         | Food_Carrot | Food_Grass -> Plant
         | Food_Meat_Rabbit -> Meat
+    member this.KillOnAllEaten =
+        match this with 
+        | Food_Grass | Food_Meat_Rabbit -> false
+        | Food_Carrot -> true
     member this.Symbol =
         match this.Classification with
         | Plant -> Some '!'
@@ -33,8 +35,13 @@ type FoodComponent(eid:uint32, foodType:FoodTypes, quantity:int, quantityMax:int
     static member Type = Comp_Food
 
     member _.FoodType = foodType
-    member _.Quantity = Math.Clamp(quantity,0,quantityMax)
+    member _.Quantity = quantity
     member _.QuantityMax = quantityMax
 
     member this.Update (newQuantity:int) =
         FoodComponent(eid, foodType, Math.Clamp(newQuantity,0,quantityMax), quantityMax)
+
+    new (eid:uint32, foodType:FoodTypes, quantityMax:int) =
+        FoodComponent(eid, foodType, quantityMax, quantityMax)
+
+

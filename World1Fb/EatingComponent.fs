@@ -24,7 +24,7 @@ type EatingComponent(eid:uint32, foods:FoodTypes[], quantity:int, quantityMax:in
     member this.QuantityRemaining = quantityMax - quantity
 
     member this.Update newQuantity newCalories = 
-        EatingComponent(eid, foods, Math.Clamp(newQuantity,0,quantityMax), quantityMax, quantityPerAction, Math.Clamp(newCalories,0,Int32.MaxValue), caloriesPerDay, caloricCheckOffset)
+        EatingComponent(eid, foods, Math.Clamp(newQuantity,0,quantityMax), quantityMax, quantityPerAction, newCalories, caloriesPerDay, caloricCheckOffset)
 
     new (eid:uint32, foods:FoodTypes[], quantityMax:int, quantityPerAction:int, caloriesPerDay:int) =
         EatingComponent(eid, foods, quantityMax/2, quantityMax, quantityPerAction, caloriesPerDay/2, caloriesPerDay, TimingOffset(EatingComponent.CaloricCheckFrequency))

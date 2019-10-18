@@ -18,10 +18,13 @@ type EatingSystem(game:Game, isActive:bool) =
         let eatc = game.EntityManager.GetComponent<EatingComponent> e.EntityID
         let quantity = convertAmountByFrequency eatc.QuantityMax Day EatingComponent.CaloricCheckFrequency
         let calories = convertAmountByFrequency eatc.CaloriesPerDay Day EatingComponent.CaloricCheckFrequency
-        let result = sprintf "Quantity:%i. Calories:%i" quantity calories
+        let starving = (eatc.Quantity-quantity < 0)
+        let result = sprintf "Quantity:-%i. Calories:-%i. Starving:%b" quantity calories starving
+
+        if starving then game.EventManager.QueueEvent (Event_Starving(e.EntityID))
 
         next.ReplaceComponent (eatc.Update (eatc.Quantity-quantity) (eatc.Calories-calories)) (Some result)
-
+        
     member private this.onEat (next:NextEntityDictionary) (ge:AbstractGameEvent) =
         let e = ge :?> Event_Action_Eat
         
@@ -41,7 +44,7 @@ type EatingSystem(game:Game, isActive:bool) =
         |> game.EntityManager.GetComponent<EatingComponent>
         |> Array.filter (fun ec -> ec.ExecuteTiming r)
         |> Array.iter (fun ec -> game.EventManager.QueueEvent (Event_Metabolize(ec.EntityID)))
-
+        
     override this.Initialize = 
         game.EventManager.RegisterListener Action_Eat this.onEat
         game.EventManager.RegisterListener Metabolize this.onMetabolize
