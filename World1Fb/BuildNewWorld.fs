@@ -16,8 +16,8 @@ let MakeGrasses (enm:EntityManager) n =
     let MakeGrass x y =
         let eid = enm.NewEntityID
         [| 
-            FoodComponent(eid, Food_Grass, 20) :> AbstractComponent
-            FormComponent(eid, true, "grass", Food_Grass.Symbol.Value, {X=x;Y=y;Z=0}) :> AbstractComponent
+            FoodComponent(eid, Food_Carrot, 20) :> AbstractComponent
+            FormComponent(eid, true, Food_Carrot.ToString(), Food_Grass.Symbol.Value, {X=x;Y=y;Z=0}) :> AbstractComponent
         |] 
     match n with 
     | 0 -> Array.empty<AbstractComponent[]>

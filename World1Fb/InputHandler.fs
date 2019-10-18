@@ -81,4 +81,4 @@ type InputHandler(evm:EventManager, enm:EntityManager, fman:FrameManager, sysm:S
                       | Some s -> sprintf "Ok  (%s):" s
         let printGER ((age,res):GameEventResult) = 
             printfn "%s: %s" (printRes res) age.Print
-        fman.GameEventsAll |> Array.iter (fun ger -> printGER ger)
+        fman.GameEventsAll 2u |> Array.iter (fun ger -> printGER ger)

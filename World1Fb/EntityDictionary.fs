@@ -43,6 +43,11 @@ type AbstractEntityDictionary() =
                    this.UpdateComponentDictionary
                    this.UpdateLocationDictionary
                    Ok None
+    member internal this.RemoveEntity (eid:uint32) : Result<string option,string> =
+        _entities <- _entities.Remove eid
+        this.UpdateComponentDictionary
+        this.UpdateLocationDictionary
+        Ok None
     member internal this.ReplaceComponent (ac:AbstractComponent) (changes:string option) : Result<string option,string> = 
         _entities <- _entities.Item(ac.EntityID)
                     |> Array.filter (fun c -> c.ComponentType <> ac.ComponentType) 
@@ -85,8 +90,9 @@ type EntityDictionary() =
 
     member this.NextEntityDictionary = nextDict
 
-    member internal this.CreateEntity (cts:AbstractComponent[]) = Error "CreateEntity: Called against Current entity dictionary"
-    member internal this.ReplaceComponent (ac:AbstractComponent) = Error "ReplaceComponent: Called against Current entity dictionary"
+    member internal this.CreateEntity (cts:AbstractComponent[]) = Error "CreateEntity: Called on Current entity dictionary"
+    member internal this.RemoveEntity (eid:uint32) = Error "RemoveEntity: Called on Currrent Dictionary"
+    member internal this.ReplaceComponent (ac:AbstractComponent) = Error "ReplaceComponent: Called on Current entity dictionary"
     member internal this.Set = base.Set nextDict
 
 

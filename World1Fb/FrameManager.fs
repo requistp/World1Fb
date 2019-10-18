@@ -38,8 +38,9 @@ type FrameManager() =
     
     member this.Count = _frames.Length
     member this.Frames = _frames
-    member this.GameEventsAll = 
+    member this.GameEventsAll (start:uint32) = 
         _frames 
+        |> Array.filter (fun f -> f.Number >= start)
         |> Array.sortBy (fun f -> f.Number)
         |> Array.collect (fun f -> f.GEResults)
 
