@@ -29,12 +29,13 @@ type Game(renderer:EntityManager->int->uint32->unit) =
         | [||] -> None
         | l -> Some l.[0]
 
-    member private this.PrintGrass =
-        let f = (entityMan.EntitiesWithComponent FoodComponent.Type).[0] |> entityMan.GetComponent<FoodComponent>
-        let e = (entityMan.EntitiesWithComponent EatingComponent.Type).[0] |> entityMan.GetComponent<EatingComponent>
-        printfn "Food Quantity :%i     " f.Quantity
-        printfn "Eater Quantity:%i     " e.Quantity
-        printfn "Calories:%i    " e.Calories
+    member private this.PrintController =
+        match inputMan.EntityID with
+        | None -> ()
+        | Some eid ->
+            let e = entityMan.GetComponent<EatingComponent> eid
+            printfn "Eater Quantity:%i     " e.Quantity
+            printfn "Calories:%i    " e.Calories
 
     member private this.setInitialForms (initialForms:AbstractComponent[][]) = 
         initialForms 
@@ -46,7 +47,7 @@ type Game(renderer:EntityManager->int->uint32->unit) =
         let setResult = entityMan.SetToNext
         let f = frameMan.AddFrame entityMan.Entities entityMan.MaxEntityID geResults setResult
         renderer entityMan frameMan.Count f.Number
-        this.PrintGrass
+        this.PrintController
 
     member this.Start (ss:AbstractSystem[]) (initialForms:AbstractComponent[][]) = 
         entityMan.Initialize
@@ -57,7 +58,8 @@ type Game(renderer:EntityManager->int->uint32->unit) =
 
         this.assignController |> inputMan.SetEntityID
 
-        while inputMan.AwaitKeyboardInput do
-             this.gameLoop
-            
+        let mutable r = inputMan.AwaitKeyboardInput
+        while r <> ExitGame do
+            if r = GameAction then this.gameLoop
+            r <- inputMan.AwaitKeyboardInput
 

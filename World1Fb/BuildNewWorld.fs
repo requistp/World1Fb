@@ -22,7 +22,7 @@ let MakeGrasses (enm:EntityManager) n =
     match n with 
     | 0 -> Array.empty<AbstractComponent[]>
     | _ -> [1..n] |> List.toArray |> Array.map (fun i -> MakeGrass (random.Next(0,MapWidth-1)) (random.Next(0,MapHeight-1))) //Can't Parallel
-
+    |> Array.rev
 
 let MakeMap (enm:EntityManager) = 
     let AddTerrain x y = 
@@ -49,17 +49,22 @@ let MakeMap (enm:EntityManager) =
 
 
 let MakeRabbits (enm:EntityManager) n = 
-    let MakeRabbit x y = 
+    let MakeRabbit x y n = 
         let eid = enm.NewEntityID
-        [|
-            ControllerComponent(eid) :> AbstractComponent
-            EatingComponent(eid, [|Food_Carrot;Food_Grass|], 150, 1, 300) :> AbstractComponent
-            FormComponent(eid, true, "rabbit", 'r', {X=x;Y=y;Z=0}) :> AbstractComponent
-            MovementComponent(eid, 1) :> AbstractComponent
-            //sight
-            //health        
-        |]    
+        let cont = [| ControllerComponent(eid) :> AbstractComponent |]
+        let baseBunny = 
+            [|
+                EatingComponent(eid, [|Food_Carrot;Food_Grass|], 150, 1, 300) :> AbstractComponent
+                FormComponent(eid, true, "rabbit", 'r', {X=x;Y=y;Z=0}) :> AbstractComponent
+                MovementComponent(eid, 1) :> AbstractComponent
+                //sight
+                //health        
+            |]
+        match n = 1 with
+        | false -> baseBunny
+        | true -> baseBunny |> Array.append cont
     match n with 
     | 0 -> Array.empty<AbstractComponent[]>
-    | _ -> [1..n] |> List.toArray |> Array.map (fun i -> MakeRabbit (random.Next(0,MapWidth-1)) (random.Next(0,MapHeight-1))) //Can't Parallel
+    | _ -> [1..n] |> List.toArray |> Array.map (fun i -> MakeRabbit (random.Next(0,MapWidth-1)) (random.Next(0,MapHeight-1)) i) //Can't Parallel
+    |> Array.rev
 

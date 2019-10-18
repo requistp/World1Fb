@@ -12,73 +12,66 @@ open MovementComponent
 open System
 open SystemManager
 
+type KeyboardResult = 
+    | ExitGame
+    | GameAction
+    | InfoOnly
 
 type InputHandler(evm:EventManager, enm:EntityManager, fman:FrameManager, sysm:SystemManager) =
     let mutable _entityID = None
 
-    member private this.HasRequiredComponents (cts:ComponentTypes[]) =
-        match _entityID with
-        | None -> None
-        | Some eid -> match enm.EntityHasAllComponents cts eid with
-                      | false -> None
-                      | true -> Some eid
+    member this.EntityID = _entityID
 
-    member private this.keyPressed_Eat =
-        // This feels a bit kludgy as if there are two edible foods at the location there should be a UI for selecting which one to eat
-        let foodAtLocation (eid:uint32) = 
-            let eaterForm = enm.GetComponent<FormComponent> eid
-            let eaterEating = enm.GetComponent<EatingComponent> eid
-            let foodsAtLocation = 
-                enm.EntitiesAtLocation eaterForm.Location // Food here
-                |> Array.filter (fun eid -> eid <> eaterForm.EntityID) // Not me
-                |> enm.TryGetComponentForEntities<FoodComponent>
-                |> Array.filter (fun f -> eaterEating.Foods |> Array.exists (fun ft -> ft = f.FoodType)) //Types I can eat
-                |> Array.filter (fun f -> f.Quantity > 0) // Food remaining
-                |> Array.sortByDescending (fun x -> x.FoodType.Calories) // Highest caloric food first
-            match foodsAtLocation with
-            | [||] -> None
-            | a -> Some a.[0]
-        match this.HasRequiredComponents [|ComponentTypes.Comp_Eating|] with
-        | None -> ()
-        | Some eid -> match foodAtLocation eid with
-                      | None -> ()
-                      | Some f -> evm.QueueEvent(Event_Action_Eat(eid,f.EntityID))
-                                           
-    member private this.keyPressed_Movement d = 
-        match this.HasRequiredComponents [| ComponentTypes.Comp_Form; ComponentTypes.Comp_Movement |] with
-        | None -> ()
-        | Some eid -> evm.QueueEvent (Event_Action_Movement(eid,d))
+    member private this.HasRequiredComponents (cts:'T[]) =
+        match _entityID with
+        | None -> false
+        | Some eid -> enm.EntityHasAllComponents cts eid
+    
+    member private this.HandleAction (requiredCTS:'T[]) event =
+        match this.HasRequiredComponents requiredCTS with
+        | false -> ()
+        | true -> event
 
     member private this.onKeyPressed k = 
         match k with 
-        | ConsoleKey.UpArrow -> this.keyPressed_Movement North 
-        | ConsoleKey.DownArrow -> this.keyPressed_Movement South
-        | ConsoleKey.LeftArrow -> this.keyPressed_Movement West 
-        | ConsoleKey.RightArrow -> this.keyPressed_Movement East
-        | ConsoleKey.E -> this.keyPressed_Eat
+        | ConsoleKey.UpArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (Event_Action_Movement(_entityID.Value,North)))
+        | ConsoleKey.DownArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (Event_Action_Movement(_entityID.Value,South)))
+        | ConsoleKey.LeftArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (Event_Action_Movement(_entityID.Value,West)))
+        | ConsoleKey.RightArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (Event_Action_Movement(_entityID.Value,East)))
+        | ConsoleKey.E -> this.HandleAction [|typeof<EatingComponent>|] (evm.QueueEvent(Event_Action_Eat(_entityID.Value)))
         | _ -> ()  
 
-        while Console.KeyAvailable do //Might helpclear double movement keys entered in one turn
+        while Console.KeyAvailable do //Might help clear double movement keys entered in one turn
             Console.ReadKey(true).Key |> ignore
-            
+        GameAction
+        
     member this.SetEntityID eid = _entityID <- eid
 
     member this.AwaitKeyboardInput =
         while not Console.KeyAvailable do
             System.Threading.Thread.Sleep 1
 
-        match Console.ReadKey(true).Key with
-        | ConsoleKey.Escape -> false
-        | ConsoleKey.F12 -> this.DisplayGameEvents; true
-        | k -> this.onKeyPressed k; true
-
-    member private this.DisplayGameEvents =
+        let k = Console.ReadKey(true)
+        match k.Key with
+        | ConsoleKey.Escape -> ExitGame
+        | ConsoleKey.F12 -> this.DisplayGameEvents (k.Modifiers = ConsoleModifiers.Shift)
+        | k -> this.onKeyPressed k
+               
+    member private this.DisplayGameEvents (shift:bool) =
         let printRes (res:Result<string option,string>) =
             match res with
-            | Error s -> sprintf "Err (%s):" s
+            | Ok o -> "Ok "
+            | Error s -> "Err"
+        let printResString (res:Result<string option,string>) =
+            match res with
+            | Error s -> sprintf "/ %s" s
             | Ok o -> match o with
-                      | None -> "Ok  :"
-                      | Some s -> sprintf "Ok  (%s):" s
+                      | None -> ""
+                      | Some s -> sprintf "/ %s" s
         let printGER ((age,res):GameEventResult) = 
-            printfn "%s: %s" (printRes res) age.Print
-        fman.GameEventsAll 2u |> Array.iter (fun ger -> printGER ger)
+            printfn "%s: %s %s" (printRes res) age.Print (printResString res)
+        let start = if shift then 0u else 2u
+        fman.GameEventsAll start |> Array.iter (fun ger -> printGER ger)
+        InfoOnly
+
+

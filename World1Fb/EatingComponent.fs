@@ -7,9 +7,9 @@ open System
 
 
 type EatingComponent(eid:uint32, foods:FoodTypes[], quantity:int, quantityMax:int, quantityPerAction:int, calories:int, caloriesPerDay:int, caloricCheckOffset:int) = 
-    inherit AbstractComponent(eid,Comp_Eating)
+    inherit AbstractComponent(eid,Component_Eating)
     
-    static member Type = Comp_Eating
+    static member Type = Component_Eating
     static member CaloricCheckFrequency = roundsPerHour * 2
 
     member _.CaloricCheckOffset = caloricCheckOffset

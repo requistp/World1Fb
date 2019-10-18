@@ -22,13 +22,8 @@ type EntityManager() =
     member _.TryGet eid = entDict.TryGet eid
     member _.TryGetComponent<'T> eid = entDict.TryGetComponent<'T> eid
 
-    member this.EntityHasAllComponents (cts:ComponentTypes[]) (eid:uint32) =
-        cts |> Array.forall (fun ct -> entDict.Entities.Item eid |> Array.exists (fun ec -> ec.ComponentType = ct))
-    member this.TryGetComponentForEntities<'T> (eids:uint32[]) = 
-        eids
-        |> Array.Parallel.map (fun eid -> entDict.TryGetComponent<'T> eid)
-        |> Array.filter (fun aco -> aco.IsSome)
-        |> Array.Parallel.map (fun aco -> aco.Value)
+    member this.EntityHasAllComponents (cts:'T[]) (eid:uint32) =
+        cts |> Array.forall (fun ct -> entDict.Entities.Item eid |> Array.exists (fun ec -> ec.GetType() = ct))
 
     member this.Initialize =
         ()

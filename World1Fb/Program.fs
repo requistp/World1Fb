@@ -17,8 +17,9 @@ let g = new Game(RenderFrame)
 
 let startingEntities = 
     MakeMap g.EntityManager
-    |> Array.append (MakeGrasses g.EntityManager 3)
-    |> Array.append (MakeRabbits g.EntityManager 1)
+    |> Array.append (MakeGrasses g.EntityManager 5)
+    |> Array.append (MakeRabbits g.EntityManager 3)
+    |> Array.rev 
 
 let ss =
     [|

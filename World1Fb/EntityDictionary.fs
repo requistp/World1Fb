@@ -35,6 +35,11 @@ type AbstractEntityDictionary() =
         | Some cts -> match cts |> Array.filter (fun c -> c.GetType() = typeof<'T>) with
                       | [||] -> None
                       | l -> Some (l.[0] :?> 'T)
+    member this.TryGetComponentForEntities<'T> (eids:uint32[]) = 
+        eids
+        |> Array.Parallel.map (fun eid -> this.TryGetComponent<'T> eid)
+        |> Array.filter (fun aco -> aco.IsSome)
+        |> Array.Parallel.map (fun aco -> aco.Value)
 
     member internal this.CreateEntity (cts:AbstractComponent[]) : Result<string option,string> = 
         match _entities.ContainsKey(cts.[0].EntityID) with

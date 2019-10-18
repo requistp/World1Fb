@@ -3,7 +3,7 @@ open AbstractComponent
 
 
 type ControllerComponent(eid:uint32) = 
-    inherit AbstractComponent(eid,Comp_Controller)
+    inherit AbstractComponent(eid,Component_Controller)
 
-    static member Type = Comp_Controller    
-    
+    static member Type = Component_Controller    
+

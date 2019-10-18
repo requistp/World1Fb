@@ -20,11 +20,10 @@ type AbstractGameEvent(et:GameEventTypes) =
     abstract member Print : string
     default this.Print = et.ToString()
 
-type Event_Action_Eat(eaterID:uint32, eateeID:uint32) =
+type Event_Action_Eat(eid:uint32) =
     inherit AbstractGameEvent(Action_Eat)
-    member _.EaterID = eaterID
-    member _.EateeID = eateeID
-    override this.Print = sprintf "%s - Eater:%i. Eatee:%i" (this.GameEventType.ToString()) eaterID eateeID
+    member _.EntityID = eid
+    override this.Print = sprintf "%s - Entity:%i" (this.GameEventType.ToString()) eid
 
 type Event_Action_Movement(eid:uint32, direction:MovementDirection) =
     inherit AbstractGameEvent(Action_Movement)

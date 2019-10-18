@@ -4,6 +4,7 @@ open CalendarTimings
 open EatingComponent
 open EntityDictionary
 open FoodComponent
+open FormComponent
 open GameEvents
 open GameManager
 open System
@@ -28,16 +29,29 @@ type EatingSystem(game:Game, isActive:bool) =
     member private this.onEat (next:NextEntityDictionary) (ge:AbstractGameEvent) =
         let e = ge :?> Event_Action_Eat
         
-        let eatc = game.EntityManager.GetComponent<EatingComponent> e.EaterID
-        let foodc = game.EntityManager.GetComponent<FoodComponent> e.EateeID
-        let quantity = Math.Clamp(eatc.QuantityPerAction, 0, Math.Min(foodc.Quantity,eatc.QuantityRemaining)) // Clamp by how much food is left and how much stomach space is left
-        let calories = quantity * foodc.FoodType.Calories
-        let result = sprintf "Quantity:%i. Calories:%i" quantity calories
-        
-        match quantity with
-        | 0 -> Error "EatingSystem.onEat: No food remaining or stomach is full"
-        | _ -> game.EventManager.QueueEvent(Event_Eaten(eatc.EntityID, foodc.EntityID, quantity))
-               next.ReplaceComponent (eatc.Update (eatc.Quantity+quantity) (eatc.Calories+calories)) (Some result)
+        let eatc = game.EntityManager.GetComponent<EatingComponent> e.EntityID
+        let formc = game.EntityManager.GetComponent<FormComponent> e.EntityID
+
+        let foodsAtLocation = 
+            next.EntitiesAtLocation formc.Location // Food here
+            |> Array.filter (fun eid -> eid <> e.EntityID) // Not me
+            |> next.TryGetComponentForEntities<FoodComponent>
+            |> Array.filter (fun f -> eatc.Foods |> Array.exists (fun ft -> ft = f.FoodType)) //Types I can eat
+            |> Array.filter (fun f -> f.Quantity > 0) // Food remaining
+            |> Array.sortByDescending (fun x -> x.FoodType.Calories) // Highest caloric food first
+
+        let eatIt (f:FoodComponent) =
+            let quantity = Math.Clamp(eatc.QuantityPerAction, 0, Math.Min(f.Quantity,eatc.QuantityRemaining)) // Clamp by how much food is left and how much stomach space is left
+            let calories = quantity * f.FoodType.Calories
+            let result = sprintf "EateeID: %i. Quantity:%i. Calories:%i" (f.EntityID) quantity calories
+            match quantity with
+            | 0 -> Error "Stomach is full"
+            | _ -> game.EventManager.QueueEvent(Event_Eaten(eatc.EntityID, f.EntityID, quantity))
+                   next.ReplaceComponent (eatc.Update (eatc.Quantity+quantity) (eatc.Calories+calories)) (Some result)
+
+        match foodsAtLocation with
+        | [||] -> Error "No food at location"
+        | fs -> eatIt fs.[0]
 
     member private this.UpdateMetabolism r =
         game.EntityManager.EntitiesWithComponent EatingComponent.Type
