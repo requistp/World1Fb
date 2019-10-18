@@ -37,7 +37,7 @@ let private RenderAll (enm:EntityManager) =
 let RenderFrame (enm:EntityManager) (fc:int) (fn:uint32) =
     System.Console.CursorVisible <- false 
 
-    //RenderAll enm
+    RenderAll enm
 
     System.Console.SetCursorPosition(MapWidth+1,MapHeight)
     System.Console.Write(sprintf "Frame count:%i - #:%i\n" fc fn)

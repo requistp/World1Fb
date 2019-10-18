@@ -4,10 +4,10 @@ open MovementComponent
 
 type GameEventTypes =
     | Action_Eat
-    | BurnCalories
-    | Eaten
     | Action_Movement
     | CreateEntity
+    | Eaten
+    | Metabolize
     | Movement
 
 [<AbstractClass>]
@@ -24,10 +24,6 @@ type Event_Action_Movement(eid:uint32, direction:MovementDirection) =
     member _.Direction = direction
     member _.EntityID = eid
 
-type Event_BurnCalories(eid:uint32) =
-    inherit AbstractGameEvent(BurnCalories)
-    member _.EntityID = eid           
-
 type Event_CreateEntity(cts:AbstractComponent[]) =
     inherit AbstractGameEvent(CreateEntity)
     member _.Components = cts         
@@ -37,6 +33,10 @@ type Event_Eaten(eaterID:uint32, eateeID:uint32, quantity:int) =
     member _.EaterID = eaterID
     member _.EateeID = eateeID
     member _.Quantity = quantity    
+
+type Event_Metabolize(eid:uint32) =
+    inherit AbstractGameEvent(Metabolize)
+    member _.EntityID = eid           
 
 type Event_Movement(eid:uint32, direction:MovementDirection) =
     inherit AbstractGameEvent(Movement)
