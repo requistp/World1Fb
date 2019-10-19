@@ -22,13 +22,13 @@ type InputHandler(evm:EventManager, enm:EntityManager, fman:FrameManager, sysm:S
 
     member this.EntityID = _entityID
 
-    member private this.HasRequiredComponents (cts:'T[]) =
+    member private this.HaveEntityAndRequiredComponents (cts:'T[]) =
         match _entityID with
         | None -> false
         | Some eid -> enm.EntityHasAllComponents cts eid
     
     member private this.HandleAction (requiredCTS:'T[]) event =
-        match this.HasRequiredComponents requiredCTS with
+        match this.HaveEntityAndRequiredComponents requiredCTS with
         | false -> ()
         | true -> event
 
@@ -54,10 +54,10 @@ type InputHandler(evm:EventManager, enm:EntityManager, fman:FrameManager, sysm:S
         let k = Console.ReadKey(true)
         match k.Key with
         | ConsoleKey.Escape -> ExitGame
-        | ConsoleKey.F12 -> this.DisplayGameEvents (k.Modifiers = ConsoleModifiers.Shift)
+        | ConsoleKey.F12 -> this.DisplayGameEvents (k.Modifiers = ConsoleModifiers.Shift) (k.Modifiers = ConsoleModifiers.Control)
         | k -> this.onKeyPressed k
                
-    member private this.DisplayGameEvents (shift:bool) =
+    member private this.DisplayGameEvents (shift:bool) (ctrl:bool) =
         let printRes (res:Result<string option,string>) =
             match res with
             | Ok o -> "Ok "
@@ -70,8 +70,12 @@ type InputHandler(evm:EventManager, enm:EntityManager, fman:FrameManager, sysm:S
                       | Some s -> sprintf "/ %s" s
         let printGER ((age,res):GameEventResult) = 
             printfn "%s: %s %s" (printRes res) age.Print (printResString res)
-        let start = if shift then 0u else 2u
-        fman.GameEventsAll start |> Array.iter (fun ger -> printGER ger)
+        let lt = 
+            match (shift,ctrl) with
+            | true,_ -> All
+            | _,true -> AllExceptFirst
+            | _ -> Current
+        fman.GameEventsAll lt |> Array.iter (fun ger -> printGER ger)
         InfoOnly
 
 

@@ -20,6 +20,10 @@ type Frame =
             SetResult = Ok None
         }
 
+type GEListType = 
+    | All
+    | AllExceptFirst
+    | Current
 
 type FrameManager() =
     let mutable _frames = [| Frame.empty |]
@@ -38,7 +42,12 @@ type FrameManager() =
     
     member this.Count = _frames.Length
     member this.Frames = _frames
-    member this.GameEventsAll (start:uint32) = 
+    member this.GameEventsAll (lt:GEListType) = 
+        let start = 
+            match lt with
+            | All -> 0u
+            | AllExceptFirst -> 2u
+            | Current -> (uint32 (_frames.Length-1))
         _frames 
         |> Array.filter (fun f -> f.Number >= start)
         |> Array.sortBy (fun f -> f.Number)

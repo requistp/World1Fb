@@ -9,6 +9,7 @@ open FoodComponent
 open FrameManager
 open GameEvents
 open InputHandler
+open PlantGrowthComponent
 open SystemManager
 
 
@@ -37,6 +38,11 @@ type Game(renderer:EntityManager->int->uint32->unit) =
             printfn "Eater Quantity:%i     " e.Quantity
             printfn "Calories:%i    " e.Calories
 
+    member private this.PrintPlant =
+        let eid = (entityMan.EntitiesWithComponent PlantGrowthComponent.Type).[0]
+        let e = entityMan.GetComponent<FoodComponent> eid
+        printfn "Plant Quantity:%i     " e.Quantity
+
     member private this.setInitialForms (initialForms:AbstractComponent[][]) = 
         initialForms 
         |> Array.iter (fun cts -> eventMan.QueueEvent (Event_CreateEntity(cts))) // Can't Parallel
@@ -48,6 +54,7 @@ type Game(renderer:EntityManager->int->uint32->unit) =
         let f = frameMan.AddFrame entityMan.Entities entityMan.MaxEntityID geResults setResult
         renderer entityMan frameMan.Count f.Number
         this.PrintController
+        this.PrintPlant
 
     member this.Start (ss:AbstractSystem[]) (initialForms:AbstractComponent[][]) = 
         entityMan.Initialize

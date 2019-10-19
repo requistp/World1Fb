@@ -7,6 +7,7 @@ type ComponentTypes =
     | Component_Form
     | Component_Controller
     | Component_Movement
+    | Component_PlantGrowth
     | Component_Terrain
 
 
@@ -14,5 +15,4 @@ type ComponentTypes =
 type AbstractComponent(eid:uint32, componentType:ComponentTypes) =
     member this.ComponentType = componentType
     member this.EntityID = eid
-
-
+  

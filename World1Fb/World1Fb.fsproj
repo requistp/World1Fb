@@ -15,6 +15,7 @@
     <Compile Include="EatingComponent.fs" />
     <Compile Include="FormComponent.fs" />
     <Compile Include="MovementComponent.fs" />
+    <Compile Include="PlantGrowthComponent.fs" />
     <Compile Include="TerrainComponent.fs" />
     <Compile Include="GameEvents.fs" />
     <Compile Include="EntityDictionary.fs" />
@@ -30,6 +31,7 @@
     <Compile Include="FormSystem.fs" />
     <Compile Include="KillSystem.fs" />
     <Compile Include="MovementSystem.fs" />
+    <Compile Include="PlantGrowthSystem.fs" />
     <Compile Include="TerrainSystem.fs" />
     <Compile Include="Renderer.fs" />
     <Compile Include="BuildNewWorld.fs" />

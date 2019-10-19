@@ -11,6 +11,7 @@ type GameEventTypes =
     | Kill_AllEaten
     | Metabolize
     | Movement
+    | PlantRegrowth
     | Starving
 
 [<AbstractClass>]
@@ -64,6 +65,11 @@ type Event_Movement(eid:uint32, direction:MovementDirection) =
     member _.EntityID = eid
     override this.Print = sprintf "%s - Entity:%i. Direction:%s" (this.GameEventType.ToString()) eid (direction.ToString())
     
+type Event_PlantRegrowth(eid:uint32) =
+    inherit AbstractGameEvent(PlantRegrowth)
+    member _.EntityID = eid
+    override this.Print = sprintf "%s - Entity:%i" (this.GameEventType.ToString()) eid
+
 type Event_Starving(eid:uint32) =
     inherit AbstractGameEvent(Starving)
     member _.EntityID = eid           

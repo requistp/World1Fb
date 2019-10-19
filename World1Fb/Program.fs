@@ -9,6 +9,7 @@ open GameManager
 open LocationTypes
 open KillSystem
 open MovementSystem
+open PlantGrowthSystem
 open Renderer
 open SystemManager
 open TerrainSystem
@@ -17,8 +18,8 @@ let g = new Game(RenderFrame)
 
 let startingEntities = 
     MakeMap g.EntityManager
-    |> Array.append (MakeGrasses g.EntityManager 5)
-    |> Array.append (MakeRabbits g.EntityManager 3)
+    |> Array.append (MakeGrasses g.EntityManager 1)
+    |> Array.append (MakeRabbits g.EntityManager 1)
     |> Array.rev 
 
 let ss =
@@ -28,6 +29,7 @@ let ss =
         FormSystem(g, true) :> AbstractSystem
         KillSystem(g, true) :> AbstractSystem
         MovementSystem(g, true) :> AbstractSystem
+        PlantGrowthSystem(g, true) :> AbstractSystem
         TerrainSystem(g, true) :> AbstractSystem
     |]
 
