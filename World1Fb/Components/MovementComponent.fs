@@ -27,9 +27,10 @@ type MovementDirection =
 
 type MovementComponent(eid:uint32, movesPerTurn:int) =
     inherit AbstractComponent(eid,Component_Movement)
-
     static member Type = Component_Movement
 
     member _.MovesPerTurn = movesPerTurn
 
 
+    override this.Copy neweid = 
+        MovementComponent(neweid, movesPerTurn) :> AbstractComponent

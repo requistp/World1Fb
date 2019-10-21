@@ -12,6 +12,7 @@ type GameEventTypes =
     | Metabolize
     | Movement
     | PlantRegrowth
+    | PlantReproduce
     | ScheduleEvent
     | Starving
 

@@ -5,7 +5,6 @@ open LocationTypes
 
 type FormComponent(eid:uint32, isPassable:bool, name:string, symbol:char, location:LocationDataInt) = 
     inherit AbstractComponent(eid,Component_Form)
-
     static member Type = Component_Form
 
     member _.IsPassable = isPassable
@@ -13,3 +12,5 @@ type FormComponent(eid:uint32, isPassable:bool, name:string, symbol:char, locati
     member _.Symbol = symbol
     member _.Location = location
 
+    override this.Copy neweid = 
+        FormComponent(neweid, isPassable, name, symbol, location) :> AbstractComponent

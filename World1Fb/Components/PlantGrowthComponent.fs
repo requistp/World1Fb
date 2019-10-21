@@ -2,7 +2,7 @@
 open AbstractComponent
 open CalendarTimings
 
-type PlantGrowthComponent(eid:uint32, regrowRate:float, reproductionLast:uint32, reproductionRate:int, reproductionRange:int) = 
+type PlantGrowthComponent(eid:uint32, regrowRate:float, reproductionLast:uint32, reproductionRate:float, reproductionRange:int) = 
     inherit AbstractComponent(eid,Component_PlantGrowth)
     static member Type = Component_PlantGrowth
 
@@ -14,7 +14,10 @@ type PlantGrowthComponent(eid:uint32, regrowRate:float, reproductionLast:uint32,
     member this.Update (reproducedLast:uint32) =
         PlantGrowthComponent(eid, regrowRate, reproducedLast, reproductionRate, reproductionRange)
 
-    new (eid:uint32, regrowRate:float, reproductionFrequency:int, reproductionRange:int) =
-        PlantGrowthComponent(eid, regrowRate, 0u, reproductionFrequency, reproductionRange) 
+    new (eid:uint32, regrowRate:float, reproductionRate:float, reproductionRange:int) =
+        PlantGrowthComponent(eid, regrowRate, 0u, reproductionRate, reproductionRange) 
 
+    
+    override this.Copy neweid = 
+        PlantGrowthComponent(neweid, regrowRate, reproductionLast, reproductionRate, reproductionRange) :> AbstractComponent
 

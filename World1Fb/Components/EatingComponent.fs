@@ -27,3 +27,5 @@ type EatingComponent(eid:uint32, foods:FoodTypes[], quantity:int, quantityMax:in
         EatingComponent(eid, foods, quantityMax/2, quantityMax, quantityPerAction, caloriesPerDay/2, caloriesPerDay)
 
 
+    override this.Copy neweid = 
+        EatingComponent(neweid, foods, quantity, quantityMax, quantityPerAction, calories, caloriesPerDay) :> AbstractComponent

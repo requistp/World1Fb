@@ -17,9 +17,9 @@
     <Compile Include="Components\MovementComponent.fs" />
     <Compile Include="Components\PlantGrowthComponent.fs" />
     <Compile Include="Components\TerrainComponent.fs" />
-    <Compile Include="GameEvents\GameEvents.fs" />
     <Compile Include="Managers\EntityDictionary.fs" />
     <Compile Include="Managers\EntityManager.fs" />
+    <Compile Include="Managers\GameEvents.fs" />
     <Compile Include="Managers\EventManager.fs" />
     <Compile Include="Managers\AbstractSystem.fs" />
     <Compile Include="Managers\SystemManager.fs" />

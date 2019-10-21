@@ -16,3 +16,5 @@ type AbstractComponent(eid:uint32, componentType:ComponentTypes) =
     member this.ComponentType = componentType
     member this.EntityID = eid
 
+    abstract member Copy : uint32 -> AbstractComponent
+

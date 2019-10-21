@@ -41,8 +41,8 @@ let ExecuteTiming (frequency:int) (offset:int) (round:int) =
 let TimingOffset (max:int) = random.Next(0, max-1)
 
 let MetabolismFrequency = roundsPerHour * 2
-let PlantGrowthFrequency = 10 //roundsPerDay // If I change this, I need to change the regrowRate because 100% of that is applied per this update
-let PlantReproductionFrequency = roundsPerMonth // If I change this, I need to change the reproductionRate because 100% of that is applied per this update
+let PlantGrowthFrequency = roundsPerDay // If I change this, I need to change the regrowRate because 100% of that is applied per this update
+let PlantReproductionFrequency = 10 // roundsPerMonth // If I change this, I need to change the reproductionRate because 100% of that is applied per this update
 
 
 

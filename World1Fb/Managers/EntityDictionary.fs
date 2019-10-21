@@ -12,6 +12,8 @@ type AbstractEntityDictionary() =
     let mutable _locDict = Map.empty<LocationDataInt,uint32[]>
 
     member this.Components = _compDict
+    member this.Copy (eid:uint32) (neweid:uint32) =
+        _entities.Item(eid) |> Array.Parallel.map (fun ct -> ct.Copy neweid)
     member this.Entities = _entities
     member this.EntitiesAtLocation (l:LocationDataInt) = 
         match _locDict.ContainsKey(l) with
