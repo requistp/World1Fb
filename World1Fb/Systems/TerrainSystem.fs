@@ -3,7 +3,7 @@ open AbstractSystem
 open CommonGenericFunctions
 open EntityManager
 open EventManager
-open GameEvents
+open EventTypes
 open GameManager
 open LocationTypes
 open TerrainComponent

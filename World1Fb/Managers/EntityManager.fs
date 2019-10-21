@@ -9,6 +9,7 @@ type EntityManager() =
     let entDict = new EntityDictionary()
 
     member _.Components = entDict.Components
+    member _.Copy eid neweid = entDict.Copy eid neweid
     member _.Entities = entDict.Entities
     member _.EntitiesAtLocation l = entDict.EntitiesAtLocation l
     member _.EntitiesWithComponent ct = entDict.EntitiesWithComponent ct

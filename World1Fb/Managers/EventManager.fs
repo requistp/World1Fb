@@ -2,7 +2,7 @@
 open CommonGenericFunctions
 open EntityDictionary
 open EntityManager
-open GameEvents
+open EventTypes
 
 
 type GameEventCallback = NextEntityDictionary -> EventData_Generic -> Result<string option,string>

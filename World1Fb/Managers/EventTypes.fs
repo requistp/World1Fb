@@ -1,4 +1,4 @@
-﻿module GameEvents
+﻿module EventTypes
 open AbstractComponent
 open MovementComponent
 

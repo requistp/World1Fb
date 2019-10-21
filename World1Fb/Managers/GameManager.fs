@@ -7,13 +7,13 @@ open EventManager
 open EatingComponent
 open FoodComponent
 open FrameManager
-open GameEvents
+open EventTypes
 open InputHandler
 open PlantGrowthComponent
 open SystemManager
 
 
-type Game(renderer:EntityManager->int->uint32->unit) =
+type Game(renderer:EntityManager->uint32->unit) =
     let frameMan = new FrameManager()
     let entityMan = new EntityManager()
     let eventMan = new EventManager(entityMan)
@@ -24,10 +24,10 @@ type Game(renderer:EntityManager->int->uint32->unit) =
     member this.EntityManager = entityMan
     member this.FrameManager = frameMan
     member this.SystemManager = systemMan
-    member this.Round = (uint32 frameMan.Count - 1u)
+    member this.Round = (uint32 frameMan.Count) // - 1u)
 
     member private this.assignController =
-        match ControllerComponent.Type |> entityMan.EntitiesWithComponent with
+        match Component_Controller |> entityMan.EntitiesWithComponent with
         | [||] -> None
         | l -> Some l.[0]
 
@@ -40,7 +40,7 @@ type Game(renderer:EntityManager->int->uint32->unit) =
             printfn "Calories:%i    " e.Calories
 
     member private this.PrintPlant =
-        let eids = (entityMan.EntitiesWithComponent PlantGrowthComponent.Type)
+        let eids = (entityMan.EntitiesWithComponent Component_PlantGrowth)
         match eids with 
         | [||] -> printfn "Plant Quantity: no plants"
         | _ ->
@@ -56,7 +56,7 @@ type Game(renderer:EntityManager->int->uint32->unit) =
         let geResults = eventMan.ProcessEvents
         let setResult = entityMan.SetToNext
         let f = frameMan.AddFrame entityMan.Entities entityMan.MaxEntityID geResults setResult
-        renderer entityMan frameMan.Count f.Number
+        renderer entityMan this.Round
         this.PrintController
         this.PrintPlant
 

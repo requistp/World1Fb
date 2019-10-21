@@ -20,7 +20,6 @@ type TerrainType =
 
 type TerrainComponent(eid:uint32, terrainType:TerrainType) =
     inherit AbstractComponent(eid,Component_Terrain)
-    static member Type = Component_Terrain
 
     member _.Terrain = terrainType
 

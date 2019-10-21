@@ -1,11 +1,12 @@
 ﻿module EatingSystem
+open AbstractComponent
 open AbstractSystem
 open CalendarTimings
 open EatingComponent
 open EntityDictionary
 open FoodComponent
 open FormComponent
-open GameEvents
+open EventTypes
 open GameManager
 open System
 
@@ -15,7 +16,7 @@ type EatingSystem(game:Game, isActive:bool) =
 
     member private this.onCreateEntity (next:NextEntityDictionary) (ge:EventData_Generic) =
         let e = ge :?> EventData_CreateEntity 
-        match e.Components |> Array.filter (fun ct -> ct.ComponentType = EatingComponent.Type) with
+        match e.Components |> Array.filter (fun ct -> ct.ComponentType = Component_Eating) with
         | [||] -> Ok None
         | ct -> game.EventManager.QueueEvent (EventData_ScheduleEvent(e.EntityID, ScheduledEvent(EventData_Generic(Metabolize,e.EntityID),uint32 MetabolismFrequency)))
                 Ok None

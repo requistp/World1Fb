@@ -19,7 +19,7 @@ let MakeGrasses (enm:EntityManager) n =
         [| 
             FoodComponent(eid, Food_Carrot, 20) :> AbstractComponent
             FormComponent(eid, true, Food_Carrot.ToString(), Food_Grass.Symbol.Value, {X=x;Y=y;Z=0}) :> AbstractComponent
-            PlantGrowthComponent(eid, 0.1, CalendarTimings.roundsPerMinute, 3) :> AbstractComponent
+            PlantGrowthComponent(eid, 0.1, 0.5, 1) :> AbstractComponent
         |] 
     match n with 
     | 0 -> Array.empty<AbstractComponent[]>

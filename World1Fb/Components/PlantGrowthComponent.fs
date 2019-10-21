@@ -4,7 +4,6 @@ open CalendarTimings
 
 type PlantGrowthComponent(eid:uint32, regrowRate:float, reproductionLast:uint32, reproductionRate:float, reproductionRange:int) = 
     inherit AbstractComponent(eid,Component_PlantGrowth)
-    static member Type = Component_PlantGrowth
 
     member _.RegrowRate = regrowRate
     member _.ReproductionLast = reproductionLast

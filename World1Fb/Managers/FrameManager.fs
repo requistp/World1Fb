@@ -1,6 +1,6 @@
 ﻿module FrameManager
 open AbstractComponent
-open GameEvents
+open EventTypes
 
 
 type Frame = 

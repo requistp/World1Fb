@@ -4,7 +4,7 @@ open AbstractSystem
 open CalendarTimings
 open CommonGenericFunctions
 open EntityDictionary
-open GameEvents
+open EventTypes
 open GameManager
 
 
@@ -14,8 +14,10 @@ type ScheduleSystem(game:Game, isActive:bool) =
     let mutable _schedule = Map.empty<uint32,ScheduledEvent[]>
 
     member private this.AddEvent (se:ScheduledEvent) =
-        _schedule <- Map_AppendValueToArray _schedule (game.Round + uint32 (TimingOffset (int se.Frequency))) se
-        Ok None
+        let offset = uint32 (TimingOffset (int se.Frequency))
+        let result = sprintf "Scheduled for EntityID:%i. Freq:%i. Offset:%i. First Round:%i" se.EventData.EntityID se.Frequency offset (game.Round+offset)
+        _schedule <- Map_AppendValueToArray _schedule (game.Round+offset) se
+        Ok (Some result)
 
     member private this.onScheduleEvent (next:NextEntityDictionary) (ge:EventData_Generic) =
         this.AddEvent ((ge :?> EventData_ScheduleEvent).ScheduledEvent)

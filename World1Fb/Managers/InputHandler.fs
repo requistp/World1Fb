@@ -6,7 +6,7 @@ open EventManager
 open FoodComponent
 open FormComponent
 open FrameManager
-open GameEvents
+open EventTypes
 open LocationTypes
 open MovementComponent
 open System

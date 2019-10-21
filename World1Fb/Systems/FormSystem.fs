@@ -1,7 +1,7 @@
 ﻿module FormSystem
 open AbstractSystem
 open FormComponent
-open GameEvents
+open EventTypes
 open GameManager
 open LocationTypes
 open SystemManager

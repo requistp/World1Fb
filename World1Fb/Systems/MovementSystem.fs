@@ -2,7 +2,7 @@
 open AbstractSystem
 open EntityDictionary
 open FormComponent
-open GameEvents
+open EventTypes
 open GameManager
 
 

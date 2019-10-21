@@ -56,10 +56,11 @@ type AbstractEntityDictionary() =
         this.UpdateLocationDictionary
         Ok None
     member internal this.ReplaceComponent (ac:AbstractComponent) (changes:string option) : Result<string option,string> = 
-        _entities <- _entities.Item(ac.EntityID)
-                    |> Array.filter (fun c -> c.ComponentType <> ac.ComponentType) 
-                    |> Array.append [|ac|]
-                    |> Map_Replace _entities ac.EntityID
+        _entities <- 
+            _entities.Item(ac.EntityID)
+            |> Array.filter (fun c -> c.ComponentType <> ac.ComponentType) 
+            |> Array.append [|ac|]
+            |> Map_Replace _entities ac.EntityID
         //this.UpdateComponentDictionary Shouldn't have to update on a 1:1 component swap
         this.UpdateLocationDictionary
         Ok changes
@@ -70,13 +71,15 @@ type AbstractEntityDictionary() =
         Ok None
 
     member private this.UpdateComponentDictionary =
-        _compDict <- _entities 
-                     |> Map.fold (fun m k v -> v |> Array.fold (fun m c -> Map_AppendValueToArray m c.ComponentType k) m ) Map.empty<ComponentTypes,uint32[]>
+        _compDict <- 
+            _entities 
+            |> Map.fold (fun m k v -> v |> Array.fold (fun m c -> Map_AppendValueToArray m c.ComponentType k) m ) Map.empty<ComponentTypes,uint32[]>
     member private this.UpdateLocationDictionary =
-        _locDict <- FormComponent.Type
-                    |> this.EntitiesWithComponent 
-                    |> Array.Parallel.map (fun eid -> this.GetComponent<FormComponent> eid)
-                    |> Array.fold (fun m f -> Map_AppendValueToArray m f.Location f.EntityID) Map.empty<LocationDataInt,uint32[]>
+        _locDict <- 
+            Component_Form
+            |> this.EntitiesWithComponent 
+            |> Array.Parallel.map (fun eid -> this.GetComponent<FormComponent> eid)
+            |> Array.fold (fun m f -> Map_AppendValueToArray m f.Location f.EntityID) Map.empty<LocationDataInt,uint32[]>
 
 
 type NextEntityDictionary() =

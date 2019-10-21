@@ -2,7 +2,7 @@
 open AbstractSystem
 open EntityDictionary
 open EventManager
-open GameEvents
+open EventTypes
     
 
 type SystemManager(evm:EventManager) =

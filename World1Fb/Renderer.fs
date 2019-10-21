@@ -19,12 +19,12 @@ let private RenderAll (enm:EntityManager) =
         DrawAt f.Symbol f.Location
 
     let fs = 
-        FormComponent.Type
+        Component_Form
         |> enm.EntitiesWithComponent
         |> Array.map (fun eid -> enm.TryGetComponent<FormComponent> eid)
         |> Array.collect (fun fo -> fo |> Option.toArray)
     let ts =
-        TerrainComponent.Type
+        Component_Terrain
         |> enm.EntitiesWithComponent
         |> Array.map (fun eid -> enm.TryGetComponent<TerrainComponent> eid)
         |> Array.collect (fun fo -> fo |> Option.toArray)
@@ -34,11 +34,11 @@ let private RenderAll (enm:EntityManager) =
     
     
 
-let RenderFrame (enm:EntityManager) (fc:int) (fn:uint32) =
+let RenderFrame (enm:EntityManager) (round:uint32) =
     System.Console.CursorVisible <- false 
 
     RenderAll enm
 
     System.Console.SetCursorPosition(MapWidth+1,MapHeight)
-    System.Console.Write(sprintf "Frame count:%i - #:%i\n" fc fn)
+    System.Console.Write(sprintf "Round:%i\n" round)
 
