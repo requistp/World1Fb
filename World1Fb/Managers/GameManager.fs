@@ -22,8 +22,9 @@ type Game(renderer:EntityManager->int->uint32->unit) =
  
     member this.EventManager = eventMan
     member this.EntityManager = entityMan
+    member this.FrameManager = frameMan
     member this.SystemManager = systemMan
-    member this.Round = frameMan.Count - 1
+    member this.Round = (uint32 frameMan.Count - 1u)
 
     member private this.assignController =
         match ControllerComponent.Type |> entityMan.EntitiesWithComponent with
@@ -39,16 +40,19 @@ type Game(renderer:EntityManager->int->uint32->unit) =
             printfn "Calories:%i    " e.Calories
 
     member private this.PrintPlant =
-        let eid = (entityMan.EntitiesWithComponent PlantGrowthComponent.Type).[0]
-        let e = entityMan.GetComponent<FoodComponent> eid
-        printfn "Plant Quantity:%i     " e.Quantity
+        let eids = (entityMan.EntitiesWithComponent PlantGrowthComponent.Type)
+        match eids with 
+        | [||] -> printfn "Plant Quantity: no plants"
+        | _ ->
+            let e = entityMan.GetComponent<FoodComponent> eids.[0]
+            printfn "Plant Quantity:%i     " e.Quantity
 
     member private this.setInitialForms (initialForms:AbstractComponent[][]) = 
         initialForms 
-        |> Array.iter (fun cts -> eventMan.QueueEvent (Event_CreateEntity(cts))) // Can't Parallel
+        |> Array.iter (fun cts -> if cts.Length > 0 then eventMan.QueueEvent (EventData_CreateEntity(cts.[0].EntityID,cts))) // Can't Parallel
 
     member private this.gameLoop =
-        systemMan.UpdateSystems (this.Round)
+        systemMan.UpdateSystems
         let geResults = eventMan.ProcessEvents
         let setResult = entityMan.SetToNext
         let f = frameMan.AddFrame entityMan.Entities entityMan.MaxEntityID geResults setResult

@@ -11,6 +11,7 @@ open KillSystem
 open MovementSystem
 open PlantGrowthSystem
 open Renderer
+open ScheduleSystem
 open SystemManager
 open TerrainSystem
 
@@ -30,6 +31,7 @@ let ss =
         KillSystem(g, true) :> AbstractSystem
         MovementSystem(g, true) :> AbstractSystem
         PlantGrowthSystem(g, true) :> AbstractSystem
+        ScheduleSystem(g, true) :> AbstractSystem
         TerrainSystem(g, true) :> AbstractSystem
     |]
 

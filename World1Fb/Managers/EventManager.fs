@@ -5,9 +5,9 @@ open EntityManager
 open GameEvents
 
 
-type GameEventCallback = NextEntityDictionary -> AbstractGameEvent -> Result<string option,string>
+type GameEventCallback = NextEntityDictionary -> EventData_Generic -> Result<string option,string>
 
-type GameEventResult = (AbstractGameEvent * Result<string option,string>)
+type GameEventResult = (EventData_Generic * Result<string option,string>)
 
 type EventListenerDictionary() =
     let mutable _listeners = Map.empty:Map<GameEventTypes,GameEventCallback[]>
@@ -18,7 +18,7 @@ type EventListenerDictionary() =
 
 
 type PendingEventsDictionary() =
-    let mutable _pending = Array.empty<AbstractGameEvent>
+    let mutable _pending = Array.empty<EventData_Generic>
     
     member this.ProcessEvents (listeners:EventListenerDictionary) (next:NextEntityDictionary) = 
         let mutable processedEvents = Array.empty<GameEventResult>
@@ -35,7 +35,7 @@ type PendingEventsDictionary() =
         p
 
     member private this.processEventBatch (listeners:EventListenerDictionary) (next:NextEntityDictionary) = 
-        let processCallbacks (ge:AbstractGameEvent) = 
+        let processCallbacks (ge:EventData_Generic) = 
             match listeners.ContainsKey ge.GameEventType with 
             | false -> [| (ge, Error "No listeners") |]
             | true -> listeners.Item ge.GameEventType 

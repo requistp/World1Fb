@@ -8,7 +8,7 @@ type Frame =
         Number : uint32
         Entities : Map<uint32,AbstractComponent[]>
         MaxEntityID : uint32 
-        GEResults : (AbstractGameEvent * Result<string option,string>)[]
+        GEResults : (EventData_Generic * Result<string option,string>)[]
         SetResult : Result<string option,string>
     } with 
     static member empty = 
@@ -28,7 +28,7 @@ type GEListType =
 type FrameManager() =
     let mutable _frames = [| Frame.empty |]
 
-    member this.AddFrame (entities:Map<uint32,AbstractComponent[]>) (maxEntityID:uint32) (geResults:(AbstractGameEvent * Result<string option,string>)[]) (setResult:Result<string option,string>) =
+    member this.AddFrame (entities:Map<uint32,AbstractComponent[]>) (maxEntityID:uint32) (geResults:(EventData_Generic * Result<string option,string>)[]) (setResult:Result<string option,string>) =
         let f = 
             { 
                 Number = (uint32 _frames.Length)
@@ -51,5 +51,5 @@ type FrameManager() =
         _frames 
         |> Array.filter (fun f -> f.Number >= start)
         |> Array.sortBy (fun f -> f.Number)
-        |> Array.collect (fun f -> f.GEResults)
+        |> Array.collect (fun f -> [|(f.Number,f.GEResults)|])
 

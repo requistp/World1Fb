@@ -24,6 +24,7 @@ type EntityManager() =
 
     member this.EntityHasAllComponents (cts:'T[]) (eid:uint32) =
         cts |> Array.forall (fun ct -> entDict.Entities.Item eid |> Array.exists (fun ec -> ec.GetType() = ct))
+    member this.Exists (eid:uint32) = entDict.Entities.ContainsKey eid
 
     member this.Initialize =
         ()

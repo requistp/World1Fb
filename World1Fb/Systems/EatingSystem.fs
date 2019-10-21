@@ -13,28 +13,27 @@ open System
 type EatingSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
 
-    member private this.onMetabolize (next:NextEntityDictionary) (ge:AbstractGameEvent) =
-        let e = ge :?> Event_Metabolize
+    member private this.onCreateEntity (next:NextEntityDictionary) (ge:EventData_Generic) =
+        let e = ge :?> EventData_CreateEntity 
+        match e.Components |> Array.filter (fun ct -> ct.ComponentType = EatingComponent.Type) with
+        | [||] -> Ok None
+        | ct -> game.EventManager.QueueEvent (EventData_ScheduleEvent(e.EntityID, ScheduledEvent(EventData_Generic(Metabolize,e.EntityID),uint32 MetabolismFrequency)))
+                Ok None
 
-        let eatc = game.EntityManager.GetComponent<EatingComponent> e.EntityID
-        let quantity = convertAmountByFrequency eatc.QuantityMax Day EatingComponent.Frequency
-        let calories = convertAmountByFrequency eatc.CaloriesPerDay Day EatingComponent.Frequency
-        let starving = (eatc.Quantity-quantity < 0)
-        let result = sprintf "Quantity:-%i. Calories:-%i. Starving:%b" quantity calories starving
-
-        if starving then game.EventManager.QueueEvent (Event_Starving(e.EntityID))
-
-        next.ReplaceComponent (eatc.Update (eatc.Quantity-quantity) (eatc.Calories-calories)) (Some result)
+    member private this.onMetabolize (next:NextEntityDictionary) (ge:EventData_Generic) =
+        let eatc = game.EntityManager.GetComponent<EatingComponent> ge.EntityID
+        let starving = (eatc.Calories-eatc.CaloriesPerMetabolize < 0)
+        let result = sprintf "Quantity:-%i. Calories:-%i. Starving:%b" eatc.QuantityPerMetabolize eatc.CaloriesPerMetabolize starving
+        if starving then game.EventManager.QueueEvent (EventData_Generic(Starving,ge.EntityID))
+        next.ReplaceComponent (eatc.Update (eatc.Quantity-eatc.QuantityPerMetabolize) (eatc.Calories-eatc.CaloriesPerMetabolize)) (Some result)
         
-    member private this.onEat (next:NextEntityDictionary) (ge:AbstractGameEvent) =
-        let e = ge :?> Event_Action_Eat
-        
-        let eatc = game.EntityManager.GetComponent<EatingComponent> e.EntityID
-        let formc = game.EntityManager.GetComponent<FormComponent> e.EntityID
+    member private this.onEat (next:NextEntityDictionary) (ge:EventData_Generic) =
+        let eatc = game.EntityManager.GetComponent<EatingComponent> ge.EntityID
+        let formc = game.EntityManager.GetComponent<FormComponent> ge.EntityID
 
         let foodsAtLocation = 
             next.EntitiesAtLocation formc.Location // Food here
-            |> Array.filter (fun eid -> eid <> e.EntityID) // Not me
+            |> Array.filter (fun eid -> eid <> ge.EntityID) // Not me
             |> next.TryGetComponentForEntities<FoodComponent>
             |> Array.filter (fun f -> eatc.Foods |> Array.exists (fun ft -> ft = f.FoodType)) //Types I can eat
             |> Array.filter (fun f -> f.Quantity > 0) // Food remaining
@@ -46,23 +45,20 @@ type EatingSystem(game:Game, isActive:bool) =
             let result = sprintf "EateeID: %i. Quantity:%i. Calories:%i" (f.EntityID) quantity calories
             match quantity with
             | 0 -> Error "Stomach is full"
-            | _ -> game.EventManager.QueueEvent(Event_Eaten(eatc.EntityID, f.EntityID, quantity))
+            | _ -> game.EventManager.QueueEvent(EventData_Eaten(eatc.EntityID, f.EntityID, quantity))
                    next.ReplaceComponent (eatc.Update (eatc.Quantity+quantity) (eatc.Calories+calories)) (Some result)
 
         match foodsAtLocation with
         | [||] -> Error "No food at location"
         | fs -> eatIt fs.[0]
-
-    member private this.UpdateMetabolism r =
-        game.EntityManager.EntitiesWithComponent EatingComponent.Type
-        |> game.EntityManager.GetComponent<EatingComponent>
-        |> Array.filter (fun ec -> ec.Timer.Execute r)
-        |> Array.iter (fun ec -> game.EventManager.QueueEvent (Event_Metabolize(ec.EntityID)))
         
     override this.Initialize = 
         game.EventManager.RegisterListener Action_Eat this.onEat
+        game.EventManager.RegisterListener CreateEntity this.onCreateEntity
         game.EventManager.RegisterListener Metabolize this.onMetabolize
         base.SetToInitialized
 
-    override this.Update r = 
-        this.UpdateMetabolism r
+    override this.Update = 
+        ()
+
+

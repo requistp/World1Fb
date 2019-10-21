@@ -34,11 +34,11 @@ type InputHandler(evm:EventManager, enm:EntityManager, fman:FrameManager, sysm:S
 
     member private this.onKeyPressed k = 
         match k with 
-        | ConsoleKey.UpArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (Event_Action_Movement(_entityID.Value,North)))
-        | ConsoleKey.DownArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (Event_Action_Movement(_entityID.Value,South)))
-        | ConsoleKey.LeftArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (Event_Action_Movement(_entityID.Value,West)))
-        | ConsoleKey.RightArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (Event_Action_Movement(_entityID.Value,East)))
-        | ConsoleKey.E -> this.HandleAction [|typeof<EatingComponent>|] (evm.QueueEvent(Event_Action_Eat(_entityID.Value)))
+        | ConsoleKey.UpArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (EventData_Action_Movement(_entityID.Value,North)))
+        | ConsoleKey.DownArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (EventData_Action_Movement(_entityID.Value,South)))
+        | ConsoleKey.LeftArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (EventData_Action_Movement(_entityID.Value,West)))
+        | ConsoleKey.RightArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (EventData_Action_Movement(_entityID.Value,East)))
+        | ConsoleKey.E -> this.HandleAction [|typeof<EatingComponent>|] (evm.QueueEvent(EventData_Generic(Action_Eat,_entityID.Value)))
         | _ -> ()  
 
         while Console.KeyAvailable do //Might help clear double movement keys entered in one turn
@@ -68,14 +68,17 @@ type InputHandler(evm:EventManager, enm:EntityManager, fman:FrameManager, sysm:S
             | Ok o -> match o with
                       | None -> ""
                       | Some s -> sprintf "/ %s" s
-        let printGER ((age,res):GameEventResult) = 
-            printfn "%s: %s %s" (printRes res) age.Print (printResString res)
+        let printGER (n:uint32) ((age,res):GameEventResult) = 
+            printfn "%i|%s: %s %s" n (printRes res) age.ToString (printResString res)
         let lt = 
             match (shift,ctrl) with
             | true,_ -> All
             | _,true -> AllExceptFirst
             | _ -> Current
-        fman.GameEventsAll lt |> Array.iter (fun ger -> printGER ger)
+        
+        fman.GameEventsAll lt 
+        |> Array.iter (fun (n,gers) -> gers |> Array.iter (fun ger -> printGER n ger))
+        //|> Array.iter (fun (n,ger) -> printGER ger)
         InfoOnly
 
 

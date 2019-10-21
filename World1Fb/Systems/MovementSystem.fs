@@ -9,8 +9,8 @@ open GameManager
 type MovementSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
 
-    member private this.onMovementKeyPressed (next:NextEntityDictionary) (ge:AbstractGameEvent) : Result<string option,string> =
-        let m = ge :?> Event_Action_Movement
+    member private this.onMovementKeyPressed (next:NextEntityDictionary) (ge:EventData_Generic) : Result<string option,string> =
+        let m = ge :?> EventData_Action_Movement
 
         let form = game.EntityManager.GetComponent<FormComponent> m.EntityID
         let dest = m.Direction.AddToLocation form.Location

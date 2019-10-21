@@ -30,20 +30,19 @@ let convertRounds (r:int) (toFreq:FrequencyTypes) =
     | Month -> (float r) / (float roundsPerMonth)
     | Year -> (float r) / (float roundsPerYear)
 
-let convertAmountByFrequency (amountPerFreq:int) (frequnecyOfAmount:FrequencyTypes) (perIntervals:int) = 
-    int (Math.Round((float amountPerFreq) * convertRounds perIntervals frequnecyOfAmount, 0))
+let convertAmountByFrequency (amountPerFreq:int) (frequencyOfAmount:FrequencyTypes) (perIntervals:int) = 
+    int (Math.Round((float amountPerFreq) * convertRounds perIntervals frequencyOfAmount, 0))
    
 let ExecuteTiming (frequency:int) (offset:int) (round:int) = 
     match frequency with
     | 0 -> false
     | _ -> (round % frequency = offset)
-   
+
 let TimingOffset (max:int) = random.Next(0, max-1)
 
+let MetabolismFrequency = roundsPerHour * 2
+let PlantGrowthFrequency = 10 //roundsPerDay // If I change this, I need to change the regrowRate because 100% of that is applied per this update
+let PlantReproductionFrequency = roundsPerMonth // If I change this, I need to change the reproductionRate because 100% of that is applied per this update
 
-type ComponentExecutionTimer(frequency:int, offset:int) =
-    member _.Execute round = 
-        ExecuteTiming frequency offset round
 
-    new (frequency:int) =
-        ComponentExecutionTimer(frequency, TimingOffset frequency) 
+

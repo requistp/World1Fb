@@ -12,5 +12,5 @@ type AbstractSystem(isActive:bool) =
     abstract member Initialize : unit
     default this.Initialize = this.SetToInitialized
 
-    abstract member Update : int -> unit
-    default this.Update r = ()
+    abstract member Update : unit
+    default this.Update = ()

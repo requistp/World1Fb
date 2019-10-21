@@ -26,7 +26,6 @@ type AbstractEntityDictionary() =
     member this.GetComponent<'T> (eids:uint32[]) : 'T[] = 
         eids
         |> Array.map (fun e -> this.GetComponent<'T> e)
-
     member this.Locations = _locDict
     member this.TryGet eid =
         _entities.ContainsKey(eid) |> TrueSomeFalseNone (_entities.Item(eid))
@@ -103,7 +102,7 @@ type EntityDictionary() =
 
 
 
-    //member this.HasComponent<'T> (eid:uint32) : bool =
-    //    match this.TryGetComponent<'T> eid with
-    //    | None -> false
-    //    | Some _ -> true
+//member this.HasComponent<'T> (eid:uint32) : bool =
+//    match this.TryGetComponent<'T> eid with
+//    | None -> false
+//    | Some _ -> true
