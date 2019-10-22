@@ -12,15 +12,13 @@ open GameManager
 open TerrainComponent
 open LocationTypes
 
-
 type PlantGrowthSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
 
     member private this.onCreateEntity (next:NextEntityDictionary) (ge:EventData_Generic) =
         let e = ge :?> EventData_CreateEntity
-        
         match e.Components |> Array.filter (fun ct -> ct.ComponentType = Component_PlantGrowth) with
-        | [||] -> Ok None
+        | [||] -> Ok (Some "No PlantGrowthComponent")
         | ct -> let pgc = ct.[0] :?> PlantGrowthComponent
                 if pgc.RegrowRate > 0.0 then game.EventManager.QueueEvent (EventData_ScheduleEvent(e.EntityID, ScheduledEvent(EventData_Generic(PlantRegrowth,e.EntityID),uint32 PlantGrowthFrequency)))
                 if pgc.ReproductionRate > 0.0 then game.EventManager.QueueEvent (EventData_ScheduleEvent(e.EntityID, ScheduledEvent(EventData_Generic(PlantReproduce,e.EntityID),uint32 PlantReproductionFrequency)))
@@ -46,7 +44,12 @@ type PlantGrowthSystem(game:Game, isActive:bool) =
                         let terrainissuitable = pgc.GrowsInTerrain |> Array.exists (fun t -> (eids |> next.TryGetComponentForEntities<TerrainComponent>) |> Array.exists (fun t2 -> t2.Terrain = t))
                         match terrainissuitable with
                         | false -> Error "Cannot reproduce: terrain is not suitable"
-                        | _ -> Ok (newLocation,r)
+                        | true -> 
+                            let foodo = game.EntityManager.TryGetComponent<FoodComponent> ge.EntityID
+                            let pct = float foodo.Value.Quantity / float foodo.Value.QuantityMax
+                            match foodo.IsNone || pgc.ReproductionRequiredFoodQuantity < pct with
+                            | false -> Error (sprintf "Cannot reproduce: food component quantity below requirement (%f<%f)" pct pgc.ReproductionRequiredFoodQuantity)
+                            | true -> Ok (newLocation,r)
         let makePlant_AdjustComponents (ct:AbstractComponent) (l:LocationDataInt) =
             match ct.ComponentType with
             | Component_Food -> 
@@ -74,4 +77,4 @@ type PlantGrowthSystem(game:Game, isActive:bool) =
     override this.Update = 
         ()
 
-   
+

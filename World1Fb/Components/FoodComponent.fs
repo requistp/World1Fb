@@ -31,7 +31,7 @@ type FoodTypes =
 
 type FoodComponent(eid:uint32, foodType:FoodTypes, quantity:int, quantityMax:int) = 
     inherit AbstractComponent(eid,Component_Food)
-
+    
     member _.FoodType = foodType
     member _.Quantity = quantity
     member _.QuantityMax = quantityMax
@@ -42,9 +42,6 @@ type FoodComponent(eid:uint32, foodType:FoodTypes, quantity:int, quantityMax:int
             (if quantityUpdate.IsSome then quantityUpdate.Value else quantity),
             (if quantityMaxUpdate.IsSome then quantityMaxUpdate.Value else quantityMax)
             )
-
-    member this.FromPlantReproduction (neweid:uint32) (f:FoodComponent) = 
-        FoodComponent(neweid, f.FoodType, 1, f.QuantityMax)
 
     new (eid:uint32, foodType:FoodTypes, quantityMax:int) =
         FoodComponent(eid, foodType, quantityMax, quantityMax)

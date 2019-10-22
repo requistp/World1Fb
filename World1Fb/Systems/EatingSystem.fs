@@ -17,9 +17,9 @@ type EatingSystem(game:Game, isActive:bool) =
     member private this.onCreateEntity (next:NextEntityDictionary) (ge:EventData_Generic) =
         let e = ge :?> EventData_CreateEntity 
         match e.Components |> Array.filter (fun ct -> ct.ComponentType = Component_Eating) with
-        | [||] -> Ok None
+        | [||] -> Ok (Some "No EatingComponent")
         | ct -> game.EventManager.QueueEvent (EventData_ScheduleEvent(e.EntityID, ScheduledEvent(EventData_Generic(Metabolize,e.EntityID),uint32 MetabolismFrequency)))
-                Ok None
+                Ok (Some "Queued Metabolize to schedule")
 
     member private this.onMetabolize (next:NextEntityDictionary) (ge:EventData_Generic) =
         let eatc = game.EntityManager.GetComponent<EatingComponent> ge.EntityID

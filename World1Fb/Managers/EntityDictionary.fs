@@ -49,7 +49,7 @@ type AbstractEntityDictionary() =
         | false -> _entities <- _entities.Add(cts.[0].EntityID,cts)
                    this.UpdateComponentDictionary
                    this.UpdateLocationDictionary
-                   Ok None
+                   Ok (Some "Created in next dictionary")
     member internal this.RemoveEntity (eid:uint32) : Result<string option,string> =
         _entities <- _entities.Remove eid
         this.UpdateComponentDictionary
@@ -80,7 +80,7 @@ type AbstractEntityDictionary() =
             |> this.EntitiesWithComponent 
             |> Array.Parallel.map (fun eid -> this.GetComponent<FormComponent> eid)
             |> Array.fold (fun m f -> Map_AppendValueToArray m f.Location f.EntityID) Map.empty<LocationDataInt,uint32[]>
-
+    
 
 type NextEntityDictionary() =
     inherit AbstractEntityDictionary()

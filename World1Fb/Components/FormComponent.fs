@@ -11,9 +11,6 @@ type FormComponent(eid:uint32, isPassable:bool, name:string, symbol:char, locati
     member _.Symbol = symbol
     member _.Location = location
 
-    override this.Copy neweid = 
-        FormComponent(neweid, isPassable, name, symbol, location) :> AbstractComponent
-
     member this.Update (isPassableUpdate:bool option) (nameUpdate:string option) (symbolUpdate:char option) (locationUpdate:LocationDataInt option) =
         FormComponent(eid, 
             (if isPassableUpdate.IsSome then isPassableUpdate.Value else isPassable), 
@@ -21,5 +18,8 @@ type FormComponent(eid:uint32, isPassable:bool, name:string, symbol:char, locati
             (if symbolUpdate.IsSome then symbolUpdate.Value else symbol), 
             (if locationUpdate.IsSome then locationUpdate.Value else location)
             )
+
+    override this.Copy neweid = 
+        FormComponent(neweid, isPassable, name, symbol, location) :> AbstractComponent
 
 
