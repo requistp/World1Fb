@@ -15,8 +15,8 @@
     <Compile Include="Components\EatingComponent.fs" />
     <Compile Include="Components\FormComponent.fs" />
     <Compile Include="Components\MovementComponent.fs" />
-    <Compile Include="Components\PlantGrowthComponent.fs" />
     <Compile Include="Components\TerrainComponent.fs" />
+    <Compile Include="Components\PlantGrowthComponent.fs" />
     <Compile Include="Managers\EntityDictionary.fs" />
     <Compile Include="Managers\EntityManager.fs" />
     <Compile Include="Managers\EventTypes.fs" />

@@ -19,11 +19,11 @@ let MakeGrasses (enm:EntityManager) n =
         [| 
             FoodComponent(eid, Food_Carrot, 20) :> AbstractComponent
             FormComponent(eid, true, Food_Carrot.ToString(), Food_Grass.Symbol.Value, {X=x;Y=y;Z=0}) :> AbstractComponent
-            PlantGrowthComponent(eid, 0.1, 0.5, 1) :> AbstractComponent
+            PlantGrowthComponent(eid, [|Dirt|], 0.1, 0.25, 5) :> AbstractComponent
         |] 
     match n with 
     | 0 -> Array.empty<AbstractComponent[]>
-    | _ -> [1..n] |> List.toArray |> Array.map (fun i -> MakeGrass (random.Next(0,MapWidth-1)) (random.Next(0,MapHeight-1))) //Can't Parallel
+    | _ -> [1..n] |> List.toArray |> Array.map (fun i -> MakeGrass (random.Next(0,MapWidth)) (random.Next(0,MapHeight))) //Can't Parallel
     |> Array.rev
 
 let MakeMap (enm:EntityManager) = 
@@ -67,6 +67,6 @@ let MakeRabbits (enm:EntityManager) n =
         | true -> baseBunny |> Array.append cont
     match n with 
     | 0 -> Array.empty<AbstractComponent[]>
-    | _ -> [1..n] |> List.toArray |> Array.map (fun i -> MakeRabbit (random.Next(0,MapWidth-1)) (random.Next(0,MapHeight-1)) i) //Can't Parallel
+    | _ -> [1..n] |> List.toArray |> Array.map (fun i -> MakeRabbit (random.Next(0,MapWidth)) (random.Next(0,MapHeight)) i) //Can't Parallel
     |> Array.rev
 
