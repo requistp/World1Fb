@@ -18,3 +18,5 @@ type AbstractComponent(eid:uint32, componentType:ComponentTypes) =
 
     abstract member Copy : uint32 -> AbstractComponent
 
+    member this.Abstract = this :> AbstractComponent
+

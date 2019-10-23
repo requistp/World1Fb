@@ -24,4 +24,4 @@ type TerrainComponent(eid:uint32, terrainType:TerrainType) =
     member _.Terrain = terrainType
 
     override this.Copy neweid = 
-        TerrainComponent(neweid, terrainType) :> AbstractComponent
+        TerrainComponent(neweid, terrainType).Abstract

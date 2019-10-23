@@ -17,9 +17,9 @@ let MakeGrasses (enm:EntityManager) n =
     let MakeGrass x y =
         let eid = enm.NewEntityID
         [| 
-            FoodComponent(eid, Food_Carrot, 20) :> AbstractComponent
-            FormComponent(eid, true, Food_Carrot.ToString(), Food_Grass.Symbol.Value, {X=x;Y=y;Z=0}) :> AbstractComponent
-            PlantGrowthComponent(eid, [|Dirt|], 0.1, 0.25, 5, 0.75) :> AbstractComponent
+            FoodComponent(eid, Food_Carrot, 20).Abstract
+            FormComponent(eid, true, Food_Carrot.ToString(), Food_Grass.Symbol.Value, {X=x;Y=y;Z=0}).Abstract
+            PlantGrowthComponent(eid, [|Dirt|], 0.1, 0.25, 5, 0.75).Abstract
         |] 
     match n with 
     | 0 -> Array.empty<AbstractComponent[]>
@@ -34,8 +34,8 @@ let MakeMap (enm:EntityManager) =
                 | _ -> Dirt
         let mutable baseTerrain =
             [| 
-                FormComponent(eid, t.IsPassable, t.ToString(), t.Symbol, {X=x;Y=y;Z=0}) :> AbstractComponent
-                TerrainComponent(eid, t) :> AbstractComponent 
+                FormComponent(eid, t.IsPassable, t.ToString(), t.Symbol, {X=x;Y=y;Z=0}).Abstract
+                TerrainComponent(eid, t).Abstract 
             |] 
         // I left this mechanic in place because there will be some component that is appropriate to add to Terrain--like a burrow
         //match food.IsSome with
@@ -53,12 +53,12 @@ let MakeMap (enm:EntityManager) =
 let MakeRabbits (enm:EntityManager) n = 
     let MakeRabbit x y n = 
         let eid = enm.NewEntityID
-        let cont = [| ControllerComponent(eid) :> AbstractComponent |]
+        let cont = [| ControllerComponent(eid).Abstract  |]
         let baseBunny = 
             [|
-                EatingComponent(eid, [|Food_Carrot;Food_Grass|], 150, 1, 300) :> AbstractComponent
-                FormComponent(eid, true, "rabbit", 'r', {X=x;Y=y;Z=0}) :> AbstractComponent
-                MovementComponent(eid, 1) :> AbstractComponent
+                EatingComponent(eid, [|Food_Carrot;Food_Grass|], 150, 1, 300).Abstract
+                FormComponent(eid, true, "rabbit", 'r', {X=x;Y=y;Z=0}).Abstract
+                MovementComponent(eid, 1).Abstract
                 //sight
                 //health        
             |]

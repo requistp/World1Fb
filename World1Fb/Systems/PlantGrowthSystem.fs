@@ -53,9 +53,9 @@ type PlantGrowthSystem(game:Game, isActive:bool) =
         let makePlant_AdjustComponents (ct:AbstractComponent) (l:LocationDataInt) =
             match ct.ComponentType with
             | Component_Food -> 
-                (ct:?>FoodComponent).Update None (Some 1) None :> AbstractComponent
+                ((ct:?>FoodComponent).Update None (Some 1) None).Abstract
             | Component_Form -> 
-                (ct:?>FormComponent).Update None None None (Some l) :> AbstractComponent
+                ((ct:?>FormComponent).Update None None None (Some l)).Abstract
             | _ -> ct        
         let makePlant (l:LocationDataInt) (r:float) = 
             let neweid = next.NewEntityID

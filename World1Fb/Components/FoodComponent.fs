@@ -47,6 +47,6 @@ type FoodComponent(eid:uint32, foodType:FoodTypes, quantity:int, quantityMax:int
         FoodComponent(eid, foodType, quantityMax, quantityMax)
 
     override this.Copy neweid = 
-        FoodComponent(neweid, foodType, quantity, quantityMax) :> AbstractComponent
+        FoodComponent(neweid, foodType, quantity, quantityMax).Abstract
 
 

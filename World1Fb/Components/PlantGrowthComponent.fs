@@ -12,6 +12,6 @@ type PlantGrowthComponent(eid:uint32, growsInTerrain:TerrainType[], regrowRate:f
     member _.ReproductionRequiredFoodQuantity = reproductionRequiredFoodQuantity
     
     override this.Copy neweid = 
-        PlantGrowthComponent(neweid, growsInTerrain, regrowRate, reproductionRate, reproductionRange, reproductionRequiredFoodQuantity) :> AbstractComponent
+        PlantGrowthComponent(neweid, growsInTerrain, regrowRate, reproductionRate, reproductionRange, reproductionRequiredFoodQuantity).Abstract
     
 

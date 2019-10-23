@@ -14,3 +14,6 @@ type AbstractSystem(isActive:bool) =
 
     abstract member Update : unit
     default this.Update = ()
+
+    member this.Abstract = this :> AbstractSystem
+
