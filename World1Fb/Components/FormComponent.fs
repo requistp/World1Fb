@@ -3,7 +3,7 @@ open AbstractComponent
 open LocationTypes
 
 
-type FormComponent(eid:uint32, isPassable:bool, name:string, symbol:char, location:LocationDataInt) = 
+type FormComponent(eid:uint32, isPassable:bool, name:string option, symbol:char, location:LocationDataInt) = 
     inherit AbstractComponent(eid,Component_Form)
 
     member _.IsPassable = isPassable
@@ -14,7 +14,7 @@ type FormComponent(eid:uint32, isPassable:bool, name:string, symbol:char, locati
     member this.Update (isPassableUpdate:bool option) (nameUpdate:string option) (symbolUpdate:char option) (locationUpdate:LocationDataInt option) =
         FormComponent(eid, 
             (if isPassableUpdate.IsSome then isPassableUpdate.Value else isPassable), 
-            (if nameUpdate.IsSome then nameUpdate.Value else name), 
+            (if nameUpdate.IsSome then Some nameUpdate.Value else name), 
             (if symbolUpdate.IsSome then symbolUpdate.Value else symbol), 
             (if locationUpdate.IsSome then locationUpdate.Value else location)
             )

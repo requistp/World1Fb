@@ -1,6 +1,7 @@
 ﻿module MovementComponent
 open AbstractComponent
 open LocationTypes
+open System
 
 
 type MovementDirection =
@@ -22,7 +23,11 @@ type MovementDirection =
         match this with
         | _ -> 0
     member this.AddToLocation (l:LocationDataInt) =
-        { X = l.X + this.X_change; Y = l.Y + this.Y_change; Z = l.Z + this.Z_change}
+        { 
+            X = byte (int l.X + this.X_change)
+            Y = byte (int l.Y + this.Y_change)
+            Z = byte (int l.Z + this.Z_change) 
+        }
     
 
 type MovementComponent(eid:uint32, movesPerTurn:int) =

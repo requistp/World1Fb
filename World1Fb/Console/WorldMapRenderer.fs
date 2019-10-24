@@ -9,16 +9,16 @@ open TerrainComponent
 
 
 type WorldMapRenderer() =
-    let mutable _windowLocation = (0,0)
-    let viewSizeX = 40
-    let viewSizeY = 20
+    let mutable _windowLocation = (0uy,0uy)
+    let viewSizeX = 40uy
+    let viewSizeY = 20uy
     
     member this.MoveWindow (k:ConsoleKey) =
         match k with 
-        | ConsoleKey.UpArrow -> _windowLocation <- (fst _windowLocation, Math.Clamp(snd _windowLocation - 1, 0, MapHeight-viewSizeY))
-        | ConsoleKey.DownArrow -> _windowLocation <- (fst _windowLocation, Math.Clamp(snd _windowLocation + 1, 0, MapHeight-viewSizeY))
-        | ConsoleKey.LeftArrow -> _windowLocation <- (Math.Clamp(fst _windowLocation - 1, 0, MapWidth-viewSizeX), snd _windowLocation)
-        | ConsoleKey.RightArrow -> _windowLocation <- (Math.Clamp(fst _windowLocation + 1, 0, MapWidth-viewSizeX), snd _windowLocation)
+        | ConsoleKey.UpArrow -> _windowLocation <- (fst _windowLocation, Math.Clamp(snd _windowLocation - 1uy, 0uy, MapHeight-viewSizeY))
+        | ConsoleKey.DownArrow -> _windowLocation <- (fst _windowLocation, Math.Clamp(snd _windowLocation + 1uy, 0uy, MapHeight-viewSizeY))
+        | ConsoleKey.LeftArrow -> _windowLocation <- (Math.Clamp(fst _windowLocation - 1uy, 0uy, MapWidth-viewSizeX), snd _windowLocation)
+        | ConsoleKey.RightArrow -> _windowLocation <- (Math.Clamp(fst _windowLocation + 1uy, 0uy, MapWidth-viewSizeX), snd _windowLocation)
         | _ -> ()
 
     member this.Update (enm:EntityManager) = 
@@ -30,18 +30,18 @@ type WorldMapRenderer() =
         Console.Title <- "World Map"
         
         let rangeY = 
-            [|(snd _windowLocation)..(snd _windowLocation + viewSizeY - 1)|]
+            [|(snd _windowLocation)..(snd _windowLocation + viewSizeY - 1uy)|]
 
         let rangeX = 
-            [|(fst _windowLocation)..(fst _windowLocation + viewSizeX - 1)|]
+            [|(fst _windowLocation)..(fst _windowLocation + viewSizeX - 1uy)|]
 
         for y in rangeY do
             for x in rangeX do
                 let fs = 
-                    enm.EntitiesAtLocation { X = x; Y = y; Z = 0 } 
+                    enm.EntitiesAtLocation { X = x; Y = y; Z = 0uy } 
                     |> enm.TryGetComponentForEntities<FormComponent> 
                 let f = fs.[fs.Length-1]
-                System.Console.SetCursorPosition(x - fst _windowLocation, y - snd _windowLocation)
+                System.Console.SetCursorPosition(int (x - fst _windowLocation), int (y - snd _windowLocation))
                 System.Console.Write(f.Symbol)
 
 

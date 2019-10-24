@@ -37,6 +37,6 @@ let RenderFrame (enm:EntityManager) (round:uint32) =
 
     RenderAll enm
 
-    System.Console.SetCursorPosition(MapWidth+1,MapHeight)
+    System.Console.SetCursorPosition(int (MapWidth+1uy),int MapHeight)
     System.Console.Write(sprintf "Round:%i\n" round)
 

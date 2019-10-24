@@ -32,10 +32,10 @@ type EntityManager() =
 
     member this.ToDisplayString =
         let mutable s = ""
-        for y in [0..MapHeight-1] do
-            for x in [0..MapWidth-1] do
+        for y in [0uy..MapHeight-1uy] do
+            for x in [0uy..MapWidth-1uy] do
                 let fs = 
-                    entDict.EntitiesAtLocation { X = x; Y = y; Z = 0 } 
+                    entDict.EntitiesAtLocation { X = x; Y = y; Z = 0uy } 
                     |> entDict.TryGetComponentForEntities<FormComponent> 
                 let f = fs.[fs.Length-1]
                 s <- s + f.Symbol.ToString()

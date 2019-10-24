@@ -21,11 +21,13 @@ type PendingEventsDictionary() =
     let mutable _pending = Array.empty<EventData_Generic>
     
     member this.ProcessEvents (listeners:EventListenerDictionary) (next:NextEntityDictionary) = 
-        let mutable processedEvents = Array.empty<GameEventResult>
+        //let mutable processedEvents = Array.empty<GameEventResult>
+        //while (_pending.Length > 0) do
+        //    processedEvents <- Array.append processedEvents (this.processEventBatch listeners next)
+        //processedEvents
         while (_pending.Length > 0) do
-            processedEvents <- Array.append processedEvents (this.processEventBatch listeners next)
-        processedEvents
-
+            this.processEventBatch listeners next
+        
     member this.QueueEvent ge = 
         _pending <- Array.append _pending [|ge|]
         
@@ -37,10 +39,11 @@ type PendingEventsDictionary() =
     member private this.processEventBatch (listeners:EventListenerDictionary) (next:NextEntityDictionary) = 
         let processCallbacks (ge:EventData_Generic) = 
             match listeners.ContainsKey ge.GameEventType with 
-            | false -> [| (ge, Error "No listeners") |]
+            | false -> () //[| (ge, Error "No listeners") |]
             | true -> listeners.Item ge.GameEventType 
-                      |> Array.map (fun cb -> (ge,cb next ge)) // Can't Parallel
-        this.collectAndClearPending |> Array.collect (fun ge -> processCallbacks ge) // Can't Parallel
+                      |> Array.iter (fun cb -> printfn "%A" ge.ToString ; (cb next ge) |> ignore) // Can't Parallel
+
+        this.collectAndClearPending |> Array.iter (fun ge -> processCallbacks ge) // Can't Parallel
 
 
 type EventManager(enm:EntityManager) =
@@ -51,3 +54,11 @@ type EventManager(enm:EntityManager) =
     member this.QueueEvent ge = pending.QueueEvent ge
     member this.RegisterListener et callback = listeners.RegisterListener et callback
     
+    (*member private this.processEventBatch (listeners:EventListenerDictionary) (next:NextEntityDictionary) = 
+        let processCallbacks (ge:EventData_Generic) = 
+            match listeners.ContainsKey ge.GameEventType with 
+            | false -> [| (ge, Error "No listeners") |]
+            | true -> listeners.Item ge.GameEventType 
+                      |> Array.map (fun cb -> (ge,cb next ge)) // Can't Parallel
+        this.collectAndClearPending |> Array.collect (fun ge -> processCallbacks ge) // Can't Parallel
+*)

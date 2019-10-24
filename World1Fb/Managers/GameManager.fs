@@ -55,11 +55,11 @@ type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*stri
     member private this.gameLoop =
         systemMan.UpdateSystems
 
-        let geResults = eventMan.ProcessEvents
+        eventMan.ProcessEvents
         
         entityMan.SetToNext |> ignore
 
-        frameMan.AddFrame entityMan.Entities entityMan.MaxEntityID geResults
+        frameMan.AddFrame entityMan.Entities entityMan.MaxEntityID // geResults
 
         //renderer_SetContent [| ("World Map",entityMan.ToDisplayString); ("Game Events List",frameMan.GERs_ToString GEListType.Last10FramesExcludingFirst) |] true |> Async.Start
         wmr entityMan

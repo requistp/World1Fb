@@ -18,12 +18,12 @@ let MakeGrasses (enm:EntityManager) n =
         let eid = enm.NewEntityID
         [| 
             FoodComponent(eid, Food_Carrot, 20).Abstract
-            FormComponent(eid, true, Food_Carrot.ToString(), Food_Grass.Symbol.Value, {X=x;Y=y;Z=0}).Abstract
+            FormComponent(eid, true, Some (Food_Carrot.ToString()), Food_Grass.Symbol.Value, {X=x;Y=y;Z=0uy}).Abstract
             PlantGrowthComponent(eid, [|Dirt|], 0.1, 0.25, 5, 0.75).Abstract
         |] 
     match n with 
     | 0 -> Array.empty<AbstractComponent[]>
-    | _ -> [1..n] |> List.toArray |> Array.map (fun i -> MakeGrass (random.Next(0,MapWidth)) (random.Next(0,MapHeight))) //Can't Parallel
+    | _ -> [1..n] |> List.toArray |> Array.map (fun i -> MakeGrass (byte (random.Next(0,int MapWidth))) (byte (random.Next(0,int MapHeight)))) //Can't Parallel
     |> Array.rev
 
 let MakeMap (enm:EntityManager) = 
@@ -34,7 +34,7 @@ let MakeMap (enm:EntityManager) =
                 | _ -> Dirt
         let mutable baseTerrain =
             [| 
-                FormComponent(eid, t.IsPassable, t.ToString(), t.Symbol, {X=x;Y=y;Z=0}).Abstract
+                FormComponent(eid, t.IsPassable, None, t.Symbol, {X=x;Y=y;Z=0uy}).Abstract
                 TerrainComponent(eid, t).Abstract 
             |] 
         // I left this mechanic in place because there will be some component that is appropriate to add to Terrain--like a burrow
@@ -44,8 +44,8 @@ let MakeMap (enm:EntityManager) =
         baseTerrain
 
     let mutable tmap = Array.empty<AbstractComponent[]>
-    for y in [0..MapHeight-1] do
-        for x in [0..MapWidth-1] do
+    for y in [0uy..MapHeight - 1uy] do
+        for x in [0uy..MapWidth - 1uy] do
             tmap <- tmap |> Array.append [| AddTerrain x y |]
     tmap
 
@@ -57,7 +57,7 @@ let MakeRabbits (enm:EntityManager) n =
         let baseBunny = 
             [|
                 EatingComponent(eid, [|Food_Carrot;Food_Grass|], 150, 1, 300).Abstract
-                FormComponent(eid, true, "rabbit", 'r', {X=x;Y=y;Z=0}).Abstract
+                FormComponent(eid, true, Some "rabbit", 'r', {X=x;Y=y;Z=0uy}).Abstract
                 MovementComponent(eid, 1).Abstract
                 //sight
                 //health        
@@ -67,6 +67,6 @@ let MakeRabbits (enm:EntityManager) n =
         | true -> baseBunny |> Array.append cont
     match n with 
     | 0 -> Array.empty<AbstractComponent[]>
-    | _ -> [1..n] |> List.toArray |> Array.map (fun i -> MakeRabbit (random.Next(0,MapWidth)) (random.Next(0,MapHeight)) i) //Can't Parallel
+    | _ -> [1..n] |> List.toArray |> Array.map (fun i -> MakeRabbit (byte (random.Next(0,int MapWidth))) (byte (random.Next(0,int MapHeight))) i) //Can't Parallel
     |> Array.rev
 
