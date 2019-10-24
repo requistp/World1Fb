@@ -3,11 +3,9 @@ open AbstractComponent
 open EatingComponent
 open EntityManager
 open EventManager
-open FoodComponent
 open FormComponent
 open FrameManager
 open EventTypes
-open LocationTypes
 open MovementComponent
 open System
 open SystemManager
@@ -17,7 +15,7 @@ type KeyboardResult =
     | GameAction
     | InfoOnly
 
-type InputHandler(evm:EventManager, enm:EntityManager, fman:FrameManager, sysm:SystemManager) =
+type InputHandler(evm:EventManager, enm:EntityManager, fman:FrameManager, sysm:SystemManager, renderer_SetDisplay:string->unit) =
     let mutable _entityID = None
 
     member this.EntityID = _entityID
@@ -32,6 +30,13 @@ type InputHandler(evm:EventManager, enm:EntityManager, fman:FrameManager, sysm:S
         | false -> ()
         | true -> event
 
+    member this.SetDisplay k =
+        match k with
+        | ConsoleKey.F1 -> renderer_SetDisplay "World Map"
+        | ConsoleKey.F2 -> renderer_SetDisplay "Game Events List"
+        | _ -> ()
+        InfoOnly
+        
     member private this.onKeyPressed k = 
         match k with 
         | ConsoleKey.UpArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (EventData_Action_Movement(_entityID.Value,North)))
@@ -54,31 +59,7 @@ type InputHandler(evm:EventManager, enm:EntityManager, fman:FrameManager, sysm:S
         let k = Console.ReadKey(true)
         match k.Key with
         | ConsoleKey.Escape -> ExitGame
-        | ConsoleKey.F12 -> this.DisplayGameEvents (k.Modifiers = ConsoleModifiers.Shift) (k.Modifiers = ConsoleModifiers.Control)
+        | ConsoleKey.F1 -> this.SetDisplay k.Key
+        | ConsoleKey.F2 -> this.SetDisplay k.Key
         | k -> this.onKeyPressed k
                
-    member private this.DisplayGameEvents (shift:bool) (ctrl:bool) =
-        let printRes (res:Result<string option,string>) =
-            match res with
-            | Ok o -> "Ok "
-            | Error s -> "Err"
-        let printResString (res:Result<string option,string>) =
-            match res with
-            | Error s -> sprintf "/ %s" s
-            | Ok o -> match o with
-                      | None -> ""
-                      | Some s -> sprintf "/ %s" s
-        let printGER (n:uint32) ((age,res):GameEventResult) = 
-            printfn "%i|%s: %s %s" n (printRes res) age.ToString (printResString res)
-        let lt = 
-            match (shift,ctrl) with
-            | true,_ -> All
-            | _,true -> AllExceptFirst
-            | _ -> Current
-        
-        fman.GameEventsAll lt 
-        |> Array.iter (fun (n,gers) -> gers |> Array.iter (fun ger -> printGER n ger))
-        //|> Array.iter (fun (n,ger) -> printGER ger)
-        InfoOnly
-
-

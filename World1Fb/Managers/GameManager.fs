@@ -11,14 +11,15 @@ open EventTypes
 open InputHandler
 open PlantGrowthComponent
 open SystemManager
+open System
 
 
-type Game(renderer:EntityManager->uint32->unit) =
+type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*string)[]->bool->Async<unit>, renderer_SetDisplay:string->unit, renderer_Display:string->unit) =
     let frameMan = new FrameManager()
     let entityMan = new EntityManager()
     let eventMan = new EventManager(entityMan)
     let systemMan = new SystemManager(eventMan)
-    let inputMan = new InputHandler(eventMan, entityMan, frameMan, systemMan)
+    let inputMan = new InputHandler(eventMan, entityMan, frameMan, systemMan, renderer_SetDisplay)
  
     member this.EventManager = eventMan
     member this.EntityManager = entityMan
@@ -54,12 +55,12 @@ type Game(renderer:EntityManager->uint32->unit) =
     member private this.gameLoop =
         systemMan.UpdateSystems
         let geResults = eventMan.ProcessEvents
-        let setResult = entityMan.SetToNext
-        let f = frameMan.AddFrame entityMan.Entities entityMan.MaxEntityID geResults setResult
-        renderer entityMan this.Round
-        this.PrintController
-        this.PrintPlant
+        entityMan.SetToNext
+        |> frameMan.AddFrame entityMan.Entities entityMan.MaxEntityID geResults
 
+        renderer_SetContent [| ("World Map",entityMan.ToDisplayString); ("Game Events List",frameMan.GERs_ToString GEListType.Last10FramesExcludingFirst) |] true |> Async.Start
+        
+        
     member this.Start (ss:AbstractSystem[]) (initialForms:AbstractComponent[][]) = 
         entityMan.Initialize
         systemMan.Initialize ss

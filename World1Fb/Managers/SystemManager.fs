@@ -17,7 +17,7 @@ type SystemManager(evm:EventManager) =
         evm.RegisterListener CreateEntity this.onCreateEntity
                 
     member this.UpdateSystems =
-        this.ActiveAndInitialized |> Array.Parallel.iter (fun s -> s.Update)
+        this.ActiveAndInitialized |> Array.iter (fun s -> s.Update)
 
     member private this.onCreateEntity (next:NextEntityDictionary) (ge:EventData_Generic) =
         let e = (ge :?> EventData_CreateEntity)

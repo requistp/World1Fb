@@ -44,8 +44,8 @@ let MakeMap (enm:EntityManager) =
         baseTerrain
 
     let mutable tmap = Array.empty<AbstractComponent[]>
-    for x in [0..MapWidth-1] do
-        for y in [0..MapHeight-1] do
+    for y in [0..MapHeight-1] do
+        for x in [0..MapWidth-1] do
             tmap <- tmap |> Array.append [| AddTerrain x y |]
     tmap
 

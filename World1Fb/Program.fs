@@ -10,8 +10,20 @@ open PlantGrowthSystem
 open Renderer
 open ScheduleSystem
 open TerrainSystem
+open ConsoleV1
 
-let g = new Game(RenderFrame)
+let windows =
+    [|
+        "World Map",""
+        "Game Events List",""
+    |]
+let windowMan = new WindowManager(windows)
+
+let setContent = windowMan.SetContent
+let setDisplay = windowMan.SetDisplay
+let display = windowMan.Display
+
+let g = new Game(RenderFrame, setContent, setDisplay, display)
 
 let startingEntities = 
     MakeMap g.EntityManager
@@ -32,3 +44,7 @@ let ss =
     |]
 
 g.Start ss startingEntities
+
+
+
+

@@ -32,8 +32,6 @@ let private RenderAll (enm:EntityManager) =
     ts |> Array.iter (fun t -> render t.EntityID fs)
     fs |> Array.filter (fun f-> not (ts |> Array.exists (fun t -> t.EntityID=f.EntityID))) |> Array.iter (fun f -> render f.EntityID fs)
     
-    
-
 let RenderFrame (enm:EntityManager) (round:uint32) =
     System.Console.CursorVisible <- false 
 

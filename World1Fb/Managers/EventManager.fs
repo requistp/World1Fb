@@ -8,7 +8,7 @@ open EventTypes
 type GameEventCallback = NextEntityDictionary -> EventData_Generic -> Result<string option,string>
 
 type GameEventResult = (EventData_Generic * Result<string option,string>)
-
+    
 type EventListenerDictionary() =
     let mutable _listeners = Map.empty:Map<GameEventTypes,GameEventCallback[]>
 

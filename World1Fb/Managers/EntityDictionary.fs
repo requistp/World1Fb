@@ -4,7 +4,6 @@ open CommonGenericFunctions
 open FormComponent
 open LocationTypes
 
-
 [<AbstractClass>]
 type AbstractEntityDictionary() =
     let mutable _entities = Map.empty<uint32,AbstractComponent[]>
@@ -107,7 +106,4 @@ type EntityDictionary() =
 
 
 
-//member this.HasComponent<'T> (eid:uint32) : bool =
-//    match this.TryGetComponent<'T> eid with
-//    | None -> false
-//    | Some _ -> true
+
