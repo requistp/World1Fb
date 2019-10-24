@@ -14,12 +14,12 @@ open SystemManager
 open System
 
 
-type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*string)[]->bool->Async<unit>, renderer_SetDisplay:string->unit, renderer_Display:string->unit) =
+type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*string)[]->bool->Async<unit>, renderer_SetDisplay:string->unit, renderer_Display:string->unit, wmr:EntityManager->unit, wmrKeys:ConsoleKey->unit) =
     let frameMan = new FrameManager()
     let entityMan = new EntityManager()
     let eventMan = new EventManager(entityMan)
     let systemMan = new SystemManager(eventMan)
-    let inputMan = new InputHandler(eventMan, entityMan, frameMan, systemMan, renderer_SetDisplay)
+    let inputMan = new InputHandler(eventMan, entityMan, frameMan, systemMan, renderer_SetDisplay, wmrKeys)
  
     member this.EventManager = eventMan
     member this.EntityManager = entityMan
@@ -54,12 +54,16 @@ type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*stri
 
     member private this.gameLoop =
         systemMan.UpdateSystems
-        let geResults = eventMan.ProcessEvents
-        entityMan.SetToNext
-        |> frameMan.AddFrame entityMan.Entities entityMan.MaxEntityID geResults
 
-        renderer_SetContent [| ("World Map",entityMan.ToDisplayString); ("Game Events List",frameMan.GERs_ToString GEListType.Last10FramesExcludingFirst) |] true |> Async.Start
+        let geResults = eventMan.ProcessEvents
         
+        entityMan.SetToNext |> ignore
+
+        frameMan.AddFrame entityMan.Entities entityMan.MaxEntityID geResults
+
+        //renderer_SetContent [| ("World Map",entityMan.ToDisplayString); ("Game Events List",frameMan.GERs_ToString GEListType.Last10FramesExcludingFirst) |] true |> Async.Start
+        wmr entityMan
+        printfn "Round:%i" this.Round
         
     member this.Start (ss:AbstractSystem[]) (initialForms:AbstractComponent[][]) = 
         entityMan.Initialize

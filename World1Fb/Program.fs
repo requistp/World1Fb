@@ -11,6 +11,10 @@ open Renderer
 open ScheduleSystem
 open TerrainSystem
 open ConsoleV1
+open WorldMapRenderer
+
+
+let wmr = new WorldMapRenderer()
 
 let windows =
     [|
@@ -23,7 +27,7 @@ let setContent = windowMan.SetContent
 let setDisplay = windowMan.SetDisplay
 let display = windowMan.Display
 
-let g = new Game(RenderFrame, setContent, setDisplay, display)
+let g = new Game(RenderFrame, setContent, setDisplay, display, wmr.Update, wmr.MoveWindow)
 
 let startingEntities = 
     MakeMap g.EntityManager

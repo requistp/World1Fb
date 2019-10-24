@@ -24,6 +24,7 @@ type EntityManager() =
     member _.SetToNext = entDict.Set
     member _.TryGet eid = entDict.TryGet eid
     member _.TryGetComponent<'T> eid = entDict.TryGetComponent<'T> eid
+    member _.TryGetComponentForEntities<'T> (eids:uint32[]) = entDict.TryGetComponentForEntities<'T> eids
 
     member this.EntityHasAllComponents (cts:'T[]) (eid:uint32) =
         cts |> Array.forall (fun ct -> entDict.Entities.Item eid |> Array.exists (fun ec -> ec.GetType() = ct))

@@ -3,11 +3,11 @@ open CommonGenericFunctions
 open System
 
 [<Literal>]
-let MapWidth = 40
+let MapWidth = 100
 
 
 [<Literal>]
-let MapHeight = 20
+let MapHeight = 100
 
 
 type LocationDataInt = {

@@ -34,6 +34,7 @@
     <Compile Include="Systems\PlantGrowthSystem.fs" />
     <Compile Include="Systems\ScheduleSystem.fs" />
     <Compile Include="Systems\TerrainSystem.fs" />
+    <Compile Include="Console\WorldMapRenderer.fs" />
     <Compile Include="Console\ConsoleV1.fs" />
     <Compile Include="Renderer.fs" />
     <Compile Include="BuildNewWorld.fs" />

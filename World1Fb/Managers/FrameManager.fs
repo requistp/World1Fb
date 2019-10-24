@@ -10,7 +10,6 @@ type Frame =
         Entities : Map<uint32,AbstractComponent[]>
         MaxEntityID : uint32 
         GEResults : GameEventResult[]
-        SetResult : Result<string option,string>
     } with 
     static member empty = 
         { 
@@ -18,7 +17,6 @@ type Frame =
             Entities = Map.empty
             MaxEntityID = 0u
             GEResults = Array.empty
-            SetResult = Ok None
         }
 
 type GEListType = 
@@ -31,7 +29,7 @@ type GEListType =
 type FrameManager() =
     let mutable _frames = [| Frame.empty |]
     
-    member this.AddFrame (entities:Map<uint32,AbstractComponent[]>) (maxEntityID:uint32) (geResults:(EventData_Generic * Result<string option,string>)[]) (setResult:Result<string option,string>) =
+    member this.AddFrame (entities:Map<uint32,AbstractComponent[]>) (maxEntityID:uint32) (geResults:(EventData_Generic * Result<string option,string>)[]) =
         _frames <- 
             [| 
                 { 
@@ -39,7 +37,6 @@ type FrameManager() =
                     Entities = entities
                     MaxEntityID = maxEntityID
                     GEResults = geResults
-                    SetResult = setResult
                 } 
             |]
             |> Array.append _frames
