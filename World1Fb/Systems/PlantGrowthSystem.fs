@@ -3,7 +3,7 @@ open AbstractComponent
 open AbstractSystem
 open CalendarTimings
 open CommonGenericFunctions
-open EntityDictionary
+open EntityManager
 open FoodComponent
 open FormComponent
 open PlantGrowthComponent

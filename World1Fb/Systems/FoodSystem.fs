@@ -1,7 +1,7 @@
 ﻿module FoodSystem
 open AbstractSystem
 open CalendarTimings
-open EntityDictionary
+open EntityManager
 open FoodComponent
 open EventTypes
 open GameManager

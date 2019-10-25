@@ -3,7 +3,7 @@ open AbstractComponent
 open AbstractSystem
 open CalendarTimings
 open EatingComponent
-open EntityDictionary
+open EntityManager
 open FoodComponent
 open FormComponent
 open EventTypes

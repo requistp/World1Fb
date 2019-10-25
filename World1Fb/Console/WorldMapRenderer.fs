@@ -1,6 +1,6 @@
 ﻿module WorldMapRenderer
 open AbstractComponent
-open EntityDictionary
+//open EntityManager
 open EntityManager
 open FormComponent
 open LocationTypes

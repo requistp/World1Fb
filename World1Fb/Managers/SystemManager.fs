@@ -1,6 +1,6 @@
 ﻿module SystemManager
 open AbstractSystem
-open EntityDictionary
+open EntityManager
 open EventManager
 open EventTypes
     

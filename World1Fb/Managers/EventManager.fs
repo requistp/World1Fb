@@ -1,6 +1,6 @@
 ﻿module EventManager
 open CommonGenericFunctions
-open EntityDictionary
+//open EntityManager
 open EntityManager
 open EventTypes
 
@@ -13,6 +13,8 @@ type GECallbackResult = GECallback option * EventData_Generic * Result<string op
 type EventManager(enm:EntityManager, round:unit->uint32) =
     let mutable _listeners = Map.empty:Map<GameEventTypes,GECallback[]>
     
+    let next = enm.NextEntityDictionary
+
     let resultAgent =
         MailboxProcessor<GECallbackResult>.Start(
             fun inbox ->
@@ -35,13 +37,15 @@ type EventManager(enm:EntityManager, round:unit->uint32) =
                         while true do
                             let! cb,ge = inbox.Receive()
                             match ge.GameEventType with 
-                            | GAME_AdvanceRound -> enm.SetToNext
+                            | GAME_AdvanceRound -> resultAgent.Post (cb,ge,(enm.SetToNext))
                             | _ -> 
                                 match cb.IsSome with
                                 | false -> resultAgent.Post (None,ge,Ok (Some "No listeners"))
-                                | true -> resultAgent.Post (cb,ge,cb.Value enm.NextEntityDictionary ge)
+                                | true -> resultAgent.Post (cb,ge,cb.Value next ge)
                     }
             )
+
+    member this.NewEntityID = next.NewEntityID
 
     member this.ProcessEvents = 
         let st = Timer.Start random.Next

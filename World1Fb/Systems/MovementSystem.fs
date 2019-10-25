@@ -1,6 +1,6 @@
 ﻿module MovementSystem
 open AbstractSystem
-open EntityDictionary
+open EntityManager
 open FormComponent
 open EventTypes
 open GameManager
