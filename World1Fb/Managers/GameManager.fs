@@ -1,7 +1,7 @@
 ﻿module GameManager
 open AbstractComponent
 open AbstractSystem
-open ControllerComponent
+open CommonGenericFunctions
 open EntityManager
 open EventManager
 open EatingComponent
@@ -17,7 +17,7 @@ open System
 type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*string)[]->bool->Async<unit>, renderer_SetDisplay:string->unit, renderer_Display:string->unit, wmr:EntityManager->unit, wmrKeys:ConsoleKey->unit) =
     let frameMan = new FrameManager()
     let entityMan = new EntityManager()
-    let eventMan = new EventManager(entityMan)
+    let eventMan = new EventManager(entityMan, (fun () -> frameMan.Round))
     let systemMan = new SystemManager(eventMan)
     let inputMan = new InputHandler(eventMan, entityMan, frameMan, systemMan, renderer_SetDisplay, wmrKeys)
  
@@ -25,28 +25,12 @@ type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*stri
     member this.EntityManager = entityMan
     member this.FrameManager = frameMan
     member this.SystemManager = systemMan
-    member this.Round = (uint32 frameMan.Count) // - 1u)
+    member this.Round = (uint32 frameMan.Round) // - 1u)
 
     member private this.assignController =
         match Component_Controller |> entityMan.EntitiesWithComponent with
         | [||] -> None
         | l -> Some l.[0]
-
-    member private this.PrintController =
-        match inputMan.EntityID with
-        | None -> ()
-        | Some eid ->
-            let e = entityMan.GetComponent<EatingComponent> eid
-            printfn "Eater Quantity:%i     " e.Quantity
-            printfn "Calories:%i    " e.Calories
-
-    member private this.PrintPlant =
-        let eids = (entityMan.EntitiesWithComponent Component_PlantGrowth)
-        match eids with 
-        | [||] -> printfn "Plant Quantity: no plants"
-        | _ ->
-            let e = entityMan.GetComponent<FoodComponent> eids.[0]
-            printfn "Plant Quantity:%i     " e.Quantity
 
     member private this.setInitialForms (initialForms:AbstractComponent[][]) = 
         initialForms 
@@ -55,18 +39,17 @@ type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*stri
     member private this.gameLoop =
         systemMan.UpdateSystems
 
-        let geResults = eventMan.ProcessEvents
+        eventMan.ProcessEvents
         
-        entityMan.SetToNext |> ignore
+        //entityMan.SetToNext |> ignore
 
-        frameMan.AddFrame entityMan.Entities entityMan.MaxEntityID geResults
+        frameMan.AddFrame entityMan.Entities entityMan.MaxEntityID //Array.empty //geResults
 
         //renderer_SetContent [| ("World Map",entityMan.ToDisplayString); ("Game Events List",frameMan.GERs_ToString GEListType.Last10FramesExcludingFirst) |] true |> Async.Start
         wmr entityMan
-        printfn "Round:%i" this.Round
+        //printfn "Round:%i" this.Round
         
     member this.Start (ss:AbstractSystem[]) (initialForms:AbstractComponent[][]) = 
-        entityMan.Initialize
         systemMan.Initialize ss
         this.setInitialForms initialForms
         
@@ -79,3 +62,25 @@ type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*stri
             if r = GameAction then this.gameLoop
             r <- inputMan.AwaitKeyboardInput
 
+
+
+
+
+
+            (*
+            member private this.PrintController =
+                match inputMan.EntityID with
+                | None -> ()
+                | Some eid ->
+                    let e = entityMan.GetComponent<EatingComponent> eid
+                    printfn "Eater Quantity:%i     " e.Quantity
+                    printfn "Calories:%i    " e.Calories
+
+            member private this.PrintPlant =
+                let eids = (entityMan.EntitiesWithComponent Component_PlantGrowth)
+                match eids with 
+                | [||] -> printfn "Plant Quantity: no plants"
+                | _ ->
+                    let e = entityMan.GetComponent<FoodComponent> eids.[0]
+                    printfn "Plant Quantity:%i     " e.Quantity
+*)

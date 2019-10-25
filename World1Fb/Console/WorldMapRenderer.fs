@@ -10,8 +10,8 @@ open TerrainComponent
 
 type WorldMapRenderer() =
     let mutable _windowLocation = (0,0)
-    let viewSizeX = 40
-    let viewSizeY = 20
+    let viewSizeX = Math.Clamp(40,10,MapWidth)
+    let viewSizeY = Math.Clamp(20,10,MapHeight)
     
     member this.MoveWindow (k:ConsoleKey) =
         match k with 
@@ -43,6 +43,8 @@ type WorldMapRenderer() =
                 let f = fs.[fs.Length-1]
                 System.Console.SetCursorPosition(x - fst _windowLocation, y - snd _windowLocation)
                 System.Console.Write(f.Symbol)
+
+        
 
 
 

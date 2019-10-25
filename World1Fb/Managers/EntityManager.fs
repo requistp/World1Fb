@@ -42,9 +42,6 @@ type EntityManager() =
             s <- s + "\n"
         s
 
-    member this.Initialize =
-        ()
-
 
 
         (*

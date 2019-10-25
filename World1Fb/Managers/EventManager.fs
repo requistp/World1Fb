@@ -4,50 +4,62 @@ open EntityDictionary
 open EntityManager
 open EventTypes
 
+type GECallback = NextEntityDictionary -> EventData_Generic -> Result<string option,string>
 
-type GameEventCallback = NextEntityDictionary -> EventData_Generic -> Result<string option,string>
+type GECallbackExecution = GECallback option * EventData_Generic
 
-type GameEventResult = (EventData_Generic * Result<string option,string>)
+type GECallbackResult = GECallback option * EventData_Generic * Result<string option,string>
     
-type EventListenerDictionary() =
-    let mutable _listeners = Map.empty:Map<GameEventTypes,GameEventCallback[]>
-
-    member this.ContainsKey et = _listeners.ContainsKey et
-    member this.Item et = _listeners.Item et
-    member this.RegisterListener et callback = _listeners <- Map_AppendValueToArray _listeners et callback
-
-
-type PendingEventsDictionary() =
-    let mutable _pending = Array.empty<EventData_Generic>
+type EventManager(enm:EntityManager, round:unit->uint32) =
+    let mutable _listeners = Map.empty:Map<GameEventTypes,GECallback[]>
     
-    member this.ProcessEvents (listeners:EventListenerDictionary) (next:NextEntityDictionary) = 
-        let mutable processedEvents = Array.empty<GameEventResult>
-        while (_pending.Length > 0) do
-            processedEvents <- Array.append processedEvents (this.processEventBatch listeners next)
-        processedEvents
+    let resultAgent =
+        MailboxProcessor<GECallbackResult>.Start(
+            fun inbox ->
+                async 
+                    { 
+                        while true do
+                            let! cb,ge,res = inbox.Receive()
+                            // Log round(), cb, ge, res someplace
+                            //printfn "%s / %s / %s " (cb.ToString()) (ge.GameEventType.ToString()) (res.ToString())
+                            //printfn "%i | %s %s" (round()) (ge.GameEventType.ToString()) (res.ToString())
+                            ()
+                    }
+            )
 
-    member this.QueueEvent ge = 
-        _pending <- Array.append _pending [|ge|]
-        
-    member private this.collectAndClearPending = 
-        let p = _pending
-        _pending <- Array.empty
-        p
+    let callbackAgent =
+        MailboxProcessor<GECallbackExecution>.Start(
+            fun inbox ->
+                async 
+                    { 
+                        while true do
+                            let! cb,ge = inbox.Receive()
+                            match ge.GameEventType with 
+                            | GAME_AdvanceRound -> enm.SetToNext
+                            | _ -> 
+                                match cb.IsSome with
+                                | false -> resultAgent.Post (None,ge,Ok (Some "No listeners"))
+                                | true -> resultAgent.Post (cb,ge,cb.Value enm.NextEntityDictionary ge)
+                    }
+            )
 
-    member private this.processEventBatch (listeners:EventListenerDictionary) (next:NextEntityDictionary) = 
-        let processCallbacks (ge:EventData_Generic) = 
-            match listeners.ContainsKey ge.GameEventType with 
-            | false -> [| (ge, Error "No listeners") |]
-            | true -> listeners.Item ge.GameEventType 
-                      |> Array.map (fun cb -> (ge,cb next ge)) // Can't Parallel
-        this.collectAndClearPending |> Array.collect (fun ge -> processCallbacks ge) // Can't Parallel
+    member this.ProcessEvents = 
+        let st = Timer.Start random.Next
+        printfn "%A" st
+        while callbackAgent.CurrentQueueLength > 0 do
+            System.Threading.Thread.Sleep 10
+        callbackAgent.Post (None,EventData_Generic(GAME_AdvanceRound))
+        while callbackAgent.CurrentQueueLength > 0 do
+            System.Threading.Thread.Sleep 10
+        Timer.End "Process Events2" st
 
+    member this.QueueEvent (ge:EventData_Generic) = 
+        match _listeners.ContainsKey ge.GameEventType with 
+        | false -> ()
+        | true -> 
+            _listeners.Item ge.GameEventType 
+            |> Array.Parallel.iter (fun cb -> callbackAgent.Post (Some cb,ge))
 
-type EventManager(enm:EntityManager) =
-    let listeners = new EventListenerDictionary() 
-    let pending = new PendingEventsDictionary()
-    
-    member this.ProcessEvents = pending.ProcessEvents listeners enm.NextEntityDictionary
-    member this.QueueEvent ge = pending.QueueEvent ge
-    member this.RegisterListener et callback = listeners.RegisterListener et callback
+    member this.RegisterListener et callback = 
+        _listeners <- Map_AppendValueToArray _listeners et callback
     

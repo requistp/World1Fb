@@ -63,11 +63,10 @@ type AbstractEntityDictionary() =
         //this.UpdateComponentDictionary Shouldn't have to update on a 1:1 component swap
         this.UpdateLocationDictionary
         Ok changes
-    member internal this.Set (aed:AbstractEntityDictionary) : Result<string option,string> =
+    member internal this.Set (aed:AbstractEntityDictionary) =
         _entities <- aed.Entities
         _compDict <- aed.Components
         _locDict <- aed.Locations
-        Ok None
 
     member private this.UpdateComponentDictionary =
         _compDict <- 

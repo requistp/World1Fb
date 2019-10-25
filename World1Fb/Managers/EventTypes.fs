@@ -3,6 +3,7 @@ open AbstractComponent
 open MovementComponent
 
 type GameEventTypes =
+    | GAME_AdvanceRound
     | Action_Eat
     | Action_Movement
     | CreateEntity
