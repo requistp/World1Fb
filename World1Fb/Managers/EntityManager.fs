@@ -1,55 +1,108 @@
-﻿module junk1
-//module EntityManager
-//open AbstractComponent
-//open CommonGenericFunctions
-//open EntityManager
-//open FormComponent
-//open LocationTypes
-//open TerrainComponent
+﻿module EntityManager
+open AbstractComponent
+open CommonGenericFunctions
+open FormComponent
+open LocationTypes
+
+[<AbstractClass>]
+type AbstractEntityDictionary() =
+    let mutable _entities = Map.empty<uint32,AbstractComponent[]>
+    let mutable _compDict = Map.empty<ComponentTypes,uint32[]>
+    let mutable _locDict = Map.empty<LocationDataInt,uint32[]>
+
+    member this.Components = _compDict
+    member this.Copy (eid:uint32) (neweid:uint32) =
+        _entities.Item(eid) |> Array.Parallel.map (fun ct -> ct.Copy neweid)
+    member this.Entities = _entities
+    member this.EntitiesAtLocation (l:LocationDataInt) = 
+        match _locDict.ContainsKey(l) with
+        | true -> _locDict.Item(l)
+        | false -> Array.empty
+    member this.EntityHasAllComponents (cts:'T[]) (eid:uint32) =
+        cts |> Array.forall (fun ct -> _entities.Item eid |> Array.exists (fun ec -> ec.GetType() = ct))
+    member this.EntitiesWithComponent (ct:ComponentTypes) =
+        match _compDict.ContainsKey(ct) with
+        | true -> _compDict.Item(ct)
+        | false -> Array.empty
+    member this.Exists (eid:uint32) = _entities.ContainsKey eid
+    member this.GetComponent<'T> (eid:uint32) : 'T =
+        (_entities.Item(eid) |> Array.find (fun x -> x.GetType() = typeof<'T>)) :?> 'T
+    //member this.GetComponent<'T> (eids:uint32[]) : 'T[] = 
+    //    eids
+    //    |> Array.Parallel.map (fun e -> this.GetComponent<'T> e)
+    member this.Locations = _locDict
+    member this.TryGet eid =
+        _entities.ContainsKey(eid) |> TrueSomeFalseNone (_entities.Item(eid))
+    member this.TryGetComponent<'T> (eid:uint32) : Option<'T> = 
+        match this.TryGet eid with
+        | None -> None
+        | Some cts -> match cts |> Array.filter (fun c -> c.GetType() = typeof<'T>) with
+                      | [||] -> None
+                      | l -> Some (l.[0] :?> 'T)
+    member this.TryGetComponentForEntities<'T> (eids:uint32[]) = 
+        eids
+        |> Array.Parallel.map (fun eid -> this.TryGetComponent<'T> eid)
+        |> Array.filter (fun aco -> aco.IsSome)
+        |> Array.Parallel.map (fun aco -> aco.Value)
+        
+    member internal this.CreateEntity (cts:AbstractComponent[]) : Result<string option,string> = 
+        match _entities.ContainsKey(cts.[0].EntityID) with
+        | true -> Error "CreateEntity: Entity already in dictionary"
+        | false -> _entities <- _entities.Add(cts.[0].EntityID,cts)
+                   this.UpdateComponentDictionary
+                   this.UpdateLocationDictionary
+                   Ok (Some "Created in next dictionary")
+    member internal this.RemoveEntity (eid:uint32) : Result<string option,string> =
+        _entities <- _entities.Remove eid
+        this.UpdateComponentDictionary
+        this.UpdateLocationDictionary
+        Ok None
+    member internal this.ReplaceComponent (ac:AbstractComponent) (changes:string option) : Result<string option,string> = 
+        _entities <- 
+            _entities.Item(ac.EntityID)
+            |> Array.filter (fun c -> c.ComponentType <> ac.ComponentType) 
+            |> Array.append [|ac|]
+            |> Map_Replace _entities ac.EntityID
+        this.UpdateLocationDictionary
+        Ok changes
+    member internal this.SetToNext (next:AbstractEntityDictionary) : Result<string option,string> =
+        _entities <- next.Entities
+        _compDict <- next.Components
+        _locDict <- next.Locations
+        Ok None
+
+    member private this.UpdateComponentDictionary =
+        _compDict <- 
+            _entities 
+            |> Map.fold (fun m k v -> v |> Array.fold (fun m c -> Map_AppendValueToArray m c.ComponentType k) m ) Map.empty<ComponentTypes,uint32[]>
+    member private this.UpdateLocationDictionary =
+        _locDict <- 
+            Component_Form
+            |> this.EntitiesWithComponent 
+            |> Array.Parallel.map (fun eid -> this.GetComponent<FormComponent> eid)
+            |> Array.fold (fun m f -> Map_AppendValueToArray m f.Location f.EntityID) Map.empty<LocationDataInt,uint32[]>
+    
+
+type NextEntityDictionary() =
+    inherit AbstractEntityDictionary()
+    let mutable _maxEntityID = 0u
+
+    member internal this.MaxEntityID = _maxEntityID
+    member internal this.NewEntityID = _maxEntityID <- _maxEntityID + 1u; _maxEntityID
+    member internal this.SetToNext (next:AbstractEntityDictionary) = Error "SetToNext: Called on Next Dictionary"
 
 
-//type EntityManager() =
-//    let entDict = new EntityDictionary()
+type EntityManager() =
+    inherit AbstractEntityDictionary()
+    let mutable _maxEntityID = 0u
+    let next = new NextEntityDictionary()
 
-//    member _.EntDict = entDict
-//    member _.Components = entDict.Components
-//    member _.Copy eid neweid = entDict.Copy eid neweid
-//    member _.Entities = entDict.Entities
-//    member _.EntitiesAtLocation l = entDict.EntitiesAtLocation l
-//    member _.EntitiesWithComponent ct = entDict.EntitiesWithComponent ct
-//    member _.GetComponent<'T> (eid:uint32) : 'T = entDict.GetComponent<'T> eid
-//    member _.GetComponent<'T> (eids:uint32[]) : 'T[] = entDict.GetComponent<'T> eids
-//    member _.Locations = entDict.Locations
-//    member _.MaxEntityID = entDict.MaxEntityID
-//    member _.NewEntityID = entDict.NextEntityDictionary.NewEntityID
-//    //member _.NextEntityDictionary = entDict.NextEntityDictionary
-//    member _.SetToNext = entDict.SetToNext
-//    member _.TryGet eid = entDict.TryGet eid
-//    member _.TryGetComponent<'T> eid = entDict.TryGetComponent<'T> eid
-//    member _.TryGetComponentForEntities<'T> (eids:uint32[]) = entDict.TryGetComponentForEntities<'T> eids
+    member internal this.MaxEntityID = next.MaxEntityID
+    member internal this.NewEntityID = next.NewEntityID
+    member internal this.Next = next
+    
+    member internal this.CreateEntity (cts:AbstractComponent[]) = Error "CreateEntity: Called on Current Dictionary"
+    member internal this.RemoveEntity (eid:uint32) = Error "RemoveEntity: Called on Current Dictionary"
+    member internal this.ReplaceComponent (ac:AbstractComponent) = Error "ReplaceComponent: Called on Current Dictionary"
+    member internal this.SetToNext = base.SetToNext next
 
-//    member this.EntityHasAllComponents (cts:'T[]) (eid:uint32) =
-//        cts |> Array.forall (fun ct -> entDict.Entities.Item eid |> Array.exists (fun ec -> ec.GetType() = ct))
-//    member this.Exists (eid:uint32) = entDict.Entities.ContainsKey eid
-
-//    member this.ToDisplayString =
-//        let mutable s = ""
-//        for y in [0..MapHeight-1] do
-//            for x in [0..MapWidth-1] do
-//                let fs = 
-//                    entDict.EntitiesAtLocation { X = x; Y = y; Z = 0 } 
-//                    |> entDict.TryGetComponentForEntities<FormComponent> 
-//                let f = fs.[fs.Length-1]
-//                s <- s + f.Symbol.ToString()
-//            s <- s + "\n"
-//        s
-
-
-
-        (*
-        not sure this works...
-        member this.HasComponent<'T> (eid:uint32) : bool =
-            match this.TryGetComponent<'T> eid with
-            | None -> false
-            | Some _ -> true
-            *)

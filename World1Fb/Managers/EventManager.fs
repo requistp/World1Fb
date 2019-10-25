@@ -1,6 +1,5 @@
 ﻿module EventManager
 open CommonGenericFunctions
-//open EntityManager
 open EntityManager
 open EventTypes
 
@@ -13,8 +12,6 @@ type GECallbackResult = GECallback option * EventData_Generic * Result<string op
 type EventManager(enm:EntityManager, round:unit->uint32) =
     let mutable _listeners = Map.empty:Map<GameEventTypes,GECallback[]>
     
-    let next = enm.NextEntityDictionary
-
     let resultAgent =
         MailboxProcessor<GECallbackResult>.Start(
             fun inbox ->
@@ -37,24 +34,22 @@ type EventManager(enm:EntityManager, round:unit->uint32) =
                         while true do
                             let! cb,ge = inbox.Receive()
                             match ge.GameEventType with 
-                            | GAME_AdvanceRound -> resultAgent.Post (cb,ge,(enm.SetToNext))
+                            | GAME_AdvanceRound -> resultAgent.Post (cb,ge,enm.SetToNext)
                             | _ -> 
                                 match cb.IsSome with
                                 | false -> resultAgent.Post (None,ge,Ok (Some "No listeners"))
-                                | true -> resultAgent.Post (cb,ge,cb.Value next ge)
+                                | true -> resultAgent.Post (cb,ge,cb.Value enm.Next ge)
                     }
             )
-
-    member this.NewEntityID = next.NewEntityID
 
     member this.ProcessEvents = 
         let st = Timer.Start random.Next
         printfn "%A" st
         while callbackAgent.CurrentQueueLength > 0 do
-            System.Threading.Thread.Sleep 10
+            System.Threading.Thread.Sleep 1
         callbackAgent.Post (None,EventData_Generic(GAME_AdvanceRound))
         while callbackAgent.CurrentQueueLength > 0 do
-            System.Threading.Thread.Sleep 10
+            System.Threading.Thread.Sleep 1
         Timer.End "Process Events2" st
 
     member this.QueueEvent (ge:EventData_Generic) = 
