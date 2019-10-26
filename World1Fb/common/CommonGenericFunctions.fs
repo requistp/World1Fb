@@ -1,6 +1,8 @@
 ﻿module CommonGenericFunctions
 open System
 
+let castEnumToArray<'a> = (Enum.GetValues(typeof<'a>) :?> ('a [])) //This only works if the enum has been assigned int values
+let castEnumToStringArray<'a> = Enum.GetNames(typeof<'a>) 
 
 let random = Random(System.DateTime.Now.DayOfYear*1000000 + System.DateTime.Now.Hour*10000000 + System.DateTime.Now.Minute*100000 + System.DateTime.Now.Second*1000 + System.DateTime.Now.Millisecond)
 
