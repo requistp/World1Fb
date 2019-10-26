@@ -22,20 +22,20 @@ type EatingSystem(game:Game, isActive:bool) =
                 Ok (Some "Queued Metabolize to schedule")
 
     member private this.onMetabolize (next:NextEntityDictionary) (ge:EventData_Generic) =
-        let eatc = game.EntityManager.GetComponent<EatingComponent> ge.EntityID
+        let eatc = game.EntityManager.Entities.GetComponent<EatingComponent> ge.EntityID
         let starving = (eatc.Calories-eatc.CaloriesPerMetabolize < 0)
         let result = sprintf "Quantity:-%i. Calories:-%i. Starving:%b" eatc.QuantityPerMetabolize eatc.CaloriesPerMetabolize starving
         if starving then game.EventManager.QueueEvent (EventData_Generic(Starving,ge.EntityID))
         next.ReplaceComponent (eatc.Update (eatc.Quantity-eatc.QuantityPerMetabolize) (eatc.Calories-eatc.CaloriesPerMetabolize)) (Some result)
         
     member private this.onEat (next:NextEntityDictionary) (ge:EventData_Generic) =
-        let eatc = game.EntityManager.GetComponent<EatingComponent> ge.EntityID
-        let formc = game.EntityManager.GetComponent<FormComponent> ge.EntityID
+        let eatc = game.EntityManager.Entities.GetComponent<EatingComponent> ge.EntityID
+        let formc = game.EntityManager.Entities.GetComponent<FormComponent> ge.EntityID
 
         let foodsAtLocation = 
-            next.EntitiesAtLocation formc.Location // Food here
+            next.Locations.List formc.Location // Food here
             |> Array.filter (fun eid -> eid <> ge.EntityID) // Not me
-            |> next.TryGetComponentForEntities<FoodComponent>
+            |> next.Entities.TryGetComponentForEntities<FoodComponent>
             |> Array.filter (fun f -> eatc.Foods |> Array.exists (fun ft -> ft = f.FoodType)) //Types I can eat
             |> Array.filter (fun f -> f.Quantity > 0) // Food remaining
             |> Array.sortByDescending (fun x -> x.FoodType.Calories) // Highest caloric food first

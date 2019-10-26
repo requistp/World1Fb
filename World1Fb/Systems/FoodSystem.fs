@@ -13,7 +13,7 @@ type FoodSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
     
     member private this.onAllEaten (next:NextEntityDictionary) (ge:EventData_Generic) =
-        match (ge.EntityID |> game.EntityManager.GetComponent<FoodComponent>).FoodType.KillOnAllEaten with
+        match (ge.EntityID |> game.EntityManager.Entities.GetComponent<FoodComponent>).FoodType.KillOnAllEaten with
         | false -> Ok None
         | true -> game.EventManager.QueueEvent (EventData_Generic(Kill_AllEaten,ge.EntityID))
                   Ok None
@@ -21,7 +21,7 @@ type FoodSystem(game:Game, isActive:bool) =
     member private this.onEaten (next:NextEntityDictionary) (ge:EventData_Generic) =
         let e = ge :?> EventData_Eaten
         
-        match next.TryGetComponent<FoodComponent> e.EateeID with  // Can't check the game current frame here b/c two entities could have entered their eat action, and the first one could have eaten and killed the food
+        match next.Entities.TryGetComponent<FoodComponent> e.EateeID with  // Can't check the game current frame here b/c two entities could have entered their eat action, and the first one could have eaten and killed the food
         | None -> Error "Something else ate it first"
         | Some f -> 
             let allEaten = (f.Quantity - e.Quantity) <= 0
@@ -31,7 +31,7 @@ type FoodSystem(game:Game, isActive:bool) =
 
     member private this.onRegrowth (next:NextEntityDictionary) (ge:EventData_Generic) =
         let tryRegrowFood (f:FoodComponent) = 
-            let pgc = game.EntityManager.GetComponent<PlantGrowthComponent> ge.EntityID
+            let pgc = game.EntityManager.Entities.GetComponent<PlantGrowthComponent> ge.EntityID
             let missing = f.QuantityMax - f.Quantity
             match (missing, pgc.RegrowRate) with
             | (0,_) -> Ok None
@@ -41,7 +41,7 @@ type FoodSystem(game:Game, isActive:bool) =
                 let result = sprintf "EntityID:%i. Regrown quantity:%i" ge.EntityID quantity
                 next.ReplaceComponent (f.Update None (Some (f.Quantity+quantity)) None) (Some result)
             
-        match (ge.EntityID |> next.TryGetComponent<FoodComponent>) with
+        match (ge.EntityID |> next.Entities.TryGetComponent<FoodComponent>) with
         | None -> Ok None
         | Some food -> tryRegrowFood food
         

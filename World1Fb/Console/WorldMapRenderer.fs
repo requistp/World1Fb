@@ -38,8 +38,8 @@ type WorldMapRenderer() =
         for y in rangeY do
             for x in rangeX do
                 let fs = 
-                    enm.EntitiesAtLocation { X = x; Y = y; Z = 0 } 
-                    |> enm.TryGetComponentForEntities<FormComponent> 
+                    enm.Locations.List { X = x; Y = y; Z = 0 } 
+                    |> enm.Entities.TryGetComponentForEntities<FormComponent> 
                 let f = fs.[fs.Length-1]
                 System.Console.SetCursorPosition(x - fst _windowLocation, y - snd _windowLocation)
                 System.Console.Write(f.Symbol)

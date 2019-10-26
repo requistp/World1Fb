@@ -20,13 +20,13 @@ let private RenderAll (enm:EntityManager) =
 
     let fs = 
         Component_Form
-        |> enm.EntitiesWithComponent
-        |> Array.map (fun eid -> enm.TryGetComponent<FormComponent> eid)
+        |> enm.Components.List
+        |> Array.map (fun eid -> enm.Entities.TryGetComponent<FormComponent> eid)
         |> Array.collect (fun fo -> fo |> Option.toArray)
     let ts =
         Component_Terrain
-        |> enm.EntitiesWithComponent
-        |> Array.map (fun eid -> enm.TryGetComponent<TerrainComponent> eid)
+        |> enm.Components.List
+        |> Array.map (fun eid -> enm.Entities.TryGetComponent<TerrainComponent> eid)
         |> Array.collect (fun fo -> fo |> Option.toArray)
 
     ts |> Array.iter (fun t -> render t.EntityID fs)

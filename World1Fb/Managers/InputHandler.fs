@@ -23,7 +23,7 @@ type InputHandler(evm:EventManager, enm:EntityManager, fman:FrameManager, sysm:S
     member private this.HaveEntityAndRequiredComponents (cts:'T[]) =
         match _entityID with
         | None -> false
-        | Some eid -> enm.EntityHasAllComponents cts eid
+        | Some eid -> enm.Entities.HasAllComponents cts eid
     
     member private this.HandleAction (requiredCTS:'T[]) event =
         match this.HaveEntityAndRequiredComponents requiredCTS with

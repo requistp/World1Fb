@@ -26,7 +26,7 @@ type ScheduleSystem(game:Game, isActive:bool) =
         let executeAndReschedule (se:ScheduledEvent) =
             _schedule <- Map_AppendValueToArray (_schedule.Remove se.EventData.EntityID) (game.Round + se.Frequency) se //Remove current and Add future 
             game.EventManager.QueueEvent se.EventData
-        let e,ne = _schedule.Item(game.Round) |> Array.partition (fun se -> game.EntityManager.Exists se.EventData.EntityID)
+        let e,ne = _schedule.Item(game.Round) |> Array.partition (fun se -> game.EntityManager.Entities.Exists se.EventData.EntityID)
         ne |> Array.iter (fun se -> _schedule <- _schedule.Remove se.EventData.EntityID)
         e |> Array.iter (fun se -> executeAndReschedule se)
 

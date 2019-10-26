@@ -12,7 +12,7 @@ type MovementSystem(game:Game, isActive:bool) =
     member private this.onMovementKeyPressed (next:NextEntityDictionary) (ge:EventData_Generic) =
         let m = ge :?> EventData_Action_Movement
 
-        let formo = next.TryGetComponent<FormComponent> m.EntityID
+        let formo = next.Entities.TryGetComponent<FormComponent> m.EntityID
 
         let checkIfMovementIsValid (form:FormComponent) = 
             let dest = m.Direction.AddToLocation form.Location
@@ -24,9 +24,9 @@ type MovementSystem(game:Game, isActive:bool) =
                 let testForImpassableFormAtLocation junk =
                     let formImpassableAtLocation =
                         dest
-                        |> next.EntitiesAtLocation
+                        |> next.Locations.List
                         |> Array.filter (fun e -> e <> m.EntityID)
-                        |> Array.Parallel.map (fun eid -> next.GetComponent<FormComponent> eid)
+                        |> Array.Parallel.map (fun eid -> next.Entities.GetComponent<FormComponent> eid)
                         |> Array.exists (fun f -> not f.IsPassable)
                     match formImpassableAtLocation with
                     | true -> Error (sprintf "Form at location %s" dest.Print)

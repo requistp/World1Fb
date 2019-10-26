@@ -25,27 +25,27 @@ type PlantGrowthSystem(game:Game, isActive:bool) =
                 Ok (Some (sprintf "Queued Regrow to Schedule:%b. Queued Repopulate to Schedule:%b" (pgc.RegrowRate > 0.0) (pgc.ReproductionRate > 0.0)))
     
     member private this.onReproduce (next:NextEntityDictionary) (ge:EventData_Generic) =
-        let pgc = game.EntityManager.GetComponent<PlantGrowthComponent> ge.EntityID
+        let pgc = game.EntityManager.Entities.GetComponent<PlantGrowthComponent> ge.EntityID
         let tryMakeNewPlant =            
             let r = random.NextDouble()
             match pgc.ReproductionRate >= r with
             | false -> Error (sprintf "Failed reproduction (%f<%f)" pgc.ReproductionRate r)
             | true -> 
-                let form = game.EntityManager.GetComponent<FormComponent> ge.EntityID
+                let form = game.EntityManager.Entities.GetComponent<FormComponent> ge.EntityID
                 let newLocation = form.Location.AddOffset pgc.ReproductionRange pgc.ReproductionRange 0 false true
                 match newLocation.IsOnMap with
                 | false -> Error "Cannot reproduce: location not on map"
                 | true ->
-                    let eids = next.EntitiesAtLocation newLocation
-                    let plantexists = not (eids |> next.TryGetComponentForEntities<PlantGrowthComponent> |> Array.isEmpty)
+                    let eids = next.Locations.List newLocation
+                    let plantexists = not (eids |> next.Entities.TryGetComponentForEntities<PlantGrowthComponent> |> Array.isEmpty)
                     match not plantexists with 
                     | false -> Error "Cannot reproduce: plant exists at location"
                     | true -> 
-                        let terrainissuitable = pgc.GrowsInTerrain |> Array.exists (fun t -> (eids |> next.TryGetComponentForEntities<TerrainComponent>) |> Array.exists (fun t2 -> t2.Terrain = t))
+                        let terrainissuitable = pgc.GrowsInTerrain |> Array.exists (fun t -> (eids |> next.Entities.TryGetComponentForEntities<TerrainComponent>) |> Array.exists (fun t2 -> t2.Terrain = t))
                         match terrainissuitable with
                         | false -> Error "Cannot reproduce: terrain is not suitable"
                         | true -> 
-                            let foodo = game.EntityManager.TryGetComponent<FoodComponent> ge.EntityID
+                            let foodo = game.EntityManager.Entities.TryGetComponent<FoodComponent> ge.EntityID
                             let pct = float foodo.Value.Quantity / float foodo.Value.QuantityMax
                             match foodo.IsNone || pgc.ReproductionRequiredFoodQuantity < pct with
                             | false -> Error (sprintf "Cannot reproduce: food component quantity below requirement (%f<%f)" pct pgc.ReproductionRequiredFoodQuantity)
@@ -60,7 +60,7 @@ type PlantGrowthSystem(game:Game, isActive:bool) =
         let makePlant (l:LocationDataInt) (r:float) = 
             let neweid = next.NewEntityID
             let newcts = 
-                game.EntityManager.Copy ge.EntityID neweid
+                game.EntityManager.Entities.Copy ge.EntityID neweid
                 |> Array.map (fun ct -> makePlant_AdjustComponents ct l)
             game.EventManager.QueueEvent (EventData_CreateEntity(neweid,newcts))
             Ok (Some (sprintf "Passed reproduction (%f>%f). New EntityID:%i" pgc.ReproductionRate r neweid))
