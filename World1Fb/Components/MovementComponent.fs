@@ -33,3 +33,5 @@ type MovementComponent(eid:uint32, movesPerTurn:int) =
 
     override this.Copy neweid = 
         MovementComponent(neweid, movesPerTurn).Abstract
+
+    

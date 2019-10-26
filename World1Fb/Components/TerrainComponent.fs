@@ -1,6 +1,5 @@
 ﻿module TerrainComponent
 open AbstractComponent
-open LocationTypes
 
 
 type TerrainType = 
@@ -25,3 +24,6 @@ type TerrainComponent(eid:uint32, terrainType:TerrainType) =
 
     override this.Copy neweid = 
         TerrainComponent(neweid, terrainType).Abstract
+
+    
+

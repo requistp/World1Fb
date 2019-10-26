@@ -7,7 +7,6 @@ open System
 
 type EatingComponent(eid:uint32, foods:FoodTypes[], quantity:int, quantityMax:int, quantityPerAction:int, calories:int, caloriesPerDay:int) = 
     inherit AbstractComponent(eid,Component_Eating)
-    static member Type = Component_Eating
 
     member _.Calories = calories
     member _.CaloriesPerDay = caloriesPerDay
@@ -30,3 +29,4 @@ type EatingComponent(eid:uint32, foods:FoodTypes[], quantity:int, quantityMax:in
     override this.Copy neweid = 
         EatingComponent(neweid, foods, quantity, quantityMax, quantityPerAction, calories, caloriesPerDay).Abstract
 
+    

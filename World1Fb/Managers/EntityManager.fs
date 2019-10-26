@@ -3,9 +3,9 @@ open AbstractComponent
 open CommonGenericFunctions
 open FormComponent
 open LocationTypes
-open System
 
-type MsgEntityArray = 
+
+type EntityArrayMsg = 
     | Add of uint32
     | Remove of uint32
     | List of AsyncReplyChannel<uint32[]>
@@ -21,7 +21,7 @@ type EntityArray() =
             match _entities |> Array.exists (fun e -> e = eid) with 
             | false -> ()
             | true -> _entities <- _entities |> Array.filter (fun e -> e <> eid)
-        MailboxProcessor<MsgEntityArray>.Start(
+        MailboxProcessor<EntityArrayMsg>.Start(
             fun inbox ->
                 async 
                     { 
@@ -30,7 +30,7 @@ type EntityArray() =
                             match msg with
                             | Add eid -> add eid
                             | Remove eid -> remove eid
-                            | List replyChannel  -> replyChannel.Reply(_entities)
+                            | List replyChannel -> replyChannel.Reply(_entities)
                     }
             )
     member this.Add eid = listAgent.Post (Add eid)
@@ -40,7 +40,7 @@ type EntityArray() =
 
 type ComponentDictionary() = 
     let _compDict =
-        ComponentTypesAsArray
+        ComponentTypes.AsArray
         |> Array.fold (fun (m:Map<ComponentTypes,EntityArray>) ct -> m.Add(ct,new EntityArray())) Map.empty
 
     member this.Add (ct:AbstractComponent) =
@@ -52,20 +52,21 @@ type ComponentDictionary() =
         (_compDict.Item ct.ComponentType).Remove ct.EntityID
     member this.Remove (cts:AbstractComponent[]) =
         cts |> Array.Parallel.iter (fun ct -> (_compDict.Item ct.ComponentType).Remove ct.EntityID)
-
+        
     member this.List (componentType:ComponentTypes) =
-        (_compDict.Item componentType).List
+        _compDict.Item(componentType).List
     member this.List () =
         _compDict |> Map.iter (fun k v -> printfn "%s | %i" (k.ToString()) v.List.Length)
+        
 
 [<AbstractClass>]
 type AbstractEntityDictionary() =
+    let mutable _compDict = new ComponentDictionary()
     let mutable _entities = Map.empty<uint32,AbstractComponent[]>
-    //let mutable _compDict = Map.empty<ComponentTypes,uint32[]>
     let mutable _locDict = Map.empty<LocationDataInt,uint32[]>
-    let mutable compDict = new ComponentDictionary()
-    member this.List() = compDict.List()
-    member this.Components = compDict
+
+    member this.List() = _compDict.List()
+    member this.Components = _compDict
     member this.Copy (eid:uint32) (neweid:uint32) =
         _entities.Item(eid) |> Array.Parallel.map (fun ct -> ct.Copy neweid)
     member this.Entities = _entities
@@ -75,11 +76,7 @@ type AbstractEntityDictionary() =
         | false -> Array.empty
     member this.EntityHasAllComponents (cts:'T[]) (eid:uint32) =
         cts |> Array.forall (fun ct -> _entities.Item eid |> Array.exists (fun ec -> ec.GetType() = ct))
-    member this.EntitiesWithComponent (ct:ComponentTypes) =
-        compDict.List ct
-        //match _compDict.ContainsKey(ct) with
-        //| true -> _compDict.Item(ct)
-        //| false -> Array.empty
+    member this.EntitiesWithComponent (ct:ComponentTypes) = _compDict.List ct
     member this.Exists (eid:uint32) = _entities.ContainsKey eid
     member this.GetComponent<'T> (eid:uint32) : 'T =
         (_entities.Item(eid) |> Array.find (fun x -> x.GetType() = typeof<'T>)) :?> 'T
@@ -105,14 +102,12 @@ type AbstractEntityDictionary() =
         match _entities.ContainsKey(cts.[0].EntityID) with
         | true -> Error "CreateEntity: Entity already in dictionary"
         | false -> _entities <- _entities.Add(cts.[0].EntityID,cts)
-                   //this.AddComponentsToDictionary cts
-                   compDict.Add cts
+                   _compDict.Add cts
                    this.UpdateLocationDictionary
                    Ok (Some "Created in next dictionary")
     member internal this.RemoveEntity (eid:uint32) : Result<string option,string> =
-        compDict.Remove (_entities.Item eid)
+        _compDict.Remove (_entities.Item eid)
         _entities <- _entities.Remove eid
-        //this.UpdateComponentDictionary
         this.UpdateLocationDictionary
         Ok None
     member internal this.ReplaceComponent (ac:AbstractComponent) (changes:string option) : Result<string option,string> = 
@@ -125,27 +120,9 @@ type AbstractEntityDictionary() =
         Ok changes
     member internal this.SetToNext (next:AbstractEntityDictionary) : Result<string option,string> =
         _entities <- next.Entities
-        compDict <- next.Components
+        _compDict <- next.Components
         _locDict <- next.Locations
         Ok None
-
-    //member private this.AddComponentsToDictionary (cts:AbstractComponent[]) =
-    //    //let addComponentToDictionary (ct:AbstractComponent) =
-    //    //    _compDict <- Map_AppendValueToArray _compDict ct.ComponentType ct.EntityID
-    //    //cts |> Array.iter (fun ct -> addComponentToDictionary ct)
-    //    compDict.Add cts
-
-    //member private this.RemoveComponentsFromDictionary (cts:AbstractComponent[]) =
-    //    //let addComponentToDictionary (ct:AbstractComponent) =
-    //    //    _compDict <- Map_AppendValueToArray _compDict ct.ComponentType ct.EntityID
-    //    //cts |> Array.iter (fun ct -> addComponentToDictionary ct)
-    //    compDict.Remove cts
-
-    //member private this.UpdateComponentDictionary =
-    //    _compDict <- 
-    //        _entities 
-    //        |> Map.fold (fun m k v -> v |> Array.fold (fun m c -> Map_AppendValueToArray m c.ComponentType k) m ) Map.empty<ComponentTypes,uint32[]>
-
     member private this.UpdateLocationDictionary =
         _locDict <- 
             Component_Form

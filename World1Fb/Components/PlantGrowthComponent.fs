@@ -4,7 +4,7 @@ open TerrainComponent
 
 type PlantGrowthComponent(eid:uint32, growsInTerrain:TerrainType[], regrowRate:float, reproductionRate:float, reproductionRange:int, reproductionRequiredFoodQuantity:float) = 
     inherit AbstractComponent(eid,Component_PlantGrowth)
-
+    
     member _.GrowsInTerrain = growsInTerrain
     member _.RegrowRate = regrowRate
     member _.ReproductionRate = reproductionRate

@@ -22,4 +22,4 @@ type FormComponent(eid:uint32, isPassable:bool, name:string, symbol:char, locati
     override this.Copy neweid = 
         FormComponent(neweid, isPassable, name, symbol, location).Abstract
 
-
+    

@@ -45,7 +45,7 @@ type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*stri
 
         entityMan.List()
         //renderer_SetContent [| ("World Map",entityMan.ToDisplayString); ("Game Events List",frameMan.GERs_ToString GEListType.Last10FramesExcludingFirst) |] true |> Async.Start
-        //wmr entityMan
+        wmr entityMan
         //printfn "Round:%i" this.Round
         
     member this.Start (ss:AbstractSystem[]) (initialForms:AbstractComponent[][]) = 

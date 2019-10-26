@@ -7,3 +7,4 @@ type ControllerComponent(eid:uint32) =
 
     override this.Copy neweid = ControllerComponent(neweid).Abstract
 
+    
