@@ -39,4 +39,3 @@ type EntityDictionary() =
     member this.Remove eid = listAgent.Post (Remove eid)
 
     member this.List = listAgent.PostAndReply List 
-

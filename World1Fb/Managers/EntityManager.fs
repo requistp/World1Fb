@@ -3,9 +3,50 @@ open AbstractComponent
 open CommonGenericFunctions
 open ComponentEntityDictionary
 open EntityComponentDictionary
+open EntityIDDictionary
 open FormComponent
 open LocationEntityDictionary
 open LocationTypes
+
+type EntityManager2() =
+    let mutable _components_Current = new ComponentEntityDictionary()
+    let mutable _entities_Current = new EntityComponentDictionary() 
+    let mutable _locations_Current = new LocationEntityDictionary()
+
+    let _components_Next = new ComponentEntityDictionary()
+    let _entities_Next = new EntityComponentDictionary() 
+    let _locations_Next = new LocationEntityDictionary()
+
+    let _eidManager = new EntityIDDictionary()
+
+    member this.Components = _components_Current
+    member this.Entities = _entities_Current
+    member this.Locations = _locations_Current
+    member this.MaxEntityID = _eidManager.Max
+    member this.NewEntityID = _eidManager.New; _eidManager.Max
+         
+    member internal this.CreateEntity (cts:AbstractComponent[]) = 
+        _entities_Next.CreateEntity cts
+        _components_Next.Add cts
+        _locations_Next.Add cts
+        Ok None
+
+    member internal this.RemoveEntity (eid:uint32) =
+        _components_Next.Remove (_entities_Next.List eid)
+        _locations_Next.Remove (_entities_Next.List eid)
+        _entities_Next.RemoveEntity eid
+        Ok None
+
+    member internal this.ReplaceComponent (ac:AbstractComponent) (changes:string option) =
+        if ac.ComponentType = Component_Form then _locations_Next.Move (_entities_Next.GetComponent<FormComponent> ac.EntityID) (ac :?> FormComponent)
+        _entities_Next.ReplaceComponent ac
+        Ok changes
+
+    member internal this.SetToNext : Result<string option,string> =
+        _components_Current <- _components_Next
+        _entities_Current <- _entities_Next
+        _locations_Current <- _locations_Next
+        Ok None
 
 
 [<AbstractClass>]
