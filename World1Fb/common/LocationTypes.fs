@@ -7,7 +7,7 @@ let MapWidth = 40
 
 
 [<Literal>]
-let MapHeight = 40
+let MapHeight = 20
 
 
 type LocationDataInt = {
@@ -44,3 +44,13 @@ type LocationDataInt = {
             l <- newLocation random.Next
         l
         
+let MapLocations =
+    [|0..MapHeight-1|] |> Array.collect (fun y -> [|0..MapWidth-1|] |> Array.map (fun x -> { X=x; Y=y; Z=0 } ))
+
+
+    //for y in [0..MapHeight-1] do
+    //    for x in [0..MapWidth-1] do
+    //        Arr
+    //        |> Array.fold ( )
+    //ComponentTypes.AsArray
+    //|> Array.fold (fun (m:Map<ComponentTypes,EntityArray>) ct -> m.Add(ct,new EntityArray())) Map.empty
