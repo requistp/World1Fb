@@ -15,7 +15,7 @@ type KeyboardResult =
     | GameAction
     | InfoOnly
 
-type InputHandler(evm:EventManager, enm:EntityManager2, fman:FrameManager, sysm:SystemManager, renderer_SetDisplay:string->unit, wmrKeys:ConsoleKey->unit) =
+type InputHandler(evm:EventManager, enm:EntityManager, fman:FrameManager, sysm:SystemManager, renderer_SetDisplay:string->unit, wmrKeys:ConsoleKey->unit) =
     let mutable _entityID = None
 
     member this.EntityID = _entityID
@@ -23,7 +23,7 @@ type InputHandler(evm:EventManager, enm:EntityManager2, fman:FrameManager, sysm:
     member private this.HaveEntityAndRequiredComponents (cts:'T[]) =
         match _entityID with
         | None -> false
-        | Some eid -> enm.Entities_Current.HasAllComponents cts eid
+        | Some eid -> enm.HasAllComponents cts eid
     
     member private this.HandleAction (requiredCTS:'T[]) event =
         match this.HaveEntityAndRequiredComponents requiredCTS with

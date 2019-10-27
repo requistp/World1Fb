@@ -9,7 +9,7 @@ open GameManager
 type KillSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
 
-    member private this.onKillAllEaten (enm:EntityManager2) (ge:EventData_Generic) =
+    member private this.onKillAllEaten (enm:EntityManager) (ge:EventData_Generic) =
         enm.RemoveEntity (ge.EntityID)
 
     override this.Initialize = 

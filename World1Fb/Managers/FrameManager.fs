@@ -8,13 +8,13 @@ type Frame =
     {
         Number : uint32
         //Entities : EntityComponentDictionary //Map<uint32,AbstractComponent[]>
-        MaxEntityID : uint32
+        //MaxEntityID : uint32
     } with 
     static member empty = 
         { 
             Number = 0u
             //Entities = EntityComponentDictionary()
-            MaxEntityID = 0u
+            //MaxEntityID = 0u
         }
 
 type GEListType = 
@@ -27,13 +27,13 @@ type GEListType =
 type FrameManager() =
     let mutable _frames = [| Frame.empty |]
     
-    member this.AddFrame (*(entities:EntityComponentDictionary)*) (maxEntityID:uint32) = 
+    member this.AddFrame (*(entities:EntityComponentDictionary)*) (*(maxEntityID:uint32)*) = 
         _frames <- 
             [| 
                 { 
                     Number = (uint32 _frames.Length)
                     //Entities = entities
-                    MaxEntityID = maxEntityID
+                    //MaxEntityID = maxEntityID
                 } 
             |]
             |> Array.append _frames

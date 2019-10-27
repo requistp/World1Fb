@@ -19,14 +19,14 @@ type ScheduleSystem(game:Game, isActive:bool) =
         _schedule <- Map_AppendValueToArray _schedule (game.Round+offset) se
         Ok (Some result)
 
-    member private this.onScheduleEvent (enm:EntityManager2) (ge:EventData_Generic) =
+    member private this.onScheduleEvent (enm:EntityManager) (ge:EventData_Generic) =
         this.AddEvent ((ge :?> EventData_ScheduleEvent).ScheduledEvent)
 
     member private this.ProcessScheduledEvents =
         let executeAndReschedule (se:ScheduledEvent) =
             _schedule <- Map_AppendValueToArray (_schedule.Remove se.EventData.EntityID) (game.Round + se.Frequency) se //Remove current and Add future 
             game.EventManager.QueueEvent se.EventData
-        let e,ne = _schedule.Item(game.Round) |> Array.partition (fun se -> game.EntityManager.Entities_Current.Exists se.EventData.EntityID)
+        let e,ne = _schedule.Item(game.Round) |> Array.partition (fun se -> game.EntityManager.Exists se.EventData.EntityID)
         ne |> Array.iter (fun se -> _schedule <- _schedule.Remove se.EventData.EntityID)
         e |> Array.iter (fun se -> executeAndReschedule se)
 

@@ -19,7 +19,6 @@
     <Compile Include="Components\PlantGrowthComponent.fs" />
     <Compile Include="Managers\ComponentEntityAgent.fs" />
     <Compile Include="Managers\LocationEntityAgent.fs" />
-    <Compile Include="Managers\EntityIDAgent.fs" />
     <Compile Include="Managers\EntityComponentAgent.fs" />
     <Compile Include="Managers\EntityManager.fs" />
     <Compile Include="Managers\EventTypes.fs" />

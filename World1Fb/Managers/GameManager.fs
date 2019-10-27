@@ -14,9 +14,9 @@ open SystemManager
 open System
 
 
-type Game(renderer:EntityManager2->uint32->unit, renderer_SetContent:(string*string)[]->bool->Async<unit>, renderer_SetDisplay:string->unit, renderer_Display:string->unit, wmr:EntityManager2->unit, wmrKeys:ConsoleKey->unit) =
+type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*string)[]->bool->Async<unit>, renderer_SetDisplay:string->unit, renderer_Display:string->unit, wmr:EntityManager->unit, wmrKeys:ConsoleKey->unit) =
     let frameMan = new FrameManager()
-    let entityMan = new EntityManager2()
+    let entityMan = new EntityManager()
     let eventMan = new EventManager(entityMan, (fun () -> frameMan.Round))
     let systemMan = new SystemManager(eventMan)
     let inputMan = new InputHandler(eventMan, entityMan, frameMan, systemMan, renderer_SetDisplay, wmrKeys)
@@ -28,7 +28,7 @@ type Game(renderer:EntityManager2->uint32->unit, renderer_SetContent:(string*str
     member this.Round = (uint32 frameMan.Round) // - 1u)
 
     member private this.assignController =
-        match Component_Controller |> entityMan.Components_Current.Get with
+        match Component_Controller |> entityMan.GetEntitiesWithComponent with
         | [||] -> None
         | l -> Some l.[0]
 
@@ -41,7 +41,7 @@ type Game(renderer:EntityManager2->uint32->unit, renderer_SetContent:(string*str
 
         eventMan.ProcessEvents
         
-        //frameMan.AddFrame entityMan.Entities_Current entityMan.EntityID_Max //Array.empty //geResults
+        frameMan.AddFrame //entityMan.Entities_Current entityMan.EntityID_Max //Array.empty //geResults
 
         //entityMan.Entities.List()
         //renderer_SetContent [| ("World Map",entityMan.ToDisplayString); ("Game Events List",frameMan.GERs_ToString GEListType.Last10FramesExcludingFirst) |] true |> Async.Start
@@ -49,7 +49,7 @@ type Game(renderer:EntityManager2->uint32->unit, renderer_SetContent:(string*str
         //entityMan.CurrentToString()
         wmr entityMan
         
-        //printfn "Round:%i" this.Round
+        printfn "Round:%i" this.Round
         
     member this.Start (ss:AbstractSystem[]) (initialForms:AbstractComponent[][]) = 
         

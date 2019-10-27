@@ -19,7 +19,7 @@ type SystemManager(evm:EventManager) =
     member this.UpdateSystems =
         this.ActiveAndInitialized |> Array.Parallel.iter (fun s -> s.Update)
 
-    member private this.onCreateEntity (enm:EntityManager2) (ge:EventData_Generic) =
+    member private this.onCreateEntity (enm:EntityManager) (ge:EventData_Generic) =
         let e = (ge :?> EventData_CreateEntity)
         enm.CreateEntity e.Components
 

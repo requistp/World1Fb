@@ -13,7 +13,7 @@ open PlantGrowthComponent
 open TerrainComponent
 
 
-let MakeGrasses (enm:EntityManager2) n =
+let MakeGrasses (enm:EntityManager) n =
     let MakeGrass x y =
         let eid = enm.EntityID_New
         [| 
@@ -26,7 +26,7 @@ let MakeGrasses (enm:EntityManager2) n =
     | _ -> [1..n] |> List.toArray |> Array.map (fun i -> MakeGrass (random.Next(0,MapWidth)) (random.Next(0,MapHeight))) //Can't Parallel
     |> Array.rev
 
-let MakeMap (enm:EntityManager2) = 
+let MakeMap (enm:EntityManager) = 
     let AddTerrain x y = 
         let eid = enm.EntityID_New
         let t = match random.Next(1,50) with
@@ -50,7 +50,7 @@ let MakeMap (enm:EntityManager2) =
     tmap
 
 
-let MakeRabbits (enm:EntityManager2) n = 
+let MakeRabbits (enm:EntityManager) n = 
     let MakeRabbit x y n = 
         let eid = enm.EntityID_New
         let cont = [| ControllerComponent(eid).Abstract  |]

@@ -3,13 +3,13 @@ open CommonGenericFunctions
 open EntityManager
 open EventTypes
 
-type GECallback = EntityManager2 -> EventData_Generic -> Result<string option,string>
+type GECallback = EntityManager -> EventData_Generic -> Result<string option,string>
 
 type GECallbackExecution = GECallback option * EventData_Generic
 
 type GECallbackResult = GECallback option * EventData_Generic * Result<string option,string>
     
-type EventManager(enm:EntityManager2, round:unit->uint32) =
+type EventManager(enm:EntityManager, round:unit->uint32) =
     let mutable _listeners = Map.empty:Map<GameEventTypes,GECallback[]>
     
     let resultAgent =

@@ -1,9 +1,14 @@
 ﻿module EntityComponentAgent
 open AbstractComponent
-open CommonGenericFunctions
 
 
-type EntityComponentAgentMsg = 
+type EntityIDAgentMsg = 
+    | GetMax of AsyncReplyChannel<uint32>
+    | GetNew of AsyncReplyChannel<uint32>
+    | InitID of uint32
+
+
+type NextAgentMsg = 
     | AddEntity of AbstractComponent[]
     | Exists of uint32 * AsyncReplyChannel<bool>
     | GetComponents of uint32 * AsyncReplyChannel<AbstractComponent[]>
@@ -12,92 +17,119 @@ type EntityComponentAgentMsg =
     | RemoveEntity of uint32
     | ReplaceComponent of AbstractComponent
 
+//type PreviousAgentMsg = 
+//    //not sure I need this... | Prev_Exists of uint32 * AsyncReplyChannel<bool>
+//    | Prev_GetComponents of uint32 * AsyncReplyChannel<AbstractComponent[]>
+//    | Prev_GetMap of AsyncReplyChannel< Map<uint32,AbstractComponent[]> >
+//    | Prev_Init of Map<uint32,AbstractComponent[]>
+
 
 type EntityComponentAgent() = 
 
-    let agent =
-        let mutable _entDict = Map.empty<uint32,AbstractComponent[]>
+    let agentForID =
+        let mutable _maxEntityID = 0u
+        MailboxProcessor<EntityIDAgentMsg>.Start(
+            fun inbox ->
+                async { 
+                    while true do
+                        let! msg = inbox.Receive()
+                        match msg with
+                        | GetMax replyChannel -> 
+                            replyChannel.Reply(_maxEntityID)
+                        | GetNew replyChannel -> 
+                            _maxEntityID <- _maxEntityID + 1u
+                            replyChannel.Reply(_maxEntityID)
+                        | InitID startMax -> 
+                            _maxEntityID <- startMax
+                }
+            )
 
-        MailboxProcessor<EntityComponentAgentMsg>.Start(
+    let agentForNext =
+        let mutable _next = Map.empty<uint32,AbstractComponent[]>
+        MailboxProcessor<NextAgentMsg>.Start(
             fun inbox ->
                 async { 
                     while true do
                         let! msg = inbox.Receive()
                         match msg with
                         | AddEntity cts ->
-                            if not (_entDict.ContainsKey(cts.[0].EntityID)) then 
-                                _entDict <- _entDict.Add(cts.[0].EntityID, cts)
+                            if not (_next.ContainsKey(cts.[0].EntityID)) then 
+                                _next <- _next.Add(cts.[0].EntityID, cts)
                         | Exists (eid,replyChannel) ->
-                            replyChannel.Reply(_entDict.ContainsKey eid)
+                            replyChannel.Reply(_next.ContainsKey eid)
                         | GetComponents (eid,replyChannel) ->
                             replyChannel.Reply(
-                                match _entDict.ContainsKey eid with
+                                match _next.ContainsKey eid with
                                 | false -> [||]
-                                | true -> _entDict.Item(eid)
+                                | true -> _next.Item(eid)
                             )
                         | GetMap replyChannel ->
-                            replyChannel.Reply(_entDict)
+                            replyChannel.Reply(_next)
                         | Init newMap -> 
-                            _entDict <- newMap
+                            _next <- newMap
                         | RemoveEntity eid -> 
-                            _entDict <- _entDict.Remove eid
+                            _next <- _next.Remove eid
                         | ReplaceComponent ct ->
-                            if (_entDict.ContainsKey ct.EntityID) then
-                                _entDict <-
+                            if (_next.ContainsKey ct.EntityID) then
+                                _next <-
                                     let a = 
-                                        _entDict.Item(ct.EntityID)
+                                        _next.Item(ct.EntityID)
                                         |> Array.filter (fun ac -> ac.ComponentType <> ct.ComponentType)
                                         |> Array.append [|ct|]
-                                    _entDict.Remove(ct.EntityID).Add(ct.EntityID,a)
+                                    _next.Remove(ct.EntityID).Add(ct.EntityID,a)
                 }
             )
 
-    member this.CopyEntity (oldeid:uint32) (neweid:uint32) =
-        this.GetComponents oldeid
-        |> Array.Parallel.map (fun (ct:AbstractComponent) -> ct.Copy neweid)
+    //let agentForPrevious =
+    //    let mutable _previous = Map.empty<uint32,AbstractComponent[]>
+    //    MailboxProcessor<PreviousAgentMsg>.Start(
+    //        fun inbox ->
+    //            async { 
+    //                while true do
+    //                    let! msg = inbox.Receive()
+    //                    match msg with
+    //                    //| Prev_Exists (eid,replyChannel) ->
+    //                    //    replyChannel.Reply(_previous.ContainsKey eid)
+    //                    | Prev_GetComponents (eid,replyChannel) ->
+    //                        replyChannel.Reply(
+    //                            match _previous.ContainsKey eid with
+    //                            | false -> [||]
+    //                            | true -> _previous.Item(eid)
+    //                        )
+    //                    | Prev_GetMap replyChannel ->
+    //                        replyChannel.Reply(_previous)
+    //                    | Prev_Init newMap -> 
+    //                        _previous <- newMap
+    //            }
+    //        )
 
     member this.CreateEntity (cts:AbstractComponent[]) = 
-        agent.Post (AddEntity cts)
+        agentForNext.Post (AddEntity cts)
 
     member this.Exists (eid:uint32) = 
-        agent.PostAndReply (fun replyChannel -> Exists(eid,replyChannel))
-
-    member this.GetComponent<'T when 'T:>AbstractComponent> (eid:uint32) : 'T =
-        (this.GetComponents eid |> Array.find (fun x -> x.GetType() = typeof<'T>)) :?> 'T
+        agentForNext.PostAndReply (fun replyChannel -> Exists(eid,replyChannel))
 
     member this.GetComponents (eid:uint32) = 
-        agent.PostAndReply (fun replyChannel -> GetComponents(eid,replyChannel))
+        agentForNext.PostAndReply (fun replyChannel -> GetComponents(eid,replyChannel))
 
     member this.GetMap() = 
-        agent.PostAndReply GetMap
+        agentForNext.PostAndReply GetMap
 
-    member this.HasAllComponents (cts:'T[]) (eid:uint32) =
-        cts |> Array.forall (fun ct -> this.GetComponents eid |> Array.exists (fun ec -> ec.GetType() = ct))
-
+    member this.GetMaxID = 
+        agentForID.PostAndReply GetMax
+    
+    member this.GetNewID = 
+        agentForID.PostAndReply GetNew
+    
     member this.RemoveEntity (eid:uint32) = 
-        agent.Post (RemoveEntity eid)
+        agentForNext.Post (RemoveEntity eid)
 
     member this.ReplaceComponent (ct:AbstractComponent) =
-        agent.Post (ReplaceComponent ct)
+        agentForNext.Post (ReplaceComponent ct)
 
-    member this.Init (newMap:Map<uint32,AbstractComponent[]>) = 
-        agent.Post (Init newMap)
-
-    member this.TryGet (eid:uint32) =
-        this.Exists eid |> TrueSomeFalseNone (this.GetComponents eid)
-
-    member this.TryGetComponent<'T when 'T:>AbstractComponent> (eid:uint32) : Option<'T> = 
-        match this.TryGet eid with
-        | None -> None
-        | Some cts -> match cts |> Array.filter (fun c -> c.GetType() = typeof<'T>) with
-                      | [||] -> None
-                      | l -> Some (l.[0] :?> 'T)
-
-    member this.TryGetComponentForEntities<'T when 'T:>AbstractComponent> (eids:uint32[]) = 
-        eids
-        |> Array.Parallel.map (fun eid -> this.TryGetComponent<'T> eid)
-        |> Array.filter (fun aco -> aco.IsSome)
-        |> Array.Parallel.map (fun aco -> aco.Value)
+    member this.Init (startMax:uint32) (newMap:Map<uint32,AbstractComponent[]>) = 
+        agentForID.Post (InitID startMax)
+        agentForNext.Post (Init newMap)
 
 
 //member this.List () =
