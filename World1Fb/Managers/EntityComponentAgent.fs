@@ -1,15 +1,14 @@
 ﻿module EntityComponentAgent
 open AbstractComponent
 open CommonGenericFunctions
-open ComponentAgent
 
 
 type EntityComponentAgentMsg = 
-    | ComponentList of uint32 * AsyncReplyChannel<AbstractComponent[]>
-    | CreateEntity of AbstractComponent[]
+    | AddEntity of AbstractComponent[]
     | Exists of uint32 * AsyncReplyChannel<bool>
-    | Init of Map<uint32,AbstractComponent[]>
+    | GetComponents of uint32 * AsyncReplyChannel<AbstractComponent[]>
     | GetMap of AsyncReplyChannel< Map<uint32,AbstractComponent[]> >
+    | Init of Map<uint32,AbstractComponent[]>
     | RemoveEntity of uint32
     | ReplaceComponent of AbstractComponent
 
@@ -17,7 +16,7 @@ type EntityComponentAgentMsg =
 type EntityComponentAgent() = 
 
     let agent =
-        let mutable _entDict = Map.empty<uint32,ComponentAgent>
+        let mutable _entDict = Map.empty<uint32,AbstractComponent[]>
 
         MailboxProcessor<EntityComponentAgentMsg>.Start(
             fun inbox ->
@@ -25,28 +24,31 @@ type EntityComponentAgent() =
                     while true do
                         let! msg = inbox.Receive()
                         match msg with
-                        | ComponentList (eid,replyChannel) ->
+                        | AddEntity cts ->
+                            if not (_entDict.ContainsKey(cts.[0].EntityID)) then 
+                                _entDict <- _entDict.Add(cts.[0].EntityID, cts)
+                        | Exists (eid,replyChannel) ->
+                            replyChannel.Reply(_entDict.ContainsKey eid)
+                        | GetComponents (eid,replyChannel) ->
                             replyChannel.Reply(
                                 match _entDict.ContainsKey eid with
                                 | false -> [||]
-                                | true -> _entDict.Item(eid).Get
+                                | true -> _entDict.Item(eid)
                             )
-                        | CreateEntity cts ->
-                            if not (_entDict.ContainsKey(cts.[0].EntityID)) then 
-                                _entDict <- _entDict.Add(cts.[0].EntityID, new ComponentAgent(cts))
-                        | Exists (eid,replyChannel) ->
-                            replyChannel.Reply(_entDict.ContainsKey eid)
                         | GetMap replyChannel ->
-                            replyChannel.Reply(_entDict |> Map.map (fun k v -> v.Get))
+                            replyChannel.Reply(_entDict)
                         | Init newMap -> 
-                            _entDict <- 
-                                newMap |> Map.map (fun k v -> new ComponentAgent(v))
+                            _entDict <- newMap
                         | RemoveEntity eid -> 
                             _entDict <- _entDict.Remove eid
                         | ReplaceComponent ct ->
-                            match _entDict.ContainsKey ct.EntityID with
-                            | false -> ()
-                            | true -> _entDict.Item(ct.EntityID).Replace ct
+                            if (_entDict.ContainsKey ct.EntityID) then
+                                _entDict <-
+                                    let a = 
+                                        _entDict.Item(ct.EntityID)
+                                        |> Array.filter (fun ac -> ac.ComponentType <> ct.ComponentType)
+                                        |> Array.append [|ct|]
+                                    _entDict.Remove(ct.EntityID).Add(ct.EntityID,a)
                 }
             )
 
@@ -55,7 +57,7 @@ type EntityComponentAgent() =
         |> Array.Parallel.map (fun (ct:AbstractComponent) -> ct.Copy neweid)
 
     member this.CreateEntity (cts:AbstractComponent[]) = 
-        agent.Post (CreateEntity cts)
+        agent.Post (AddEntity cts)
 
     member this.Exists (eid:uint32) = 
         agent.PostAndReply (fun replyChannel -> Exists(eid,replyChannel))
@@ -64,7 +66,7 @@ type EntityComponentAgent() =
         (this.GetComponents eid |> Array.find (fun x -> x.GetType() = typeof<'T>)) :?> 'T
 
     member this.GetComponents (eid:uint32) = 
-        agent.PostAndReply (fun replyChannel -> ComponentList(eid,replyChannel))
+        agent.PostAndReply (fun replyChannel -> GetComponents(eid,replyChannel))
 
     member this.GetMap() = 
         agent.PostAndReply GetMap

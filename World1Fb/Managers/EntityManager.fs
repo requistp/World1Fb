@@ -9,9 +9,6 @@ open LocationEntityAgent
 open LocationTypes
 
 type EntityManager2() =
-    let newMap = 
-        MapLocations 
-        |> Array.fold (fun (m:Map<LocationDataInt,uint32[]>) l -> m.Add(l,[||])) Map.empty
 
     let _components_Current = new ComponentEntityAgent()
     let _components_Next = new ComponentEntityAgent()
@@ -21,11 +18,6 @@ type EntityManager2() =
     let _locations_Next = new LocationEntityAgent()
 
     let _eidManager = new EntityIDAgent()
-
-    do
-        //_locations_Current.Init newMap
-        //_locations_Next.Init newMap
-        ()
 
     member this.Components_Current = _components_Current
     member this.Components_Next = _components_Next
