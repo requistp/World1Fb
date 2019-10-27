@@ -24,7 +24,7 @@ type MovementSystem(game:Game, isActive:bool) =
                 let testForImpassableFormAtLocation junk =
                     let formImpassableAtLocation =
                         dest
-                        |> enm.Locations_Next.Get
+                        |> enm.GetEntitiesAtLocation
                         |> Array.filter (fun e -> e <> m.EntityID)
                         |> Array.Parallel.map (fun eid -> enm.GetComponent<FormComponent> eid)
                         |> Array.exists (fun f -> not f.IsPassable)

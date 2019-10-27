@@ -1,46 +1,28 @@
 ﻿module EntityComponentAgent
 open AbstractComponent
+open ComponentEntityAgent
+open EntityIDAgent
+open FormComponent
+open LocationEntityAgent
+open LocationTypes
 
-
-type EntityIDAgentMsg = 
-    | GetMax of AsyncReplyChannel<uint32>
-    | GetNew of AsyncReplyChannel<uint32>
-    | InitID of uint32
-
-
-type NextAgentMsg = 
-    | AddEntity of AbstractComponent[]
-    | Exists of uint32 * AsyncReplyChannel<bool>
-    | GetComponents of uint32 * AsyncReplyChannel<AbstractComponent[]>
-    | GetMap of AsyncReplyChannel< Map<uint32,AbstractComponent[]> >
-    | Init of Map<uint32,AbstractComponent[]>
-    | RemoveEntity of uint32
-    | ReplaceComponent of AbstractComponent
-
+type private EntityComponentAgentMsg = 
+| AddEntity of AbstractComponent[]
+| Exists of uint32 * AsyncReplyChannel<bool>
+| GetComponents of uint32 * AsyncReplyChannel<AbstractComponent[]>
+| GetMap of AsyncReplyChannel< Map<uint32,AbstractComponent[]> >
+| Init of Map<uint32,AbstractComponent[]>
+| RemoveEntity of uint32
+| ReplaceComponent of AbstractComponent
 
 type EntityComponentAgent() = 
+    let agentForID = new EntityIDAgent()
+    let agentForComponents = new ComponentEntityAgent()
+    let agentForLocations = new LocationEntityAgent()
 
-    let agentForID =
-        let mutable _maxEntityID = 0u
-        MailboxProcessor<EntityIDAgentMsg>.Start(
-            fun inbox ->
-                async { 
-                    while true do
-                        let! msg = inbox.Receive()
-                        match msg with
-                        | GetMax replyChannel -> 
-                            replyChannel.Reply(_maxEntityID)
-                        | GetNew replyChannel -> 
-                            _maxEntityID <- _maxEntityID + 1u
-                            replyChannel.Reply(_maxEntityID)
-                        | InitID startMax -> 
-                            _maxEntityID <- startMax
-                }
-            )
-
-    let agentForNext =
+    let agentForEntities =
         let mutable _next = Map.empty<uint32,AbstractComponent[]>
-        MailboxProcessor<NextAgentMsg>.Start(
+        MailboxProcessor<EntityComponentAgentMsg>.Start(
             fun inbox ->
                 async { 
                     while true do
@@ -63,44 +45,63 @@ type EntityComponentAgent() =
                             _next <- newMap
                         | RemoveEntity eid -> 
                             _next <- _next.Remove eid
-                        | ReplaceComponent ct ->
-                            if (_next.ContainsKey ct.EntityID) then
+                        | ReplaceComponent c ->
+                            if (_next.ContainsKey c.EntityID) then
                                 _next <-
                                     let a = 
-                                        _next.Item(ct.EntityID)
-                                        |> Array.filter (fun ac -> ac.ComponentType <> ct.ComponentType)
-                                        |> Array.append [|ct|]
-                                    _next.Remove(ct.EntityID).Add(ct.EntityID,a)
+                                        _next.Item(c.EntityID)
+                                        |> Array.filter (fun ac -> ac.ComponentType <> ac.ComponentType)
+                                        |> Array.append [|c|]
+                                    _next.Remove(c.EntityID).Add(c.EntityID,a)
                 }
             )
 
     member this.CreateEntity (cts:AbstractComponent[]) = 
-        agentForNext.Post (AddEntity cts)
+        agentForComponents.Add cts
+        agentForLocations.Add cts
+        agentForEntities.Post (AddEntity cts)
 
     member this.Exists (eid:uint32) = 
-        agentForNext.PostAndReply (fun replyChannel -> Exists(eid,replyChannel))
+        agentForEntities.PostAndReply (fun replyChannel -> Exists(eid,replyChannel))
 
     member this.GetComponents (eid:uint32) = 
-        agentForNext.PostAndReply (fun replyChannel -> GetComponents(eid,replyChannel))
+        agentForEntities.PostAndReply (fun replyChannel -> GetComponents(eid,replyChannel))
+
+    member this.GetComponent<'T when 'T:>AbstractComponent> (eid:uint32) : 'T =
+        (this.GetComponents eid |> Array.find (fun x -> x.GetType() = typeof<'T>)) :?> 'T
+    
+    member this.GetLocation (location:LocationDataInt) =
+        agentForLocations.Get location
 
     member this.GetMap() = 
-        agentForNext.PostAndReply GetMap
+        agentForEntities.PostAndReply GetMap
 
     member this.GetMaxID = 
-        agentForID.PostAndReply GetMax
-    
-    member this.GetNewID = 
-        agentForID.PostAndReply GetNew
-    
-    member this.RemoveEntity (eid:uint32) = 
-        agentForNext.Post (RemoveEntity eid)
+        agentForID.GetMaxID
 
-    member this.ReplaceComponent (ct:AbstractComponent) =
-        agentForNext.Post (ReplaceComponent ct)
+    member this.GetNewID =
+        agentForID.GetNewID
+    
+    member this.GetWithComponent ct =
+        agentForComponents.Get ct
+    
+    member this.PendingUpdates = 
+        (agentForEntities.CurrentQueueLength > 0) || agentForID.PendingUpdates || agentForComponents.PendingUpdates || agentForLocations.PendingUpdates
+
+    member this.RemoveEntity (eid:uint32) = 
+        let cts = this.GetComponents eid
+        agentForComponents.Remove cts
+        agentForLocations.Remove cts
+        agentForEntities.Post (RemoveEntity eid)
+
+    member this.ReplaceComponent (ac:AbstractComponent) =
+        if (ac.ComponentType = Component_Form) then 
+            agentForLocations.Move (this.GetComponent<FormComponent> ac.EntityID) (ac :?> FormComponent)
+        agentForEntities.Post (ReplaceComponent ac)
 
     member this.Init (startMax:uint32) (newMap:Map<uint32,AbstractComponent[]>) = 
-        agentForID.Post (InitID startMax)
-        agentForNext.Post (Init newMap)
+        agentForID.Init startMax
+        agentForEntities.Post (Init newMap)
 
 
 //member this.List () =

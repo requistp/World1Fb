@@ -36,7 +36,7 @@ type PlantGrowthSystem(game:Game, isActive:bool) =
                 match newLocation.IsOnMap with
                 | false -> Error "Cannot reproduce: location not on map"
                 | true ->
-                    let eids = enm.Locations_Next.Get newLocation
+                    let eids = enm.GetEntitiesAtLocation newLocation
                     let plantexists = not (eids |> enm.TryGetComponentForEntities<PlantGrowthComponent> |> Array.isEmpty)
                     match not plantexists with 
                     | false -> Error "Cannot reproduce: plant exists at location"

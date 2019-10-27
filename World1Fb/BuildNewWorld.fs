@@ -19,7 +19,7 @@ let MakeGrasses (enm:EntityManager) n =
         [| 
             FoodComponent(eid, Food_Carrot, 20).Abstract
             FormComponent(eid, true, Food_Carrot.ToString(), Food_Grass.Symbol.Value, {X=x;Y=y;Z=0}).Abstract
-            PlantGrowthComponent(eid, [|Dirt|], 0.1, 0.25, 5, 0.75).Abstract
+            //PlantGrowthComponent(eid, [|Dirt|], 0.1, 0.25, 5, 0.75).Abstract
         |] 
     match n with 
     | 0 -> Array.empty<AbstractComponent[]>
@@ -27,14 +27,14 @@ let MakeGrasses (enm:EntityManager) n =
     |> Array.rev
 
 let MakeMap (enm:EntityManager) = 
-    let AddTerrain x y = 
+    let AddTerrain l = 
         let eid = enm.EntityID_New
         let t = match random.Next(1,50) with
                 | 1 -> Rock
                 | _ -> Dirt
         let mutable baseTerrain =
             [| 
-                FormComponent(eid, t.IsPassable, t.ToString(), t.Symbol, {X=x;Y=y;Z=0}).Abstract
+                FormComponent(eid, t.IsPassable, t.ToString(), t.Symbol, l).Abstract
                 TerrainComponent(eid, t).Abstract 
             |] 
         // I left this mechanic in place because there will be some component that is appropriate to add to Terrain--like a burrow
@@ -43,11 +43,10 @@ let MakeMap (enm:EntityManager) =
         //| true -> baseTerrain <- Array.append baseTerrain [|food.Value:>AbstractComponent|]
         baseTerrain
 
-    let mutable tmap = Array.empty<AbstractComponent[]>
-    for y in [0..MapHeight-1] do
-        for x in [0..MapWidth-1] do
-            tmap <- tmap |> Array.append [| AddTerrain x y |]
-    tmap
+    let m2 = 
+        MapLocations
+        |> Array.map (fun l -> AddTerrain l)
+    m2
 
 
 let MakeRabbits (enm:EntityManager) n = 
@@ -56,7 +55,7 @@ let MakeRabbits (enm:EntityManager) n =
         let cont = [| ControllerComponent(eid).Abstract  |]
         let baseBunny = 
             [|
-                EatingComponent(eid, [|Food_Carrot;Food_Grass|], 150, 1, 300).Abstract
+                //EatingComponent(eid, [|Food_Carrot;Food_Grass|], 150, 1, 300).Abstract
                 FormComponent(eid, true, "rabbit", 'r', {X=x;Y=y;Z=0}).Abstract
                 MovementComponent(eid, 1).Abstract
                 //sight

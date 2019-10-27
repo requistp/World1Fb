@@ -48,7 +48,7 @@ type EventManager(enm:EntityManager, round:unit->uint32) =
         while callbackAgent.CurrentQueueLength > 0 do
             System.Threading.Thread.Sleep 1
         callbackAgent.Post (None,EventData_Generic(GAME_AdvanceRound))
-        while callbackAgent.CurrentQueueLength > 0 do
+        while callbackAgent.CurrentQueueLength > 0 || enm.PendingUpdates do
             System.Threading.Thread.Sleep 1
         Timer.End "Process Events2" st
 

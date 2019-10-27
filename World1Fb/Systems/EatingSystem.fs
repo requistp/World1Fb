@@ -33,7 +33,7 @@ type EatingSystem(game:Game, isActive:bool) =
         let formc = enm.GetComponent<FormComponent> ge.EntityID
 
         let foodsAtLocation = 
-            enm.Locations_Next.Get formc.Location // Food here
+            enm.GetEntitiesAtLocation formc.Location // Food here
             |> Array.filter (fun eid -> eid <> ge.EntityID) // Not me
             |> enm.TryGetComponentForEntities<FoodComponent>
             |> Array.filter (fun f -> eatc.Foods |> Array.exists (fun ft -> ft = f.FoodType)) //Types I can eat

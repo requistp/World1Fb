@@ -38,7 +38,7 @@ type WorldMapRenderer() =
         for y in rangeY do
             for x in rangeX do
                 let fs = 
-                    enm.GetLocation { X = x; Y = y; Z = 0 } 
+                    enm.GetEntitiesAtLocation { X = x; Y = y; Z = 0 } 
                     |> enm.TryGetComponentForEntities<FormComponent> 
                 match fs.Length with
                 | 0 -> ()

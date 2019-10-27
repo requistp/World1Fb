@@ -2,22 +2,16 @@
 open AbstractComponent
 open CommonGenericFunctions
 
-
-type ComponentEntityAgentMsg = 
-    | Add of AbstractComponent
-    | Get of ComponentTypes * AsyncReplyChannel<uint32[]>
-    | GetMap of AsyncReplyChannel<Map<ComponentTypes,uint32[]> >
-    | Init of Map<ComponentTypes,uint32[]>    
-    | Remove of AbstractComponent
-
+type private ComponentEntityAgentMsg = 
+| Add of AbstractComponent
+| Get of ComponentTypes * AsyncReplyChannel<uint32[]>
+| GetMap of AsyncReplyChannel<Map<ComponentTypes,uint32[]> >
+| Init of Map<ComponentTypes,uint32[]>    
+| Remove of AbstractComponent
 
 type ComponentEntityAgent() = 
-
     let agent =
-        let mutable _map = 
-            ComponentTypes.AsArray
-            |> Array.fold (fun (m:Map<ComponentTypes,uint32[]>) ct -> m.Add(ct,Array.empty)) Map.empty
-
+        let mutable _map = ComponentTypes.AsArray |> Array.fold (fun (m:Map<ComponentTypes,uint32[]>) ct -> m.Add(ct,Array.empty)) Map.empty
         MailboxProcessor<ComponentEntityAgentMsg>.Start(
             fun inbox ->
                 async { 
@@ -55,6 +49,9 @@ type ComponentEntityAgent() =
     member this.Init (newMap:Map<ComponentTypes,uint32[]>) =
         agent.Post (Init newMap)
     
+    member this.PendingUpdates = 
+        (agent.CurrentQueueLength > 0)
+
     member this.Print =
         this.GetMap()
         |> Map.iter (fun k v -> printfn "%s | %i" (k.ToString()) v.Length)

@@ -4,22 +4,16 @@ open CommonGenericFunctions
 open FormComponent
 open LocationTypes
 
-
-type LocationEntityAgentMsg =
-    | Add of FormComponent
-    | Get of LocationDataInt * AsyncReplyChannel<uint32[]>
-    | GetMap of AsyncReplyChannel<Map<LocationDataInt,uint32[]> >
-    | Init of Map<LocationDataInt,uint32[]>    
-    | Remove of FormComponent
-
+type private LocationEntityAgentMsg =
+| Add of FormComponent
+| Get of LocationDataInt * AsyncReplyChannel<uint32[]>
+| GetMap of AsyncReplyChannel<Map<LocationDataInt,uint32[]> >
+| Init of Map<LocationDataInt,uint32[]>    
+| Remove of FormComponent
 
 type LocationEntityAgent() = 
-
     let agent =
-        let mutable _map = 
-            MapLocations 
-            |> Array.fold (fun (m:Map<LocationDataInt,uint32[]>) l -> m.Add(l,Array.empty)) Map.empty
-
+        let mutable _map = MapLocations |> Array.fold (fun (m:Map<LocationDataInt,uint32[]>) l -> m.Add(l,Array.empty)) Map.empty
         MailboxProcessor<LocationEntityAgentMsg>.Start(
             fun inbox ->
                 async { 
@@ -62,6 +56,9 @@ type LocationEntityAgent() =
     member this.Move (oldForm:FormComponent) (newForm:FormComponent) =
         this.Remove oldForm
         this.Add newForm
+
+    member this.PendingUpdates = 
+        (agent.CurrentQueueLength > 0)
 
     member this.Print() =
         this.GetMap()

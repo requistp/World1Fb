@@ -1,0 +1,42 @@
+﻿module EntityIDAgent
+
+
+type private EntityIDAgentMsg = 
+| GetMax of AsyncReplyChannel<uint32>
+| GetNew of AsyncReplyChannel<uint32>
+| InitID of uint32
+
+
+type EntityIDAgent() = 
+
+    let agent =
+        let mutable _maxEntityID = 0u
+        MailboxProcessor<EntityIDAgentMsg>.Start(
+            fun inbox ->
+                async { 
+                    while true do
+                        let! msg = inbox.Receive()
+                        match msg with
+                        | GetMax replyChannel -> 
+                            replyChannel.Reply(_maxEntityID)
+                        | GetNew replyChannel -> 
+                            _maxEntityID <- _maxEntityID + 1u
+                            replyChannel.Reply(_maxEntityID)
+                        | InitID startMax -> 
+                            _maxEntityID <- startMax
+                }
+            )
+
+    member this.GetMaxID = 
+        agent.PostAndReply GetMax
+    
+    member this.GetNewID = 
+        agent.PostAndReply GetNew
+    
+    member this.Init (startMax:uint32) = 
+        agent.Post (InitID startMax)
+
+    member this.PendingUpdates = 
+        (agent.CurrentQueueLength > 0)
+
+
