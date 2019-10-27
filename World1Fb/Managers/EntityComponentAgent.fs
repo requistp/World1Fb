@@ -17,12 +17,6 @@ type NextAgentMsg =
     | RemoveEntity of uint32
     | ReplaceComponent of AbstractComponent
 
-//type PreviousAgentMsg = 
-//    //not sure I need this... | Prev_Exists of uint32 * AsyncReplyChannel<bool>
-//    | Prev_GetComponents of uint32 * AsyncReplyChannel<AbstractComponent[]>
-//    | Prev_GetMap of AsyncReplyChannel< Map<uint32,AbstractComponent[]> >
-//    | Prev_Init of Map<uint32,AbstractComponent[]>
-
 
 type EntityComponentAgent() = 
 
@@ -79,29 +73,6 @@ type EntityComponentAgent() =
                                     _next.Remove(ct.EntityID).Add(ct.EntityID,a)
                 }
             )
-
-    //let agentForPrevious =
-    //    let mutable _previous = Map.empty<uint32,AbstractComponent[]>
-    //    MailboxProcessor<PreviousAgentMsg>.Start(
-    //        fun inbox ->
-    //            async { 
-    //                while true do
-    //                    let! msg = inbox.Receive()
-    //                    match msg with
-    //                    //| Prev_Exists (eid,replyChannel) ->
-    //                    //    replyChannel.Reply(_previous.ContainsKey eid)
-    //                    | Prev_GetComponents (eid,replyChannel) ->
-    //                        replyChannel.Reply(
-    //                            match _previous.ContainsKey eid with
-    //                            | false -> [||]
-    //                            | true -> _previous.Item(eid)
-    //                        )
-    //                    | Prev_GetMap replyChannel ->
-    //                        replyChannel.Reply(_previous)
-    //                    | Prev_Init newMap -> 
-    //                        _previous <- newMap
-    //            }
-    //        )
 
     member this.CreateEntity (cts:AbstractComponent[]) = 
         agentForNext.Post (AddEntity cts)
