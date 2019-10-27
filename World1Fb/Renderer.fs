@@ -13,26 +13,26 @@ let private DrawAt (c:char) location =
     System.Console.Write(c)
    
 
-let private RenderAll (enm:EntityManager) =
+let private RenderAll (enm:EntityManager2) =
     let render (eid:uint32) (fs:FormComponent[]) =
         let f = fs |> Array.find (fun e -> e.EntityID = eid)
         DrawAt f.Symbol f.Location
 
     let fs = 
         Component_Form
-        |> enm.Components.List
-        |> Array.map (fun eid -> enm.Entities.TryGetComponent<FormComponent> eid)
+        |> enm.Components_Current.Get
+        |> Array.map (fun eid -> enm.Entities_Current.TryGetComponent<FormComponent> eid)
         |> Array.collect (fun fo -> fo |> Option.toArray)
     let ts =
         Component_Terrain
-        |> enm.Components.List
-        |> Array.map (fun eid -> enm.Entities.TryGetComponent<TerrainComponent> eid)
+        |> enm.Components_Current.Get
+        |> Array.map (fun eid -> enm.Entities_Current.TryGetComponent<TerrainComponent> eid)
         |> Array.collect (fun fo -> fo |> Option.toArray)
 
     ts |> Array.iter (fun t -> render t.EntityID fs)
     fs |> Array.filter (fun f-> not (ts |> Array.exists (fun t -> t.EntityID=f.EntityID))) |> Array.iter (fun f -> render f.EntityID fs)
     
-let RenderFrame (enm:EntityManager) (round:uint32) =
+let RenderFrame (enm:EntityManager2) (round:uint32) =
     System.Console.CursorVisible <- false 
 
     RenderAll enm

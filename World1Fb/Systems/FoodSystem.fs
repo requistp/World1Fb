@@ -12,26 +12,26 @@ open System
 type FoodSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
     
-    member private this.onAllEaten (next:NextEntityDictionary) (ge:EventData_Generic) =
-        match (ge.EntityID |> game.EntityManager.Entities.GetComponent<FoodComponent>).FoodType.KillOnAllEaten with
+    member private this.onAllEaten (enm:EntityManager2) (ge:EventData_Generic) =
+        match (ge.EntityID |> enm.Entities_Next.GetComponent<FoodComponent>).FoodType.KillOnAllEaten with
         | false -> Ok None
         | true -> game.EventManager.QueueEvent (EventData_Generic(Kill_AllEaten,ge.EntityID))
                   Ok None
 
-    member private this.onEaten (next:NextEntityDictionary) (ge:EventData_Generic) =
+    member private this.onEaten (enm:EntityManager2) (ge:EventData_Generic) =
         let e = ge :?> EventData_Eaten
         
-        match next.Entities.TryGetComponent<FoodComponent> e.EateeID with  // Can't check the game current frame here b/c two entities could have entered their eat action, and the first one could have eaten and killed the food
+        match enm.Entities_Next.TryGetComponent<FoodComponent> e.EateeID with  // Can't check the game current frame here b/c two entities could have entered their eat action, and the first one could have eaten and killed the food
         | None -> Error "Something else ate it first"
         | Some f -> 
             let allEaten = (f.Quantity - e.Quantity) <= 0
             let result = sprintf "All Eaten:%b" allEaten
             if allEaten then game.EventManager.QueueEvent (EventData_Generic(Kill_AllEaten,f.EntityID))
-            next.ReplaceComponent (f.Update None (Some (f.Quantity-e.Quantity)) None) (Some result)
+            enm.ReplaceComponent (f.Update None (Some (f.Quantity-e.Quantity)) None) (Some result)
 
-    member private this.onRegrowth (next:NextEntityDictionary) (ge:EventData_Generic) =
+    member private this.onRegrowth (enm:EntityManager2) (ge:EventData_Generic) =
         let tryRegrowFood (f:FoodComponent) = 
-            let pgc = game.EntityManager.Entities.GetComponent<PlantGrowthComponent> ge.EntityID
+            let pgc = enm.Entities_Next.GetComponent<PlantGrowthComponent> ge.EntityID
             let missing = f.QuantityMax - f.Quantity
             match (missing, pgc.RegrowRate) with
             | (0,_) -> Ok None
@@ -39,9 +39,9 @@ type FoodSystem(game:Game, isActive:bool) =
             | (_,_) -> 
                 let quantity = Math.Clamp((int (Math.Round(pgc.RegrowRate * (float f.QuantityMax),0))), 1, missing)
                 let result = sprintf "EntityID:%i. Regrown quantity:%i" ge.EntityID quantity
-                next.ReplaceComponent (f.Update None (Some (f.Quantity+quantity)) None) (Some result)
+                enm.ReplaceComponent (f.Update None (Some (f.Quantity+quantity)) None) (Some result)
             
-        match (ge.EntityID |> next.Entities.TryGetComponent<FoodComponent>) with
+        match (ge.EntityID |> enm.Entities_Next.TryGetComponent<FoodComponent>) with
         | None -> Ok None
         | Some food -> tryRegrowFood food
         

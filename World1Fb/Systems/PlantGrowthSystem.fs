@@ -15,7 +15,7 @@ open LocationTypes
 type PlantGrowthSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
 
-    member private this.onCreateEntity (next:NextEntityDictionary) (ge:EventData_Generic) =
+    member private this.onCreateEntity (enm:EntityManager2) (ge:EventData_Generic) =
         let e = ge :?> EventData_CreateEntity
         match e.Components |> Array.filter (fun ct -> ct.ComponentType = Component_PlantGrowth) with
         | [||] -> Ok (Some "No PlantGrowthComponent")
@@ -24,28 +24,28 @@ type PlantGrowthSystem(game:Game, isActive:bool) =
                 if pgc.ReproductionRate > 0.0 then game.EventManager.QueueEvent (EventData_ScheduleEvent(e.EntityID, ScheduledEvent(EventData_Generic(PlantReproduce,e.EntityID),uint32 PlantReproductionFrequency)))
                 Ok (Some (sprintf "Queued Regrow to Schedule:%b. Queued Repopulate to Schedule:%b" (pgc.RegrowRate > 0.0) (pgc.ReproductionRate > 0.0)))
     
-    member private this.onReproduce (next:NextEntityDictionary) (ge:EventData_Generic) =
-        let pgc = game.EntityManager.Entities.GetComponent<PlantGrowthComponent> ge.EntityID
+    member private this.onReproduce (enm:EntityManager2) (ge:EventData_Generic) =
+        let pgc = enm.Entities_Next.GetComponent<PlantGrowthComponent> ge.EntityID
         let tryMakeNewPlant =            
             let r = random.NextDouble()
             match pgc.ReproductionRate >= r with
             | false -> Error (sprintf "Failed reproduction (%f<%f)" pgc.ReproductionRate r)
             | true -> 
-                let form = game.EntityManager.Entities.GetComponent<FormComponent> ge.EntityID
+                let form = enm.Entities_Next.GetComponent<FormComponent> ge.EntityID
                 let newLocation = form.Location.AddOffset pgc.ReproductionRange pgc.ReproductionRange 0 false true
                 match newLocation.IsOnMap with
                 | false -> Error "Cannot reproduce: location not on map"
                 | true ->
-                    let eids = next.Locations.List newLocation
-                    let plantexists = not (eids |> next.Entities.TryGetComponentForEntities<PlantGrowthComponent> |> Array.isEmpty)
+                    let eids = enm.Locations_Next.Get newLocation
+                    let plantexists = not (eids |> enm.Entities_Next.TryGetComponentForEntities<PlantGrowthComponent> |> Array.isEmpty)
                     match not plantexists with 
                     | false -> Error "Cannot reproduce: plant exists at location"
                     | true -> 
-                        let terrainissuitable = pgc.GrowsInTerrain |> Array.exists (fun t -> (eids |> next.Entities.TryGetComponentForEntities<TerrainComponent>) |> Array.exists (fun t2 -> t2.Terrain = t))
+                        let terrainissuitable = pgc.GrowsInTerrain |> Array.exists (fun t -> (eids |> enm.Entities_Next.TryGetComponentForEntities<TerrainComponent>) |> Array.exists (fun t2 -> t2.Terrain = t))
                         match terrainissuitable with
                         | false -> Error "Cannot reproduce: terrain is not suitable"
                         | true -> 
-                            let foodo = game.EntityManager.Entities.TryGetComponent<FoodComponent> ge.EntityID
+                            let foodo = enm.Entities_Next.TryGetComponent<FoodComponent> ge.EntityID
                             let pct = float foodo.Value.Quantity / float foodo.Value.QuantityMax
                             match foodo.IsNone || pgc.ReproductionRequiredFoodQuantity < pct with
                             | false -> Error (sprintf "Cannot reproduce: food component quantity below requirement (%f<%f)" pct pgc.ReproductionRequiredFoodQuantity)
@@ -58,9 +58,9 @@ type PlantGrowthSystem(game:Game, isActive:bool) =
                 ((ct:?>FormComponent).Update None None None (Some l)).Abstract
             | _ -> ct        
         let makePlant (l:LocationDataInt) (r:float) = 
-            let neweid = next.NewEntityID
+            let neweid = enm.EntityID_New
             let newcts = 
-                game.EntityManager.Entities.Copy ge.EntityID neweid
+                enm.Entities_Current.CopyEntity ge.EntityID neweid
                 |> Array.map (fun ct -> makePlant_AdjustComponents ct l)
             game.EventManager.QueueEvent (EventData_CreateEntity(neweid,newcts))
             Ok (Some (sprintf "Passed reproduction (%f>%f). New EntityID:%i" pgc.ReproductionRate r neweid))

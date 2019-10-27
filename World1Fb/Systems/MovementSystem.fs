@@ -9,10 +9,10 @@ open GameManager
 type MovementSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
 
-    member private this.onMovementKeyPressed (next:NextEntityDictionary) (ge:EventData_Generic) =
+    member private this.onMovementKeyPressed (enm:EntityManager2) (ge:EventData_Generic) =
         let m = ge :?> EventData_Action_Movement
 
-        let formo = next.Entities.TryGetComponent<FormComponent> m.EntityID
+        let formo = enm.Entities_Next.TryGetComponent<FormComponent> m.EntityID
 
         let checkIfMovementIsValid (form:FormComponent) = 
             let dest = m.Direction.AddToLocation form.Location
@@ -24,9 +24,9 @@ type MovementSystem(game:Game, isActive:bool) =
                 let testForImpassableFormAtLocation junk =
                     let formImpassableAtLocation =
                         dest
-                        |> next.Locations.List
+                        |> enm.Locations_Next.Get
                         |> Array.filter (fun e -> e <> m.EntityID)
-                        |> Array.Parallel.map (fun eid -> next.Entities.GetComponent<FormComponent> eid)
+                        |> Array.Parallel.map (fun eid -> enm.Entities_Next.GetComponent<FormComponent> eid)
                         |> Array.exists (fun f -> not f.IsPassable)
                     match formImpassableAtLocation with
                     | true -> Error (sprintf "Form at location %s" dest.Print)
@@ -36,7 +36,7 @@ type MovementSystem(game:Game, isActive:bool) =
 
             match isMovementValid with
             | Error s -> Error s
-            | Ok _ -> next.ReplaceComponent (form.Update None None None (Some dest)) (Some (sprintf "Location %s" dest.Print))
+            | Ok _ -> enm.ReplaceComponent (form.Update None None None (Some dest)) (Some (sprintf "Location %s" dest.Print))
 
         match formo with
         | None -> Error "Entity not in next dictionary"

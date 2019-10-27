@@ -21,7 +21,7 @@ type WorldMapRenderer() =
         | ConsoleKey.RightArrow -> _windowLocation <- (Math.Clamp(fst _windowLocation + 1, 0, MapWidth-viewSizeX), snd _windowLocation)
         | _ -> ()
 
-    member this.Update (enm:EntityManager) = 
+    member this.Update (enm:EntityManager2) = 
         //Console.Clear()
         //Console.SetBufferSize(MapWidth,MapHeight)
 
@@ -38,11 +38,14 @@ type WorldMapRenderer() =
         for y in rangeY do
             for x in rangeX do
                 let fs = 
-                    enm.Locations.List { X = x; Y = y; Z = 0 } 
-                    |> enm.Entities.TryGetComponentForEntities<FormComponent> 
-                let f = fs.[fs.Length-1]
-                System.Console.SetCursorPosition(x - fst _windowLocation, y - snd _windowLocation)
-                System.Console.Write(f.Symbol)
+                    enm.Locations_Current.Get { X = x; Y = y; Z = 0 } 
+                    |> enm.Entities_Current.TryGetComponentForEntities<FormComponent> 
+                match fs.Length with
+                | 0 -> ()
+                | _ ->
+                    let f = fs.[fs.Length-1]
+                    System.Console.SetCursorPosition(x - fst _windowLocation, y - snd _windowLocation)
+                    System.Console.Write(f.Symbol)
 
         
 
