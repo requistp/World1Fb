@@ -43,7 +43,7 @@ type WorldMapRenderer() =
                 match fs.Length with
                 | 0 -> ()
                 | _ ->
-                    let f = fs.[fs.Length-1]
+                    let f = fs.[0] //[fs.Length-1]
                     System.Console.SetCursorPosition(x - fst _windowLocation, y - snd _windowLocation)
                     System.Console.Write(f.Symbol)
 

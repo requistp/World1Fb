@@ -1,6 +1,6 @@
 ﻿module LocationEntityAgent
 open AbstractComponent
-open EntityAgent
+open CommonGenericFunctions
 open FormComponent
 open LocationTypes
 
@@ -16,9 +16,9 @@ type LocationEntityAgentMsg =
 type LocationEntityAgent() = 
 
     let agent =
-        let mutable _locations = 
+        let mutable _map = 
             MapLocations 
-            |> Array.fold (fun (m:Map<LocationDataInt,EntityAgent>) l -> m.Add(l,new EntityAgent())) Map.empty
+            |> Array.fold (fun (m:Map<LocationDataInt,uint32[]>) l -> m.Add(l,Array.empty)) Map.empty
 
         MailboxProcessor<LocationEntityAgentMsg>.Start(
             fun inbox ->
@@ -27,17 +27,18 @@ type LocationEntityAgent() =
                         let! msg = inbox.Receive()
                         match msg with
                         | Add f ->
-                            _locations.Item(f.Location).Add f.EntityID
+                            if not (_map.Item(f.Location) |> Array.contains f.EntityID) then
+                                _map <- Map_AppendValueToArray _map f.Location f.EntityID
                         | Get (location,replyChannel) -> 
-                            replyChannel.Reply(_locations.Item(location).Get)
+                            replyChannel.Reply(_map.Item(location))
                         | GetMap replyChannel -> 
-                            replyChannel.Reply(_locations |> Map.map (fun k v -> v.Get))
+                            replyChannel.Reply(_map)
                         | Init newMap -> 
-                            _locations <- 
-                                newMap 
-                                |> Map.fold (fun m k v -> m.Add(k,(new EntityAgent(v)))) Map.empty<LocationDataInt,EntityAgent>
+                            _map <- newMap 
                         | Remove f ->
-                            _locations.Item(f.Location).Remove f.EntityID
+                            _map <-
+                                let a = _map.Item(f.Location) |> Array.filter (fun eid -> eid <> f.EntityID)
+                                _map.Remove(f.Location).Add(f.Location,a)
                 }
             )
 

@@ -17,7 +17,6 @@
     <Compile Include="Components\MovementComponent.fs" />
     <Compile Include="Components\TerrainComponent.fs" />
     <Compile Include="Components\PlantGrowthComponent.fs" />
-    <Compile Include="Managers\EntityAgent.fs" />
     <Compile Include="Managers\ComponentEntityAgent.fs" />
     <Compile Include="Managers\LocationEntityAgent.fs" />
     <Compile Include="Managers\ComponentAgent.fs" />

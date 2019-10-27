@@ -14,7 +14,7 @@ type ComponentEntityAgentMsg =
 type ComponentEntityAgent() = 
 
     let agent =
-        let mutable _compDict = 
+        let mutable _map = 
             ComponentTypes.AsArray
             |> Array.fold (fun (m:Map<ComponentTypes,uint32[]>) ct -> m.Add(ct,Array.empty)) Map.empty
 
@@ -25,19 +25,18 @@ type ComponentEntityAgent() =
                         let! msg = inbox.Receive()
                         match msg with
                         | Add ct ->
-                            match _compDict.Item(ct.ComponentType)|>Array.contains ct.EntityID with
-                            | true -> ()
-                            | false -> _compDict <- Map_AppendValueToArray _compDict ct.ComponentType ct.EntityID
+                            if not (_map.Item(ct.ComponentType) |> Array.contains ct.EntityID) then
+                                _map <- Map_AppendValueToArray _map ct.ComponentType ct.EntityID
                         | Get (componentType,replyChannel) -> 
-                            replyChannel.Reply(_compDict.Item(componentType))
+                            replyChannel.Reply(_map.Item(componentType))
                         | GetMap replyChannel -> 
-                            replyChannel.Reply(_compDict)
+                            replyChannel.Reply(_map)
                         | Init newMap -> 
-                            _compDict <- newMap
+                            _map <- newMap
                         | Remove ct ->
-                            _compDict <-
-                                let a = _compDict.Item(ct.ComponentType) |> Array.filter (fun eid -> eid <> ct.EntityID)
-                                _compDict.Remove(ct.ComponentType).Add(ct.ComponentType,a)
+                            _map <-
+                                let a = _map.Item(ct.ComponentType) |> Array.filter (fun eid -> eid <> ct.EntityID)
+                                _map.Remove(ct.ComponentType).Add(ct.ComponentType,a)
                 }
             )
 
@@ -67,4 +66,4 @@ type ComponentEntityAgent() =
         cts |> Array.Parallel.iter (fun ct -> this.Remove ct)
 
  
- -
+ 
