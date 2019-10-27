@@ -31,6 +31,11 @@ let Map_AppendValueToArray (map:Map<'K,'V[]>) (key:'K) (newValue:'V) =
     | true -> let a = map.Item(key) |> Array.append [|newValue|]
               map.Remove(key).Add(key,a)
 
+let Map_RemoveValueFromArray (map:Map<'K,'V[]>) (key:'K) (newValue:'V) =
+    match map.ContainsKey(key) with
+    | false -> map
+    | true -> let a = map.Item(key) |> Array.filter (fun v -> v <> newValue)
+              map.Remove(key).Add(key,a)
 
 let OptionBindNone (noneFx:'T option->'T option) (last:'T option) =
     match last with
