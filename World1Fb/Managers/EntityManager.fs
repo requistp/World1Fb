@@ -22,18 +22,19 @@ type EntityManager() =
 
     member _.CreateEntity (cts:AbstractComponent[]) = 
         entities.CreateEntity cts
-        Ok (Some "in async")
-        
-    member this.HasAllComponents (cts:'T[]) (eid:uint32) =
-        cts |> Array.forall (fun ct -> entities.GetComponents eid |> Array.exists (fun ec -> ec.GetType() = ct))
+    
+    member _.GetComponents (eid:uint32) = 
+        entities.GetComponents eid
 
+    member this.HasAllComponents (cts:ComponentTypes[]) (eid:uint32) =
+        let ects = entities.GetComponents eid |> Array.Parallel.map (fun ct -> ct.ComponentType)
+        cts |> Array.forall (fun ct -> ects |> Array.contains ct)
+        
     member _.RemoveEntity (eid:uint32) =
         entities.RemoveEntity eid
-        Ok (Some "in async")
 
     member _.ReplaceComponent (ac:AbstractComponent) (changes:string option) =
-        entities.ReplaceComponent ac
-        Ok (Some "in async") //changes
+        entities.ReplaceComponent ac changes
         
     member this.TryGet (eid:uint32) =
         entities.Exists eid |> TrueSomeFalseNone (entities.GetComponents eid)

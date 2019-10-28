@@ -68,16 +68,19 @@ type EventManager(enm:EntityManager) =
         resultAgent.PostAndReply Get
 
     member this.ProcessEvents = 
-        //let st = Timer.Start random.Next
-        //printfn "%A" st
+        let st = Timer.Start random.Next
+        printfn "%A" st
         
         while callbackAgent.CurrentQueueLength > 0 do
             System.Threading.Thread.Sleep 1
         
         callbackAgent.PostAndReply EndRound
         
-        //Timer.End "Process Events2" st
+        Timer.End "Process Events2" st
 
+    member this.PrintEventLog =
+        this.GetEventLog |> Array.iter (fun (rnd,cb,ge,res) -> if rnd <> 0u then printfn "%i | %A / %s" rnd (ge.GameEventType) (res.ToString()))
+    
     member this.QueueEvent (ge:EventData_Generic) = 
         match _listeners.ContainsKey ge.GameEventType with 
         | false -> ()

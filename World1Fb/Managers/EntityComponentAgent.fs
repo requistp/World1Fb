@@ -50,7 +50,7 @@ type EntityComponentAgent() =
                                 _next <-
                                     let a = 
                                         _next.Item(c.EntityID)
-                                        |> Array.filter (fun ac -> ac.ComponentType <> ac.ComponentType)
+                                        |> Array.filter (fun ac -> ac.ComponentType <> c.ComponentType)
                                         |> Array.append [|c|]
                                     _next.Remove(c.EntityID).Add(c.EntityID,a)
                 }
@@ -60,6 +60,7 @@ type EntityComponentAgent() =
         agentForComponents.Add cts
         agentForLocations.Add cts
         agentForEntities.Post (AddEntity cts)
+        Ok (Some "in async")
 
     member this.Exists (eid:uint32) = 
         agentForEntities.PostAndReply (fun replyChannel -> Exists(eid,replyChannel))
@@ -93,11 +94,13 @@ type EntityComponentAgent() =
         agentForComponents.Remove cts
         agentForLocations.Remove cts
         agentForEntities.Post (RemoveEntity eid)
+        Ok (Some "in async")
 
-    member this.ReplaceComponent (ac:AbstractComponent) =
+    member this.ReplaceComponent (ac:AbstractComponent) (changes:string option) =
         if (ac.ComponentType = Component_Form) then 
             agentForLocations.Move (this.GetComponent<FormComponent> ac.EntityID) (ac :?> FormComponent)
         agentForEntities.Post (ReplaceComponent ac)
+        Ok (Some "in async") //changes
 
     member this.Init (startMax:uint32) (newMap:Map<uint32,AbstractComponent[]>) = 
         agentForID.Init startMax

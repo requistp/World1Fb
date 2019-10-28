@@ -8,7 +8,6 @@ type private EntityIDAgentMsg =
 
 
 type EntityIDAgent() = 
-
     let agent =
         let mutable _maxEntityID = 0u
         MailboxProcessor<EntityIDAgentMsg>.Start(

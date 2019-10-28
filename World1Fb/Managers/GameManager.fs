@@ -49,6 +49,10 @@ type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*stri
     member private this.gameLoop =
         //printfn "starting game loop, Round:%i" this.Round
         
+        //let eid = 811u
+        //System.Console.SetCursorPosition(0,30)
+        //printfn "%i | Components: %A" eid (entityMan.GetComponents eid)
+
         systemMan.UpdateSystems
 
         eventMan.ProcessEvents |> ignore

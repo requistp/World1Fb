@@ -55,7 +55,7 @@ let MakeRabbits (enm:EntityManager) n =
         let cont = [| ControllerComponent(eid).Abstract  |]
         let baseBunny = 
             [|
-                //EatingComponent(eid, [|Food_Carrot;Food_Grass|], 150, 1, 300).Abstract
+                EatingComponent(eid, [|Food_Carrot;Food_Grass|], 150, 1, 300).Abstract
                 FormComponent(eid, true, "rabbit", 'r', {X=x;Y=y;Z=0}).Abstract
                 MovementComponent(eid, 1).Abstract
                 //sight
@@ -66,6 +66,7 @@ let MakeRabbits (enm:EntityManager) n =
         | true -> baseBunny |> Array.append cont
     match n with 
     | 0 -> Array.empty<AbstractComponent[]>
-    | _ -> [1..n] |> List.toArray |> Array.Parallel.map (fun i -> MakeRabbit (random.Next(0,MapWidth)) (random.Next(0,MapHeight)) i) //Can't Parallel
+    //| _ -> [1..n] |> List.toArray |> Array.Parallel.map (fun i -> MakeRabbit (random.Next(0,MapWidth)) (random.Next(0,MapHeight)) i) //Can't Parallel
+    | _ -> [1..n] |> List.toArray |> Array.Parallel.map (fun i -> MakeRabbit (MapWidth/2) (MapHeight/2) 1) //Can't Parallel
     |> Array.rev
 
