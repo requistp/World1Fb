@@ -4,7 +4,7 @@
 type private EntityIDAgentMsg = 
 | GetMax of AsyncReplyChannel<uint32>
 | GetNew of AsyncReplyChannel<uint32>
-| InitID of uint32
+| Init of uint32
 
 
 type EntityIDAgent() = 
@@ -22,7 +22,7 @@ type EntityIDAgent() =
                         | GetNew replyChannel -> 
                             _maxEntityID <- _maxEntityID + 1u
                             replyChannel.Reply(_maxEntityID)
-                        | InitID startMax -> 
+                        | Init startMax -> 
                             _maxEntityID <- startMax
                 }
             )
@@ -34,7 +34,7 @@ type EntityIDAgent() =
         agent.PostAndReply GetNew
     
     member this.Init (startMax:uint32) = 
-        agent.Post (InitID startMax)
+        agent.Post (Init startMax)
 
     member this.PendingUpdates = 
         (agent.CurrentQueueLength > 0)

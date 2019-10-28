@@ -11,5 +11,8 @@ open TerrainComponent
 type TerrainSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
 
-    //member TerrainAtLocation l =
+    override this.Update = 
+        ()
+
+
         

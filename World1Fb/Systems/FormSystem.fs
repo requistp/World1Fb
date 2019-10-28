@@ -10,3 +10,6 @@ open SystemManager
 type FormSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
 
+    override this.Update = 
+        ()
+

@@ -32,7 +32,7 @@ let g = new Game(RenderFrame, setContent, setDisplay, display, wmr.Update, wmr.M
 let startingEntities = 
     MakeMap g.EntityManager
     |> Array.append (MakeGrasses g.EntityManager 10)
-    |> Array.append (MakeRabbits g.EntityManager 3)
+    |> Array.append (MakeRabbits g.EntityManager 1)
     |> Array.rev 
 
 let ss =

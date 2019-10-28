@@ -13,7 +13,6 @@ type AbstractSystem(isActive:bool) =
     default this.Initialize = this.SetToInitialized
 
     abstract member Update : unit
-    default this.Update = ()
 
     member this.Abstract = this :> AbstractSystem
 

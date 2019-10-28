@@ -6,7 +6,6 @@ open EntityManager
 open EventManager
 open EatingComponent
 open FoodComponent
-open FrameManager
 open EventTypes
 open InputHandler
 open PlantGrowthComponent
@@ -15,17 +14,15 @@ open System
 
 
 type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*string)[]->bool->Async<unit>, renderer_SetDisplay:string->unit, renderer_Display:string->unit, wmr:EntityManager->unit, wmrKeys:ConsoleKey->unit) =
-    let frameMan = new FrameManager()
     let entityMan = new EntityManager()
-    let eventMan = new EventManager(entityMan, (fun () -> frameMan.Round))
+    let eventMan = new EventManager(entityMan)
     let systemMan = new SystemManager(eventMan)
-    let inputMan = new InputHandler(eventMan, entityMan, frameMan, systemMan, renderer_SetDisplay, wmrKeys)
+    let inputMan = new InputHandler(eventMan, entityMan, systemMan, renderer_SetDisplay, wmrKeys)
  
     member this.EventManager = eventMan
     member this.EntityManager = entityMan
-    member this.FrameManager = frameMan
     member this.SystemManager = systemMan
-    member this.Round = (uint32 frameMan.Round) // - 1u)
+    member this.Round = eventMan.Round
 
     member private this.assignController =
         match Component_Controller |> entityMan.GetEntitiesWithComponent with
@@ -34,25 +31,9 @@ type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*stri
 
     member private this.setInitialForms (initialForms:AbstractComponent[][]) = 
         initialForms 
-        |> Array.iter (fun cts -> if cts.Length > 0 then eventMan.QueueEvent (EventData_CreateEntity(cts.[0].EntityID,cts))) // Can't Parallel
+        |> Array.Parallel.iter (fun cts -> if (cts.Length > 0) then eventMan.QueueEvent (EventData_CreateEntity(cts.[0].EntityID,cts)))
 
-    member private this.gameLoop =
-        systemMan.UpdateSystems
-
-        eventMan.ProcessEvents
-        
-        frameMan.AddFrame //entityMan.Entities_Current entityMan.EntityID_Max //Array.empty //geResults
-
-        //entityMan.Entities.List()
-        //renderer_SetContent [| ("World Map",entityMan.ToDisplayString); ("Game Events List",frameMan.GERs_ToString GEListType.Last10FramesExcludingFirst) |] true |> Async.Start
-        
-        //entityMan.CurrentToString()
-        wmr entityMan
-        
-        printfn "Round:%i" this.Round
-        
     member this.Start (ss:AbstractSystem[]) (initialForms:AbstractComponent[][]) = 
-        
         systemMan.Initialize ss
         this.setInitialForms initialForms
         
@@ -65,6 +46,17 @@ type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*stri
             if r = GameAction then this.gameLoop
             r <- inputMan.AwaitKeyboardInput
 
+    member private this.gameLoop =
+        //printfn "starting game loop, Round:%i" this.Round
+        
+        systemMan.UpdateSystems
+
+        eventMan.ProcessEvents |> ignore
+        
+        wmr entityMan
+        
+        //printfn "ending game loop, Round:%i" this.Round
+        
 
 
 

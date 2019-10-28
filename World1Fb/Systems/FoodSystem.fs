@@ -51,4 +51,7 @@ type FoodSystem(game:Game, isActive:bool) =
         game.EventManager.RegisterListener PlantRegrowth this.onRegrowth
         base.SetToInitialized
 
+    override this.Update = 
+        ()
+
 

@@ -15,7 +15,7 @@ type KeyboardResult =
     | GameAction
     | InfoOnly
 
-type InputHandler(evm:EventManager, enm:EntityManager, fman:FrameManager, sysm:SystemManager, renderer_SetDisplay:string->unit, wmrKeys:ConsoleKey->unit) =
+type InputHandler(evm:EventManager, enm:EntityManager, sysm:SystemManager, renderer_SetDisplay:string->unit, wmrKeys:ConsoleKey->unit) =
     let mutable _entityID = None
 
     member this.EntityID = _entityID
@@ -68,17 +68,17 @@ type InputHandler(evm:EventManager, enm:EntityManager, fman:FrameManager, sysm:S
         | _ -> this.onKeyPressed k
                
 
-               (*
-               member this.HandleArrows k (alt:bool) =
-                     match alt,k with
-                     | false,ConsoleKey.UpArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (EventData_Action_Movement(_entityID.Value,North)))
-                     | false,ConsoleKey.DownArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (EventData_Action_Movement(_entityID.Value,South)))
-                     | false,ConsoleKey.LeftArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (EventData_Action_Movement(_entityID.Value,West)))
-                     | false,ConsoleKey.RightArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (EventData_Action_Movement(_entityID.Value,East)))
-                     | true, ConsoleKey.UpArrow -> wmrKeys k
-                     | true, ConsoleKey.DownArrow -> wmrKeys k
-                     | true, ConsoleKey.LeftArrow -> wmrKeys k
-                     | true, ConsoleKey.RightArrow -> wmrKeys k
-                     | _,_ -> ()
+(*
+member this.HandleArrows k (alt:bool) =
+        match alt,k with
+        | false,ConsoleKey.UpArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (EventData_Action_Movement(_entityID.Value,North)))
+        | false,ConsoleKey.DownArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (EventData_Action_Movement(_entityID.Value,South)))
+        | false,ConsoleKey.LeftArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (EventData_Action_Movement(_entityID.Value,West)))
+        | false,ConsoleKey.RightArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (EventData_Action_Movement(_entityID.Value,East)))
+        | true, ConsoleKey.UpArrow -> wmrKeys k
+        | true, ConsoleKey.DownArrow -> wmrKeys k
+        | true, ConsoleKey.LeftArrow -> wmrKeys k
+        | true, ConsoleKey.RightArrow -> wmrKeys k
+        | _,_ -> ()
 *)
 //| ConsoleKey.F12 -> this.DisplayGameEvents (k.Modifiers = ConsoleModifiers.Shift) (k.Modifiers = ConsoleModifiers.Control)

@@ -16,3 +16,6 @@ type KillSystem(game:Game, isActive:bool) =
         game.EventManager.RegisterListener Kill_AllEaten this.onKillAllEaten
         base.SetToInitialized
 
+    override this.Update = 
+        ()
+

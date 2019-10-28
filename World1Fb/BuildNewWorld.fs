@@ -23,7 +23,7 @@ let MakeGrasses (enm:EntityManager) n =
         |] 
     match n with 
     | 0 -> Array.empty<AbstractComponent[]>
-    | _ -> [1..n] |> List.toArray |> Array.map (fun i -> MakeGrass (random.Next(0,MapWidth)) (random.Next(0,MapHeight))) //Can't Parallel
+    | _ -> [1..n] |> List.toArray |> Array.Parallel.map (fun i -> MakeGrass (random.Next(0,MapWidth)) (random.Next(0,MapHeight))) //Can't Parallel
     |> Array.rev
 
 let MakeMap (enm:EntityManager) = 
@@ -45,7 +45,7 @@ let MakeMap (enm:EntityManager) =
 
     let m2 = 
         MapLocations
-        |> Array.map (fun l -> AddTerrain l)
+        |> Array.Parallel.map (fun l -> AddTerrain l)
     m2
 
 
@@ -66,6 +66,6 @@ let MakeRabbits (enm:EntityManager) n =
         | true -> baseBunny |> Array.append cont
     match n with 
     | 0 -> Array.empty<AbstractComponent[]>
-    | _ -> [1..n] |> List.toArray |> Array.map (fun i -> MakeRabbit (random.Next(0,MapWidth)) (random.Next(0,MapHeight)) i) //Can't Parallel
+    | _ -> [1..n] |> List.toArray |> Array.Parallel.map (fun i -> MakeRabbit (random.Next(0,MapWidth)) (random.Next(0,MapHeight)) i) //Can't Parallel
     |> Array.rev
 
