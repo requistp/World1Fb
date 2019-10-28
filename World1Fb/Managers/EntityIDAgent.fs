@@ -36,6 +36,6 @@ type EntityIDAgent() =
         agent.Post (Init startMax)
 
     member this.PendingUpdates = 
-        (agent.CurrentQueueLength > 0)
+        agent.CurrentQueueLength > 0
 
 

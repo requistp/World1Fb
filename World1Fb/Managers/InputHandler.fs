@@ -4,7 +4,6 @@ open EatingComponent
 open EntityManager
 open EventManager
 open FormComponent
-open FrameManager
 open EventTypes
 open MovementComponent
 open System
@@ -14,10 +13,6 @@ type KeyboardResult =
     | ExitGame
     | GameAction
     | InfoOnly
-
-
-type Delegate_EventWithData = delegate of unit -> unit
-
 
 type InputHandler(evm:EventManager, enm:EntityManager, sysm:SystemManager, renderer_SetDisplay:string->unit, wmrKeys:ConsoleKey->unit) =
     let mutable _entityID = None

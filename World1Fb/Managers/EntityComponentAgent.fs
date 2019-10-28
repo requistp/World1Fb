@@ -1,10 +1,6 @@
 ﻿module EntityComponentAgent
 open AbstractComponent
-open ComponentEntityAgent
-open EntityIDAgent
-open FormComponent
-open LocationEntityAgent
-open LocationTypes
+
 
 type private EntityComponentAgentMsg = 
 | AddEntity of AbstractComponent[]
@@ -15,12 +11,9 @@ type private EntityComponentAgentMsg =
 | RemoveEntity of uint32
 | ReplaceComponent of AbstractComponent
 
-type EntityComponentAgent() = 
-    let agentForID = new EntityIDAgent()
-    let agentForComponents = new ComponentEntityAgent()
-    let agentForLocations = new LocationEntityAgent()
 
-    let agentForEntities =
+type EntityComponentAgent() = 
+    let agent =
         let mutable _next = Map.empty<uint32,AbstractComponent[]>
         MailboxProcessor<EntityComponentAgentMsg>.Start(
             fun inbox ->
@@ -57,54 +50,28 @@ type EntityComponentAgent() =
             )
 
     member this.CreateEntity (cts:AbstractComponent[]) = 
-        agentForComponents.Add cts
-        agentForLocations.Add cts
-        agentForEntities.Post (AddEntity cts)
-        Ok (Some "in async")
+        agent.Post (AddEntity cts)
 
     member this.Exists (eid:uint32) = 
-        agentForEntities.PostAndReply (fun replyChannel -> Exists(eid,replyChannel))
+        agent.PostAndReply (fun replyChannel -> Exists(eid,replyChannel))
 
     member this.GetComponents (eid:uint32) = 
-        agentForEntities.PostAndReply (fun replyChannel -> GetComponents(eid,replyChannel))
-
-    member this.GetComponent<'T when 'T:>AbstractComponent> (eid:uint32) : 'T =
-        (this.GetComponents eid |> Array.find (fun x -> x.GetType() = typeof<'T>)) :?> 'T
-    
-    member this.GetLocation (location:LocationDataInt) =
-        agentForLocations.Get location
+        agent.PostAndReply (fun replyChannel -> GetComponents(eid,replyChannel))
 
     member this.GetMap() = 
-        agentForEntities.PostAndReply GetMap
+        agent.PostAndReply GetMap
 
-    member this.GetMaxID = 
-        agentForID.GetMaxID
-
-    member this.GetNewID =
-        agentForID.GetNewID
-    
-    member this.GetWithComponent ct =
-        agentForComponents.Get ct
-    
     member this.PendingUpdates = 
-        (agentForEntities.CurrentQueueLength > 0) || agentForID.PendingUpdates || agentForComponents.PendingUpdates || agentForLocations.PendingUpdates
+        agent.CurrentQueueLength > 0
 
     member this.RemoveEntity (eid:uint32) = 
-        let cts = this.GetComponents eid
-        agentForComponents.Remove cts
-        agentForLocations.Remove cts
-        agentForEntities.Post (RemoveEntity eid)
-        Ok (Some "in async")
+        agent.Post (RemoveEntity eid)
 
-    member this.ReplaceComponent (ac:AbstractComponent) (changes:string option) =
-        if (ac.ComponentType = Component_Form) then 
-            agentForLocations.Move (this.GetComponent<FormComponent> ac.EntityID) (ac :?> FormComponent)
-        agentForEntities.Post (ReplaceComponent ac)
-        Ok (Some "in async") //changes
+    member this.ReplaceComponent (ac:AbstractComponent) =
+        agent.Post (ReplaceComponent ac)
 
-    member this.Init (startMax:uint32) (newMap:Map<uint32,AbstractComponent[]>) = 
-        agentForID.Init startMax
-        agentForEntities.Post (Init newMap)
+    member this.Init (newMap:Map<uint32,AbstractComponent[]>) = 
+        agent.Post (Init newMap)
 
 
 //member this.List () =

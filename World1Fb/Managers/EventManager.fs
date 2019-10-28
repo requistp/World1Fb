@@ -17,6 +17,7 @@ type private resultAgentMsg =
 type private callbackAgentMsg =
 | Callback of GECallbackExecution
 | EndRound of AsyncReplyChannel<uint32>
+| EndRound2
 | GetRound of AsyncReplyChannel<uint32>
 
 type EventManager(enm:EntityManager) =
@@ -53,30 +54,29 @@ type EventManager(enm:EntityManager) =
                         | Callback (cb,ge) -> 
                             resultAgent.Post (Result (_round,cb,ge,cb enm ge))
                         | EndRound replyChannel -> 
-                            while (inbox.CurrentQueueLength > 0 || enm.PendingUpdates) do // I don't think this is needed
-                                //printfn "Queue length:%i. Pending:%b" (inbox.CurrentQueueLength) enm.PendingUpdates
-                                System.Threading.Thread.Sleep 1 // I think this only happens at the start, maybe log it. 0000 //Long delay so hopefully I will notice
+                            while (inbox.CurrentQueueLength > 0 || enm.PendingUpdates) do
+                                System.Threading.Thread.Sleep 2
                             resultAgent.Post EndOfRound
                             _round <- _round + 1u
                             replyChannel.Reply(_round)
+                        | EndRound2 -> 
+                            while (inbox.CurrentQueueLength > 0 || enm.PendingUpdates) do
+                                System.Threading.Thread.Sleep 2
+                            //resultAgent.Post EndOfRound
+                            _round <- _round + 1u
                         | GetRound replyChannel -> 
                             replyChannel.Reply(_round)
                 }
             )
 
+    member this.EndRound = 
+        callbackAgent.PostAndReply EndRound 
+
+    member this.EndRound2 = 
+        callbackAgent.Post EndRound2 
+
     member this.GetEventLog = 
         resultAgent.PostAndReply Get
-
-    member this.ProcessEvents = 
-        let st = Timer.Start random.Next
-        printfn "%A" st
-        
-        while callbackAgent.CurrentQueueLength > 0 do
-            System.Threading.Thread.Sleep 1
-        
-        callbackAgent.PostAndReply EndRound
-        
-        Timer.End "Process Events2" st
 
     member this.PrintEventLog =
         this.GetEventLog |> Array.iter (fun (rnd,cb,ge,res) -> if rnd <> 0u then printfn "%i | %A / %s" rnd (ge.GameEventType) (res.ToString()))
@@ -91,4 +91,7 @@ type EventManager(enm:EntityManager) =
     member this.RegisterListener et callback = 
         _listeners <- Map_AppendValueToArray _listeners et callback
     
-    member this.Round = callbackAgent.PostAndReply GetRound
+    member this.Round() = 
+        callbackAgent.PostAndReply GetRound
+
+

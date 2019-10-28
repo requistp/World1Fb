@@ -2,12 +2,14 @@
 open AbstractComponent
 open CommonGenericFunctions
 
+
 type private ComponentEntityAgentMsg = 
 | Add of AbstractComponent
 | Get of ComponentTypes * AsyncReplyChannel<uint32[]>
 | GetMap of AsyncReplyChannel<Map<ComponentTypes,uint32[]> >
 | Init of Map<ComponentTypes,uint32[]>    
 | Remove of AbstractComponent
+
 
 type ComponentEntityAgent() = 
     let agent =
@@ -50,7 +52,7 @@ type ComponentEntityAgent() =
         agent.Post (Init newMap)
     
     member this.PendingUpdates = 
-        (agent.CurrentQueueLength > 0)
+        agent.CurrentQueueLength > 0
 
     member this.Print =
         this.GetMap()

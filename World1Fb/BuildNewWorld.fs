@@ -15,7 +15,7 @@ open TerrainComponent
 
 let MakeGrasses (enm:EntityManager) n =
     let MakeGrass x y =
-        let eid = enm.EntityID_New
+        let eid = enm.GetNewID
         [| 
             FoodComponent(eid, Food_Carrot, 20).Abstract
             FormComponent(eid, true, Food_Carrot.ToString(), Food_Grass.Symbol.Value, {X=x;Y=y;Z=0}).Abstract
@@ -28,7 +28,7 @@ let MakeGrasses (enm:EntityManager) n =
 
 let MakeMap (enm:EntityManager) = 
     let AddTerrain l = 
-        let eid = enm.EntityID_New
+        let eid = enm.GetNewID
         let t = match random.Next(1,50) with
                 | 1 -> Rock
                 | _ -> Dirt
@@ -51,7 +51,7 @@ let MakeMap (enm:EntityManager) =
 
 let MakeRabbits (enm:EntityManager) n = 
     let MakeRabbit x y n = 
-        let eid = enm.EntityID_New
+        let eid = enm.GetNewID
         let cont = [| ControllerComponent(eid).Abstract  |]
         let baseBunny = 
             [|

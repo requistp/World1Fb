@@ -26,7 +26,6 @@
     <Compile Include="Managers\EventManager.fs" />
     <Compile Include="Managers\AbstractSystem.fs" />
     <Compile Include="Managers\SystemManager.fs" />
-    <Compile Include="Managers\FrameManager.fs" />
     <Compile Include="Managers\InputHandler.fs" />
     <Compile Include="Managers\GameManager.fs" />
     <Compile Include="Systems\EatingSystem.fs" />
@@ -35,6 +34,7 @@
     <Compile Include="Systems\KillSystem.fs" />
     <Compile Include="Systems\MovementSystem.fs" />
     <Compile Include="Systems\PlantGrowthSystem.fs" />
+    <Compile Include="Systems\ScheduleAgent.fs" />
     <Compile Include="Systems\ScheduleSystem.fs" />
     <Compile Include="Systems\TerrainSystem.fs" />
     <Compile Include="Console\WorldMapRenderer.fs" />

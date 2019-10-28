@@ -58,7 +58,7 @@ type PlantGrowthSystem(game:Game, isActive:bool) =
                 ((ct:?>FormComponent).Update None None None (Some l)).Abstract
             | _ -> ct        
         let makePlant (l:LocationDataInt) (r:float) = 
-            let neweid = enm.EntityID_New
+            let neweid = enm.GetNewID
             let newcts = 
                 enm.CopyEntity ge.EntityID neweid
                 |> Array.map (fun ct -> makePlant_AdjustComponents ct l)

@@ -55,8 +55,9 @@ type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*stri
 
         systemMan.UpdateSystems
 
-        eventMan.ProcessEvents |> ignore
-        
+        eventMan.EndRound2
+        //printfn "%i" (eventMan.EndRound) // EndRound seems to hang if I don't print this.
+
         wmr entityMan
         
         //printfn "ending game loop, Round:%i" this.Round

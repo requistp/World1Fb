@@ -4,12 +4,14 @@ open CommonGenericFunctions
 open FormComponent
 open LocationTypes
 
+
 type private LocationEntityAgentMsg =
 | Add of FormComponent
 | Get of LocationDataInt * AsyncReplyChannel<uint32[]>
 | GetMap of AsyncReplyChannel<Map<LocationDataInt,uint32[]> >
 | Init of Map<LocationDataInt,uint32[]>    
 | Remove of FormComponent
+
 
 type LocationEntityAgent() = 
     let agent =
@@ -58,7 +60,7 @@ type LocationEntityAgent() =
         this.Add newForm
 
     member this.PendingUpdates = 
-        (agent.CurrentQueueLength > 0)
+        agent.CurrentQueueLength > 0
 
     member this.Print() =
         this.GetMap()
