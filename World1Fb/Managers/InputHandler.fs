@@ -32,7 +32,7 @@ type InputHandler(evm:EventManager, enm:EntityManager, renderer_SetDisplay:strin
         | ConsoleKey.F1 -> renderer_SetDisplay "World Map"
         | ConsoleKey.F2 -> 
             System.Console.SetCursorPosition(0,27)
-            evm.PrintEventLog // renderer_SetDisplay "Game Events List"
+            () //evm.PrintEventLog // renderer_SetDisplay "Game Events List"
         | _ -> ()
         InfoOnly
 

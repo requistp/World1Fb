@@ -7,11 +7,12 @@ open System
 
 type private GECallback = EventData_Generic -> Result<string option,string>
 
-type private GECallbackResult = uint32 * string * GECallback * EventData_Generic * Result<string option,string> 
+type private GECallbackResult = uint32 * string * GECallback option * EventData_Generic option * Result<string option,string> 
 
 type private agentResultMsg =
 | DumpLog
 | EndOfRound
+| EndOfRoundCancelled
 | Get of AsyncReplyChannel<GECallbackResult[]>
 | Result of GECallbackResult
 | SetLogging of bool
@@ -25,6 +26,7 @@ type private agentListenersMsg =
 | Register of string * GameEventTypes * GECallback
 
 type EventManager(enm:EntityManager) =
+    let mutable _round = 0u
     let agentResult =
         let mutable _log = Array.empty<GECallbackResult>
         let mutable _logging = true
@@ -35,9 +37,9 @@ type EventManager(enm:EntityManager) =
                         let GECallbackResult_ToString ((rnd,l,cb,ge,res):GECallbackResult) =
                             let res_ToStrings =
                                 match res with
-                                | Error x -> ("Err",x)
-                                | Ok s -> ("Ok ",if s.IsSome then " : " + s.Value else ".")
-                            sprintf "%5i | %s | %s by %s%s" rnd (fst res_ToStrings) (ge.GameEventType.ToString()) l (snd res_ToStrings)
+                                | Error x -> ("Err", " : " + x)
+                                | Ok s -> ("Ok", if s.IsSome then " : " + s.Value else "")
+                            sprintf "%5i | %-3s | %-20s -> %-25s%s" rnd (fst res_ToStrings) l (if ge.IsSome then ge.Value.ToString else "<none>") (snd res_ToStrings)
                         let! msg = inbox.Receive()
                         match msg with
                         | DumpLog ->
@@ -46,6 +48,8 @@ type EventManager(enm:EntityManager) =
                         | EndOfRound ->
                             if (_logging) then _log |> Array.iter (fun gecb -> log (GECallbackResult_ToString gecb))
                             _log <- Array.empty
+                        | EndOfRoundCancelled ->
+                            _log <- Array.append _log [| ( _round, "EventManager", None, None, Error "Pending Events" )|]
                         | Get replyChannel ->
                             replyChannel.Reply(_log)
                             _log <- Array.empty
@@ -56,7 +60,6 @@ type EventManager(enm:EntityManager) =
                 }
             )
     let agentCallback =
-        let mutable _round = 0u
         MailboxProcessor<agentCallbackMsg>.Start(
             fun inbox ->
                 async { 
@@ -64,14 +67,16 @@ type EventManager(enm:EntityManager) =
                         let! msg = inbox.Receive()
                         match msg with 
                         | Callback (l,cb,ge) -> 
-                            agentResult.Post (Result (_round,l,cb,ge,cb ge))
+                            agentResult.Post (Result (_round,l,Some cb,Some ge,cb ge))
                         | EndRound replyChannel -> 
-                            while (inbox.CurrentQueueLength > 0 || enm.PendingUpdates) do
-                                Console.Write '!'
-                                System.Threading.Thread.Sleep 1
-                            agentResult.Post EndOfRound
-                            _round <- _round + 1u
-                            replyChannel.Reply(_round)
+                            match (inbox.CurrentQueueLength > 0 || enm.PendingUpdates) with
+                            | true -> 
+                                // If I want to log this... agentResult.Post EndOfRoundCancelled
+                                replyChannel.Reply(0u)
+                            | false -> 
+                                agentResult.Post EndOfRound
+                                _round <- _round + 1u
+                                replyChannel.Reply(_round)
                 }
             )
     let agentListeners =
@@ -83,7 +88,10 @@ type EventManager(enm:EntityManager) =
                         let! msg = inbox.Receive()
                         match msg with 
                         | Execute ge ->
-                            if (_listeners.ContainsKey ge.GameEventType) then
+                            match _listeners.ContainsKey ge.GameEventType with
+                            | false -> 
+                                agentResult.Post (Result (_round,"<nolisteners>",None,Some ge,Ok None))
+                            | true ->
                                 _listeners.Item ge.GameEventType
                                 |> Array.Parallel.iter (fun (l,cb) -> agentCallback.Post (Callback (l,cb,ge)))
                         | Register (l,et,cb) -> 
@@ -95,10 +103,10 @@ type EventManager(enm:EntityManager) =
         agentResult.Post DumpLog
 
     member this.EndRound = 
-        while (agentCallback.CurrentQueueLength > 0 || enm.PendingUpdates) do
+        while (agentCallback.CurrentQueueLength > 0 || enm.PendingUpdates || agentCallback.PostAndReply EndRound = 0u) do
             Console.Write '.'
             System.Threading.Thread.Sleep 1
-        agentCallback.PostAndReply EndRound 
+        _round
 
     member this.GetEventLog = 
         agentResult.PostAndReply Get
@@ -112,6 +120,6 @@ type EventManager(enm:EntityManager) =
     member this.RegisterListener (listener:string) (et:GameEventTypes) (callback:GECallback) = 
         agentListeners.Post (Register (listener,et,callback))
     
-    member this.PrintEventLog =
-        this.GetEventLog |> Array.iter (fun (rnd,l,cb,ge,res) -> if rnd <> 0u then printfn "%i | %A / %s" rnd (ge.GameEventType) (res.ToString()))
+    //member this.PrintEventLog =
+    //    this.GetEventLog |> Array.iter (fun (rnd,l,cb,ge,res) -> if rnd <> 0u then printfn "%i | %A / %s" rnd (ge.GameEventType) (res.ToString()))
     

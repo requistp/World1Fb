@@ -3,7 +3,6 @@ open AbstractComponent
 open MovementComponent
 
 type GameEventTypes =
-    | GAME_AdvanceRound
     | Action_Eat
     | Action_Movement
     | CreateEntity
@@ -21,7 +20,7 @@ type GameEventTypes =
 type EventData_Generic(gameEventType:GameEventTypes, eid:uint32) =
     member _.EntityID = eid
     member _.GameEventType = gameEventType
-    member this.ToString = sprintf "%s - Entity:%i" (this.GameEventType.ToString()) eid
+    member this.ToString = sprintf "%s (#%i)" (this.GameEventType.ToString()) eid
     new (gameEventType:GameEventTypes) = EventData_Generic(gameEventType, 0u)
 
 type ScheduledEvent(ed:EventData_Generic, frequency:uint32) =
@@ -34,23 +33,23 @@ type ScheduledEvent(ed:EventData_Generic, frequency:uint32) =
 type EventData_Action_Movement(eid:uint32, direction:MovementDirection) =
     inherit EventData_Generic(Action_Movement, eid)
     member _.Direction = direction
-    member this.ToString = base.ToString + (sprintf ". Direction:%s" (direction.ToString()))
+    member this.ToString = base.ToString + (sprintf " Direction:%s" (direction.ToString()))
 
 type EventData_CreateEntity(eid: uint32, cts:AbstractComponent[]) =
     inherit EventData_Generic(CreateEntity, eid)
     member _.Components = cts         
-    member this.ToString = base.ToString + (sprintf ". Components:%i" (cts.Length))
+    member this.ToString = base.ToString + (sprintf " Components:%i" (cts.Length))
 
 type EventData_Eaten(eaterID:uint32, eateeID:uint32, quantity:int) =
     inherit EventData_Generic(Eaten, eaterID)
     member _.EateeID = eateeID
     member _.Quantity = quantity
-    member this.ToString = base.ToString + (sprintf ". EateeID:%i. Quantity:%i" eateeID quantity)
+    member this.ToString = base.ToString + (sprintf " EateeID:%i. Quantity:%i" eateeID quantity)
 
 type EventData_Movement(eid:uint32, direction:MovementDirection) =
     inherit EventData_Generic(Movement,eid)
     member _.Direction = direction
-    member this.ToString = base.ToString + (sprintf ". Direction:%s" (direction.ToString()))
+    member this.ToString = base.ToString + (sprintf " Direction:%s" (direction.ToString()))
     
 type EventData_ScheduleEvent(eid:uint32, se:ScheduledEvent) =
     inherit EventData_Generic(ScheduleEvent,eid)

@@ -55,10 +55,15 @@ type EntityManager() =
         Ok (Some "in async")
         
     member me.ReplaceComponent (ac:AbstractComponent) (changes:string option) =
-        if (ac.ComponentType = Component_Form) then 
-            agentForLocations.Move (me.GetComponent<FormComponent> ac.EntityID) (ac :?> FormComponent)
+        let handleComponentSpecificIssues =
+            match ac.ComponentType with
+            | Component_Form ->
+                agentForLocations.Move (me.GetComponent<FormComponent> ac.EntityID) (ac :?> FormComponent)
+            | _ -> ()
+
+        handleComponentSpecificIssues
         agentForEntities.ReplaceComponent ac
-        Ok (Some "in async") //changes
+        Ok changes
 
     member _.TryGet (eid:uint32) =
         agentForEntities.Exists eid |> TrueSomeFalseNone (agentForEntities.GetComponents eid)
