@@ -2,30 +2,29 @@
 open CommonGenericFunctions
 open EntityManager
 open EventTypes
+open System
 
 type private GECallback = EntityManager -> EventData_Generic -> Result<string option,string>
 
-type private GECallbackExecution = GECallback * EventData_Generic
+type private GECallbackResult = uint32 * GECallback * EventData_Generic * Result<string option,string>
 
-type GECallbackResult = uint32 * GECallback * EventData_Generic * Result<string option,string>
-
-type private resultAgentMsg =
+type private agentResultMsg =
 | EndOfRound
 | Get of AsyncReplyChannel<GECallbackResult[]>
 | Result of GECallbackResult
 
-type private callbackAgentMsg =
-| Callback of GECallbackExecution
+type private agentCallbackMsg =
+| Callback of GECallback * EventData_Generic
 | EndRound of AsyncReplyChannel<uint32>
-| EndRound2
-| GetRound of AsyncReplyChannel<uint32>
+
+type private agentListenersMsg =
+| Add of GameEventTypes * GECallback
+| Execute of EventData_Generic 
 
 type EventManager(enm:EntityManager) =
-    let mutable _listeners = Map.empty:Map<GameEventTypes,GECallback[]>
-
-    let resultAgent =
+    let agentResult =
         let mutable _log = Array.empty<GECallbackResult>
-        MailboxProcessor<resultAgentMsg>.Start(
+        MailboxProcessor<agentResultMsg>.Start(
             fun inbox ->
                 async { 
                     while true do
@@ -42,56 +41,57 @@ type EventManager(enm:EntityManager) =
                             _log <- Array.append _log [|r|]
                 }
             )
-
-    let callbackAgent =
+    let agentCallback =
         let mutable _round = 0u
-        MailboxProcessor<callbackAgentMsg>.Start(
+        MailboxProcessor<agentCallbackMsg>.Start(
             fun inbox ->
                 async { 
                     while true do
                         let! msg = inbox.Receive()
                         match msg with 
                         | Callback (cb,ge) -> 
-                            resultAgent.Post (Result (_round,cb,ge,cb enm ge))
+                            agentResult.Post (Result (_round,cb,ge,cb enm ge))
                         | EndRound replyChannel -> 
                             while (inbox.CurrentQueueLength > 0 || enm.PendingUpdates) do
-                                System.Threading.Thread.Sleep 2
-                            resultAgent.Post EndOfRound
+                                Console.Write '!'
+                                System.Threading.Thread.Sleep 1
+                            agentResult.Post EndOfRound
                             _round <- _round + 1u
                             replyChannel.Reply(_round)
-                        | EndRound2 -> 
-                            while (inbox.CurrentQueueLength > 0 || enm.PendingUpdates) do
-                                System.Threading.Thread.Sleep 2
-                            //resultAgent.Post EndOfRound
-                            _round <- _round + 1u
-                        | GetRound replyChannel -> 
-                            replyChannel.Reply(_round)
+                }
+            )
+    let agentListeners =
+        let mutable _listeners = Map.empty:Map<GameEventTypes,GECallback[]>
+        MailboxProcessor<agentListenersMsg>.Start(
+            fun inbox ->
+                async { 
+                    while true do
+                        let! msg = inbox.Receive()
+                        match msg with 
+                        | Add (et,cb) -> 
+                            _listeners <- Map_AppendValueToArray _listeners et cb
+                        | Execute ge ->
+                            if (_listeners.ContainsKey ge.GameEventType) then
+                                _listeners.Item ge.GameEventType
+                                |> Array.Parallel.iter (fun cb -> agentCallback.Post (Callback (cb,ge)))
                 }
             )
 
     member this.EndRound = 
-        callbackAgent.PostAndReply EndRound 
-
-    member this.EndRound2 = 
-        callbackAgent.Post EndRound2 
+        while (agentCallback.CurrentQueueLength > 0 || enm.PendingUpdates) do
+            Console.Write '.'
+            System.Threading.Thread.Sleep 1
+        agentCallback.PostAndReply EndRound 
 
     member this.GetEventLog = 
-        resultAgent.PostAndReply Get
+        agentResult.PostAndReply Get
 
+    member this.QueueEvent (ge:EventData_Generic) = 
+        agentListeners.Post (Execute ge)
+
+    member this.RegisterListener et callback = 
+        agentListeners.Post (Add (et,callback))
+    
     member this.PrintEventLog =
         this.GetEventLog |> Array.iter (fun (rnd,cb,ge,res) -> if rnd <> 0u then printfn "%i | %A / %s" rnd (ge.GameEventType) (res.ToString()))
     
-    member this.QueueEvent (ge:EventData_Generic) = 
-        match _listeners.ContainsKey ge.GameEventType with 
-        | false -> ()
-        | true -> 
-            _listeners.Item ge.GameEventType 
-            |> Array.Parallel.iter (fun cb -> callbackAgent.Post (Callback (cb,ge)))
-
-    member this.RegisterListener et callback = 
-        _listeners <- Map_AppendValueToArray _listeners et callback
-    
-    member this.Round() = 
-        callbackAgent.PostAndReply GetRound
-
-

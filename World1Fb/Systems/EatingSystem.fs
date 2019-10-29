@@ -56,7 +56,7 @@ type EatingSystem(game:Game, isActive:bool) =
         
     override this.Initialize = 
         game.EventManager.RegisterListener Action_Eat this.onEat
-        game.EventManager.RegisterListener CreateEntity this.onCreateEntity
+        //game.EventManager.RegisterListener CreateEntity this.onCreateEntity
         game.EventManager.RegisterListener Metabolize this.onMetabolize
         base.SetToInitialized
 

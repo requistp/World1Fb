@@ -14,15 +14,16 @@ open System
 
 
 type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*string)[]->bool->Async<unit>, renderer_SetDisplay:string->unit, renderer_Display:string->unit, wmr:EntityManager->unit, wmrKeys:ConsoleKey->unit) =
+    let mutable _round = 0u // I do this because when I wasn't getting the round there were problems
     let entityMan = new EntityManager()
     let eventMan = new EventManager(entityMan)
     let systemMan = new SystemManager(eventMan)
-    let inputMan = new InputHandler(eventMan, entityMan, systemMan, renderer_SetDisplay, wmrKeys)
+    let inputMan = new InputHandler(eventMan, entityMan, renderer_SetDisplay, wmrKeys)
  
     member this.EventManager = eventMan
     member this.EntityManager = entityMan
     member this.SystemManager = systemMan
-    member this.Round = eventMan.Round
+    member this.Round() = _round
 
     member private this.assignController =
         match Component_Controller |> entityMan.GetEntitiesWithComponent with
@@ -55,8 +56,8 @@ type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*stri
 
         systemMan.UpdateSystems
 
-        eventMan.EndRound2
-        //printfn "%i" (eventMan.EndRound) // EndRound seems to hang if I don't print this.
+        _round <- eventMan.EndRound
+        printfn "%i    " _round // EndRound seems to hang if I don't print this.
 
         wmr entityMan
         

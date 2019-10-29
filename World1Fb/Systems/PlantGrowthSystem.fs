@@ -70,7 +70,7 @@ type PlantGrowthSystem(game:Game, isActive:bool) =
         | Ok (l,r) -> makePlant l r
 
     override this.Initialize = 
-        game.EventManager.RegisterListener CreateEntity this.onCreateEntity
+        //game.EventManager.RegisterListener CreateEntity this.onCreateEntity
         game.EventManager.RegisterListener PlantReproduce this.onReproduce
         base.SetToInitialized
 

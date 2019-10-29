@@ -14,10 +14,8 @@ type KeyboardResult =
     | GameAction
     | InfoOnly
 
-type InputHandler(evm:EventManager, enm:EntityManager, sysm:SystemManager, renderer_SetDisplay:string->unit, wmrKeys:ConsoleKey->unit) =
+type InputHandler(evm:EventManager, enm:EntityManager, renderer_SetDisplay:string->unit, wmrKeys:ConsoleKey->unit) =
     let mutable _entityID = None
-
-    member this.EntityID = _entityID
 
     member private this.HaveEntityAndRequiredComponents (cts:ComponentTypes[]) =
         match _entityID with
