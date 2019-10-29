@@ -49,7 +49,10 @@ let private closeLog file =
 //        |> Seq.choose snd
 //        |> Seq.iter File.Delete
 
-type private LogMsg =  Log of string | CloseLog of AsyncReplyChannel<unit> //| Rollover
+type private LogMsg = 
+    | Log of string 
+    | CloseLog of AsyncReplyChannel<unit> 
+    //| Rollover
 
 //let private rolloverAgent (inbox:MailboxProcessor<LogMsg>) = 
 //    async{
@@ -81,7 +84,7 @@ let private logAgent =
     mb
 
 //API
-let log (msg:string) = //(tag:string) (desc:string) = 
+let writeLog (msg:string) = //(tag:string) (desc:string) = 
     //let msg = sprintf "%A %s : %s" DateTime.Now tag desc 
     logAgent.Post (Log msg)   
 

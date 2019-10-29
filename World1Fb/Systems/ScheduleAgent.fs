@@ -12,10 +12,8 @@ type private ScheduleAgentMsg =
 
 
 type ScheduleAgent(getRound:unit->uint32) =
-
     let agent =
         let mutable _schedule = Map.empty<uint32,ScheduledEvent[]>
-
         MailboxProcessor<ScheduleAgentMsg>.Start(
             fun inbox ->
                 async { 

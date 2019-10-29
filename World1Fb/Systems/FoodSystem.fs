@@ -49,7 +49,7 @@ type FoodSystem(game:Game, isActive:bool) =
         | Some f -> tryRegrowFood f
         
     override this.Initialize = 
-        evm.RegisterListener "FoodSystem" Eaten this.onEaten
+        //evm.RegisterListener "FoodSystem" Eaten this.onEaten
         //evm.RegisterListener "FoodSystem" Food_AllEaten this.onAllEaten
         evm.RegisterListener "FoodSystem" PlantRegrowth this.onRegrowth
         base.SetToInitialized
