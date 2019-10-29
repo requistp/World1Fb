@@ -30,7 +30,7 @@ type ScheduleSystem(game:Game, isActive:bool) =
         |> Array.Parallel.iter (fun se -> executeAndReschedule se)
 
     override this.Initialize = 
-        game.EventManager.RegisterListener ScheduleEvent this.onScheduleEvent
+        game.EventManager.RegisterListener "ScheduleSystem" ScheduleEvent this.onScheduleEvent
         base.SetToInitialized
 
     override this.Update = 

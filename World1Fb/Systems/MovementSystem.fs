@@ -43,7 +43,7 @@ type MovementSystem(game:Game, isActive:bool) =
         | Some f -> checkIfMovementIsValid f
 
     override this.Initialize = 
-        game.EventManager.RegisterListener Action_Movement this.onMovementKeyPressed
+        game.EventManager.RegisterListener "MovementSystem" Action_Movement this.onMovementKeyPressed
         base.SetToInitialized
 
     override this.Update = 

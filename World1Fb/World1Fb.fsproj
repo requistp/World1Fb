@@ -9,6 +9,7 @@
     <Compile Include="common\CommonGenericFunctions.fs" />
     <Compile Include="common\CalendarTimings.fs" />
     <Compile Include="common\LocationTypes.fs" />
+    <Compile Include="common\Logging.fs" />
     <Compile Include="Components\AbstractComponent.fs" />
     <Compile Include="Components\ControllerComponent.fs" />
     <Compile Include="Components\FoodComponent.fs" />

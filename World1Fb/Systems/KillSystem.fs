@@ -13,7 +13,7 @@ type KillSystem(game:Game, isActive:bool) =
         enm.RemoveEntity (ge.EntityID)
 
     override this.Initialize = 
-        game.EventManager.RegisterListener Kill_AllEaten this.onKillAllEaten
+        game.EventManager.RegisterListener "KillSystem" Kill_AllEaten this.onKillAllEaten
         base.SetToInitialized
 
     override this.Update = 

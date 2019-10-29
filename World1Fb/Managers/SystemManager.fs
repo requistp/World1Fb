@@ -14,7 +14,7 @@ type SystemManager(evm:EventManager) =
     member this.Initialize (ss:AbstractSystem[]) =
         _systems <- ss
         this.Active |> Array.Parallel.iter (fun s -> s.Initialize)
-        evm.RegisterListener CreateEntity this.onCreateEntity
+        evm.RegisterListener "SystemManager" CreateEntity this.onCreateEntity
                 
     member this.UpdateSystems =
         this.ActiveAndInitialized 
