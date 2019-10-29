@@ -13,23 +13,25 @@ open System
 
 type EatingSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
-
-    member private this.onCreateEntity (enm:EntityManager) (ge:EventData_Generic) =
+    let enm = game.EntityManager
+    let evm = game.EventManager    
+    
+    member private this.onCreateEntity (ge:EventData_Generic) =
         let e = ge :?> EventData_CreateEntity 
         match e.Components |> Array.filter (fun ct -> ct.ComponentType = Component_Eating) with
         | [||] -> Ok (Some "No EatingComponent")
         | _ -> 
-            game.EventManager.QueueEvent (EventData_ScheduleEvent(e.EntityID, ScheduledEvent(EventData_Generic(Metabolize,e.EntityID),uint32 MetabolismFrequency)))
+            evm.QueueEvent (EventData_ScheduleEvent(e.EntityID, ScheduledEvent(EventData_Generic(Metabolize,e.EntityID),uint32 MetabolismFrequency)))
             Ok (Some "Queued Metabolize to schedule")
         
-    member private this.onMetabolize (enm:EntityManager) (ge:EventData_Generic) =
+    member private this.onMetabolize (ge:EventData_Generic) =
         let eatc = enm.GetComponent<EatingComponent> ge.EntityID
         let starving = (eatc.Calories-eatc.CaloriesPerMetabolize < 0)
         let result = sprintf "Quantity:-%i. Calories:-%i. Starving:%b" eatc.QuantityPerMetabolize eatc.CaloriesPerMetabolize starving
-        if starving then game.EventManager.QueueEvent (EventData_Generic(Starving,ge.EntityID))
+        if starving then evm.QueueEvent (EventData_Generic(Starving,ge.EntityID))
         enm.ReplaceComponent (eatc.Update (eatc.Quantity-eatc.QuantityPerMetabolize) (eatc.Calories-eatc.CaloriesPerMetabolize)) (Some result)
         
-    member private this.onEat (enm:EntityManager) (ge:EventData_Generic) =
+    member private this.onEat (ge:EventData_Generic) =
         let eatc = enm.GetComponent<EatingComponent> ge.EntityID
         let formc = enm.GetComponent<FormComponent> ge.EntityID
 
@@ -47,17 +49,17 @@ type EatingSystem(game:Game, isActive:bool) =
             let result = sprintf "EateeID: %i. Quantity:%i. Calories:%i" (f.EntityID) quantity calories
             match quantity with
             | 0 -> Error "Stomach is full"
-            | _ -> game.EventManager.QueueEvent(EventData_Eaten(eatc.EntityID, f.EntityID, quantity))
+            | _ -> evm.QueueEvent(EventData_Eaten(eatc.EntityID, f.EntityID, quantity))
                    enm.ReplaceComponent (eatc.Update (eatc.Quantity+quantity) (eatc.Calories+calories)) (Some result)
 
         match foodsAtLocation with
         | [||] -> Error "No food at location"
         | fs -> eatIt fs.[0]
-        
+
     override this.Initialize = 
-        game.EventManager.RegisterListener "EatingSystem" Action_Eat this.onEat
-        //game.EventManager.RegisterListener "EatingSystem" CreateEntity this.onCreateEntity
-        game.EventManager.RegisterListener "EatingSystem" Metabolize this.onMetabolize
+        evm.RegisterListener "EatingSystem" Action_Eat this.onEat
+        //evm.RegisterListener "EatingSystem" CreateEntity this.onCreateEntity
+        evm.RegisterListener "EatingSystem" Metabolize this.onMetabolize
         base.SetToInitialized
 
     override this.Update = 

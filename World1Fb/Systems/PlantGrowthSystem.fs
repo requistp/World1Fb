@@ -14,17 +14,19 @@ open LocationTypes
 
 type PlantGrowthSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
+    let enm = game.EntityManager
+    let evm = game.EventManager    
 
-    member private this.onCreateEntity (enm:EntityManager) (ge:EventData_Generic) =
+    member private this.onCreateEntity (ge:EventData_Generic) =
         let e = ge :?> EventData_CreateEntity
         match e.Components |> Array.filter (fun ct -> ct.ComponentType = Component_PlantGrowth) with
         | [||] -> Ok (Some "No PlantGrowthComponent")
         | ct -> let pgc = ct.[0] :?> PlantGrowthComponent
-                if pgc.RegrowRate > 0.0 then game.EventManager.QueueEvent (EventData_ScheduleEvent(e.EntityID, ScheduledEvent(EventData_Generic(PlantRegrowth,e.EntityID),uint32 PlantGrowthFrequency)))
-                if pgc.ReproductionRate > 0.0 then game.EventManager.QueueEvent (EventData_ScheduleEvent(e.EntityID, ScheduledEvent(EventData_Generic(PlantReproduce,e.EntityID),uint32 PlantReproductionFrequency)))
+                if pgc.RegrowRate > 0.0 then evm.QueueEvent (EventData_ScheduleEvent(e.EntityID, ScheduledEvent(EventData_Generic(PlantRegrowth,e.EntityID),uint32 PlantGrowthFrequency)))
+                if pgc.ReproductionRate > 0.0 then evm.QueueEvent (EventData_ScheduleEvent(e.EntityID, ScheduledEvent(EventData_Generic(PlantReproduce,e.EntityID),uint32 PlantReproductionFrequency)))
                 Ok (Some (sprintf "Queued Regrow to Schedule:%b. Queued Repopulate to Schedule:%b" (pgc.RegrowRate > 0.0) (pgc.ReproductionRate > 0.0)))
     
-    member private this.onReproduce (enm:EntityManager) (ge:EventData_Generic) =
+    member private this.onReproduce (ge:EventData_Generic) =
         let pgc = enm.GetComponent<PlantGrowthComponent> ge.EntityID
         let tryMakeNewPlant =            
             let r = random.NextDouble()
@@ -62,7 +64,7 @@ type PlantGrowthSystem(game:Game, isActive:bool) =
             let newcts = 
                 enm.CopyEntity ge.EntityID neweid
                 |> Array.map (fun ct -> makePlant_AdjustComponents ct l)
-            game.EventManager.QueueEvent (EventData_CreateEntity(neweid,newcts))
+            evm.QueueEvent (EventData_CreateEntity(neweid,newcts))
             Ok (Some (sprintf "Passed reproduction (%f>%f). New EntityID:%i" pgc.ReproductionRate r neweid))
 
         match tryMakeNewPlant with
@@ -70,8 +72,8 @@ type PlantGrowthSystem(game:Game, isActive:bool) =
         | Ok (l,r) -> makePlant l r
 
     override this.Initialize = 
-        //game.EventManager.RegisterListener "PlantGrowthSystem" CreateEntity this.onCreateEntity
-        game.EventManager.RegisterListener "PlantGrowthSystem" PlantReproduce this.onReproduce
+        //evm.RegisterListener "PlantGrowthSystem" CreateEntity this.onCreateEntity
+        evm.RegisterListener "PlantGrowthSystem" PlantReproduce this.onReproduce
         base.SetToInitialized
 
     override this.Update = 

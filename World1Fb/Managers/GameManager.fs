@@ -17,7 +17,7 @@ type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*stri
     let mutable _round = 0u // I do this because when I wasn't getting the round there were problems
     let entityMan = new EntityManager()
     let eventMan = new EventManager(entityMan)
-    let systemMan = new SystemManager(eventMan)
+    let systemMan = new SystemManager(entityMan, eventMan)
     let inputMan = new InputHandler(eventMan, entityMan, renderer_SetDisplay, wmrKeys)
  
     member this.EventManager = eventMan

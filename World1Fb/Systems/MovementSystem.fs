@@ -8,8 +8,10 @@ open GameManager
 
 type MovementSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
+    let enm = game.EntityManager
+    let evm = game.EventManager    
 
-    member private this.onMovementKeyPressed (enm:EntityManager) (ge:EventData_Generic) =
+    member private this.onMovementKeyPressed (ge:EventData_Generic) =
         let m = ge :?> EventData_Action_Movement
 
         let formo = enm.TryGetComponent<FormComponent> m.EntityID
@@ -43,7 +45,7 @@ type MovementSystem(game:Game, isActive:bool) =
         | Some f -> checkIfMovementIsValid f
 
     override this.Initialize = 
-        game.EventManager.RegisterListener "MovementSystem" Action_Movement this.onMovementKeyPressed
+        evm.RegisterListener "MovementSystem" Action_Movement this.onMovementKeyPressed
         base.SetToInitialized
 
     override this.Update = 

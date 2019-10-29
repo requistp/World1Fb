@@ -5,7 +5,7 @@ open EventManager
 open EventTypes
     
 
-type SystemManager(evm:EventManager) =
+type SystemManager(enm:EntityManager,evm:EventManager) =
     let mutable _systems = Array.empty<AbstractSystem>
 
     member this.Active = _systems |> Array.filter (fun s -> s.IsActive)
@@ -20,7 +20,7 @@ type SystemManager(evm:EventManager) =
         this.ActiveAndInitialized 
         |> Array.Parallel.iter (fun s -> s.Update)
 
-    member private this.onCreateEntity (enm:EntityManager) (ge:EventData_Generic) =
+    member private this.onCreateEntity (ge:EventData_Generic) =
         let e = (ge :?> EventData_CreateEntity)
         enm.CreateEntity e.Components
 

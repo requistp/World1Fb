@@ -11,14 +11,16 @@ open System
 
 type FoodSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
+    let enm = game.EntityManager
+    let evm = game.EventManager    
     
-    member private this.onAllEaten (enm:EntityManager) (ge:EventData_Generic) =
+    member private this.onAllEaten (ge:EventData_Generic) =
         match (ge.EntityID |> enm.GetComponent<FoodComponent>).FoodType.KillOnAllEaten with
         | false -> Ok None
-        | true -> game.EventManager.QueueEvent (EventData_Generic(Kill_AllEaten,ge.EntityID))
+        | true -> evm.QueueEvent (EventData_Generic(Kill_AllEaten,ge.EntityID))
                   Ok None
 
-    member private this.onEaten (enm:EntityManager) (ge:EventData_Generic) =
+    member private this.onEaten (ge:EventData_Generic) =
         let e = ge :?> EventData_Eaten
         
         match enm.TryGetComponent<FoodComponent> e.EateeID with  // Can't check the game current frame here b/c two entities could have entered their eat action, and the first one could have eaten and killed the food
@@ -26,10 +28,10 @@ type FoodSystem(game:Game, isActive:bool) =
         | Some f -> 
             let allEaten = (f.Quantity - e.Quantity) <= 0
             let result = sprintf "All Eaten:%b" allEaten
-            if allEaten then game.EventManager.QueueEvent (EventData_Generic(Kill_AllEaten,f.EntityID))
+            if allEaten then evm.QueueEvent (EventData_Generic(Kill_AllEaten,f.EntityID))
             enm.ReplaceComponent (f.Update None (Some (f.Quantity-e.Quantity)) None) (Some result)
 
-    member private this.onRegrowth (enm:EntityManager) (ge:EventData_Generic) =
+    member private this.onRegrowth (ge:EventData_Generic) =
         let tryRegrowFood (f:FoodComponent) = 
             let pgc = enm.GetComponent<PlantGrowthComponent> ge.EntityID
             let missing = f.QuantityMax - f.Quantity
@@ -46,9 +48,9 @@ type FoodSystem(game:Game, isActive:bool) =
         | Some food -> tryRegrowFood food
         
     override this.Initialize = 
-        game.EventManager.RegisterListener "FoodSystem" Eaten this.onEaten
-        game.EventManager.RegisterListener "FoodSystem" Food_AllEaten this.onAllEaten
-        game.EventManager.RegisterListener "FoodSystem" PlantRegrowth this.onRegrowth
+        evm.RegisterListener "FoodSystem" Eaten this.onEaten
+        evm.RegisterListener "FoodSystem" Food_AllEaten this.onAllEaten
+        evm.RegisterListener "FoodSystem" PlantRegrowth this.onRegrowth
         base.SetToInitialized
 
     override this.Update = 

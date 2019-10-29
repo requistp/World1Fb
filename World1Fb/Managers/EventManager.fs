@@ -5,7 +5,7 @@ open EventTypes
 open Logging
 open System
 
-type private GECallback = EntityManager -> EventData_Generic -> Result<string option,string>
+type private GECallback = EventData_Generic -> Result<string option,string>
 
 type private GECallbackResult = uint32 * string * GECallback * EventData_Generic * Result<string option,string> 
 
@@ -64,7 +64,7 @@ type EventManager(enm:EntityManager) =
                         let! msg = inbox.Receive()
                         match msg with 
                         | Callback (l,cb,ge) -> 
-                            agentResult.Post (Result (_round,l,cb,ge,cb enm ge))
+                            agentResult.Post (Result (_round,l,cb,ge,cb ge))
                         | EndRound replyChannel -> 
                             while (inbox.CurrentQueueLength > 0 || enm.PendingUpdates) do
                                 Console.Write '!'
