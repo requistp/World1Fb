@@ -25,13 +25,13 @@ type MovementDirection =
         { X = l.X + this.X_change; Y = l.Y + this.Y_change; Z = l.Z + this.Z_change}
     
 
-type MovementComponent(eid:uint32, movesPerTurn:int) =
-    inherit AbstractComponent(eid,Component_Movement)
+//type MovementComponent(eid:uint32, movesPerTurn:int) =
+//    inherit AbstractComponent(eid,Component_Movement)
 
-    member _.MovesPerTurn = movesPerTurn
+//    member _.MovesPerTurn = movesPerTurn
 
 
-    override this.Copy neweid = 
-        MovementComponent(neweid, movesPerTurn).Abstract
+//    override this.Copy neweid = 
+//        MovementComponent(neweid, movesPerTurn).Abstract
 
     

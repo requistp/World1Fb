@@ -4,16 +4,16 @@ open CommonGenericFunctions
 
 
 type private ComponentEntityAgentMsg = 
-| Add of AbstractComponent
-| Get of ComponentTypes * AsyncReplyChannel<uint32[]>
-| GetMap of AsyncReplyChannel<Map<ComponentTypes,uint32[]> >
-| Init of Map<ComponentTypes,uint32[]>    
-| Remove of AbstractComponent
+| Add of Component
+| Get of int * AsyncReplyChannel<uint32[]>
+| GetMap of AsyncReplyChannel<Map<int,uint32[]> >
+| Init of Map<int,uint32[]>    
+| Remove of Component
 
 
 type ComponentEntityAgent() = 
     let agent =
-        let mutable _map = ComponentTypes.AsArray |> Array.fold (fun (m:Map<ComponentTypes,uint32[]>) ct -> m.Add(ct,Array.empty)) Map.empty
+        let mutable _map = Map.empty<int,uint32[]>
         MailboxProcessor<ComponentEntityAgentMsg>.Start(
             fun inbox ->
                 async { 
@@ -21,34 +21,37 @@ type ComponentEntityAgent() =
                         let! msg = inbox.Receive()
                         match msg with
                         | Add ct ->
-                            if not (_map.Item(ct.ComponentType) |> Array.contains ct.EntityID) then
-                                _map <- Map_AppendValueToArray _map ct.ComponentType ct.EntityID
-                        | Get (componentType,replyChannel) -> 
-                            replyChannel.Reply(_map.Item(componentType))
+                            match _map.ContainsKey ct.ComponentID with
+                            | false -> _map <- _map.Add(ct.ComponentID,[|ct.EntityID|])
+                            | true -> 
+                                if not (_map.Item(ct.ComponentID)|>Array.contains ct.EntityID) then
+                                    _map <- Map_AppendValueToArray _map ct.ComponentID ct.EntityID
+                        | Get (cid,replyChannel) -> 
+                            replyChannel.Reply(_map.Item(cid))
                         | GetMap replyChannel -> 
                             replyChannel.Reply(_map)
                         | Init newMap -> 
                             _map <- newMap
                         | Remove ct ->
                             _map <-
-                                let a = _map.Item(ct.ComponentType) |> Array.filter (fun eid -> eid <> ct.EntityID)
-                                _map.Remove(ct.ComponentType).Add(ct.ComponentType,a)
+                                let a = _map.Item(ct.ComponentID) |> Array.filter (fun eid -> eid <> ct.EntityID)
+                                _map.Remove(ct.ComponentID).Add(ct.ComponentID,a)
                 }
             )
 
-    member this.Add (ct:AbstractComponent) = 
+    member this.Add (ct:Component) = 
         agent.Post (Add ct)
 
-    member this.Add (cts:AbstractComponent[]) =
+    member this.Add (cts:Component[]) =
         cts |> Array.Parallel.iter (fun ct -> this.Add ct)
     
-    member this.Get (componentType:ComponentTypes) = 
-        agent.PostAndReply (fun replyChannel -> Get (componentType,replyChannel))
+    member this.Get (cid:int) = 
+        agent.PostAndReply (fun replyChannel -> Get (cid,replyChannel))
 
     member this.GetMap() =
         agent.PostAndReply GetMap
         
-    member this.Init (newMap:Map<ComponentTypes,uint32[]>) =
+    member this.Init (newMap:Map<int,uint32[]>) =
         agent.Post (Init newMap)
     
     member this.PendingUpdates = 
@@ -58,10 +61,10 @@ type ComponentEntityAgent() =
         this.GetMap()
         |> Map.iter (fun k v -> printfn "%s | %i" (k.ToString()) v.Length)
 
-    member this.Remove (ct:AbstractComponent) =
+    member this.Remove (ct:Component) =
         agent.Post (Remove ct)
 
-    member this.Remove (cts:AbstractComponent[]) =
+    member this.Remove (cts:Component[]) =
         cts |> Array.Parallel.iter (fun ct -> this.Remove ct)
 
  

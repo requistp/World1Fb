@@ -11,11 +11,11 @@ type KillSystem(game:Game, isActive:bool) =
     let enm = game.EntityManager
     let evm = game.EventManager    
 
-    member private this.onKillAllEaten (ge:EventData_Generic) =
-        enm.RemoveEntity (ge.EntityID)
+    //member private this.onKillAllEaten (ge:EventData_Generic) =
+    //    enm.RemoveEntity (ge.EntityID)
 
     override this.Initialize = 
-        evm.RegisterListener "KillSystem" Kill_AllEaten this.onKillAllEaten
+        //evm.RegisterListener "KillSystem" Kill_AllEaten this.onKillAllEaten
         base.SetToInitialized
 
     override this.Update = 

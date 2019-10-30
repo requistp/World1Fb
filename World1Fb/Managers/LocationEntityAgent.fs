@@ -6,11 +6,11 @@ open LocationTypes
 
 
 type private LocationEntityAgentMsg =
-| Add of FormComponent
-| Get of LocationDataInt * AsyncReplyChannel<uint32[]>
-| GetMap of AsyncReplyChannel<Map<LocationDataInt,uint32[]> >
-| Init of Map<LocationDataInt,uint32[]>    
-| Remove of FormComponent
+    | Add of eintityID:uint32 * FormData
+    | Get of LocationDataInt * AsyncReplyChannel<uint32[]>
+    | GetMap of AsyncReplyChannel<Map<LocationDataInt,uint32[]> >
+    | Init of Map<LocationDataInt,uint32[]>    
+    | Remove of eintityID:uint32 * FormData
 
 
 type LocationEntityAgent() = 
@@ -22,29 +22,31 @@ type LocationEntityAgent() =
                     while true do
                         let! msg = inbox.Receive()
                         match msg with
-                        | Add f ->
-                            if not (_map.Item(f.Location) |> Array.contains f.EntityID) then
-                                _map <- Map_AppendValueToArray _map f.Location f.EntityID
+                        | Add (e,fd) ->
+                            if not (_map.Item(fd.Location) |> Array.contains e) then
+                                _map <- Map_AppendValueToArray _map fd.Location e
                         | Get (location,replyChannel) -> 
                             replyChannel.Reply(_map.Item(location))
                         | GetMap replyChannel -> 
                             replyChannel.Reply(_map)
                         | Init newMap -> 
                             _map <- newMap 
-                        | Remove f ->
+                        | Remove (e,fd) ->
                             _map <-
-                                let a = _map.Item(f.Location) |> Array.filter (fun eid -> eid <> f.EntityID)
-                                _map.Remove(f.Location).Add(f.Location,a)
+                                let a = _map.Item(fd.Location) |> Array.filter (fun eid -> eid <> e)
+                                _map.Remove(fd.Location).Add(fd.Location,a)
                 }
             )
 
-    member this.Add (form:FormComponent) =
-        agent.Post (Add form)
+    member this.Add (e,form:FormData) =
+        agent.Post (Add (e,form))
 
-    member this.Add (cts:AbstractComponent[]) =
+    member this.Add (cts:Component[]) =
         cts
-        |> Array.filter (fun ct -> ct.ComponentType = Component_Form)
-        |> Array.iter (fun ct -> this.Add (ct:?>FormComponent))
+        |> Array.filter (fun ct -> ct.ComponentID = 1)
+        |> Array.iter (fun ct -> 
+            let (Form (e,fd))=ct
+            this.Add (e,fd))
 
     member this.Get (location:LocationDataInt) =
         agent.PostAndReply (fun replyChannel -> Get (location,replyChannel))
@@ -55,9 +57,9 @@ type LocationEntityAgent() =
     member this.Init (newMap:Map<LocationDataInt,uint32[]>) =
         agent.Post (Init newMap)
 
-    member this.Move (oldForm:FormComponent) (newForm:FormComponent) =
-        this.Remove oldForm
-        this.Add newForm
+    member this.Move (e,oldForm:FormData,newForm:FormData) = //(oldForm:Component.Form) (newForm:Component.Form) =
+        this.Remove (e,oldForm) //oldForm
+        this.Add (e,newForm) //newForm
 
     member this.PendingUpdates = 
         agent.CurrentQueueLength > 0
@@ -66,12 +68,15 @@ type LocationEntityAgent() =
         this.GetMap()
         |> Map.iter (fun k v -> printfn "%s | %i" (k.Print) v.Length)
         
-    member this.Remove (form:FormComponent) =
-        agent.Post (Remove form)
+    member this.Remove (e,fd:FormData) =
+        agent.Post (Remove (e,fd))
 
-    member this.Remove (cts:AbstractComponent[]) =
+    member this.Remove (cts:Component[]) =
         cts
-        |> Array.filter (fun ct -> ct.ComponentType = Component_Form)
-        |> Array.iter (fun ct -> this.Remove (ct:?>FormComponent))
+        |> Array.filter (fun ct -> ct.ComponentID = 1)
+        |> Array.iter (fun ct -> 
+            let (Form (e,fd))=ct
+            this.Remove (e,fd))
+//        this.Remove (ct) //:?>FormComponent))
         
 

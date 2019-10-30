@@ -22,5 +22,5 @@ type SystemManager(enm:EntityManager,evm:EventManager) =
 
     member private this.onCreateEntity (ge:EventData_Generic) =
         let e = (ge :?> EventData_CreateEntity)
-        enm.CreateEntity e.Components
+        enm.CreateEntity (e.EntityID,e.Components)
 

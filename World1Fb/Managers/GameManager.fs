@@ -25,22 +25,26 @@ type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*stri
     member this.SystemManager = systemMan
     member this.Round() = _round
 
-    member private this.assignController =
-        match Component_Controller |> entityMan.GetEntitiesWithComponent with
-        | [||] -> None
-        | l -> Some l.[0]
+    //member private this.assignController =
+    //    match Component_Controller |> entityMan.GetEntitiesWithComponent with
+    //    | [||] -> None
+    //    | l -> Some l.[0]
 
-    member private this.setInitialForms (initialForms:AbstractComponent[][]) = 
+    member private this.setInitialForms (initialForms:Component[][]) = 
         initialForms 
-        |> Array.Parallel.iter (fun cts -> if (cts.Length > 0) then eventMan.QueueEvent (EventData_CreateEntity(cts.[0].EntityID,cts)))
+        |> Array.Parallel.iter (fun cts -> 
+            if (cts.Length > 0) then 
+                let (Form (e,_)) = cts.[0]
+                eventMan.QueueEvent (EventData_CreateEntity(e,cts))
+            )
 
-    member this.Start (ss:AbstractSystem[]) (initialForms:AbstractComponent[][]) = 
+    member this.Start (ss:AbstractSystem[]) (initialForms:Component[][]) = 
         systemMan.Initialize ss
         this.setInitialForms initialForms
         
         this.gameLoop
 
-        this.assignController |> inputMan.SetEntityID
+        //this.assignController |> inputMan.SetEntityID
 
         let mutable r = inputMan.AwaitKeyboardInput
         while r <> ExitGame do
@@ -59,7 +63,8 @@ type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*stri
         _round <- eventMan.EndRound
         printfn "%i    " _round // EndRound seems to hang if I don't print this.
 
-        wmr entityMan
+        //wmr entityMan
+        renderer entityMan _round
         
         //printfn "ending game loop, Round:%i" this.Round
         

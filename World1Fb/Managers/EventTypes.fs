@@ -35,7 +35,7 @@ type EventData_Action_Movement(eid:uint32, direction:MovementDirection) =
     member _.Direction = direction
     member this.ToString = base.ToString + (sprintf " Direction:%s" (direction.ToString()))
 
-type EventData_CreateEntity(eid: uint32, cts:AbstractComponent[]) =
+type EventData_CreateEntity(eid:uint32, cts:Component[]) =
     inherit EventData_Generic(CreateEntity, eid)
     member _.Components = cts         
     member this.ToString = base.ToString + (sprintf " Components:%i" (cts.Length))

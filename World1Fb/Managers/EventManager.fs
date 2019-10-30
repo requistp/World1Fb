@@ -13,7 +13,6 @@ type private agentLogTypes =
     | CallbackResult of GECallbackResult
     | EndOfRoundCancelled
     | NoListeners of EventData_Generic
-    with
     override this.ToString() = 
         match this with
         | CallbackResult (l,cb,ge,res) -> 

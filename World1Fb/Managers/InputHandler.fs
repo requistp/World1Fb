@@ -17,12 +17,12 @@ type KeyboardResult =
 type InputHandler(evm:EventManager, enm:EntityManager, renderer_SetDisplay:string->unit, wmrKeys:ConsoleKey->unit) =
     let mutable _entityID = None
 
-    member private this.HaveEntityAndRequiredComponents (cts:ComponentTypes[]) =
+    member private this.HaveEntityAndRequiredComponents (cts:int[]) =
         match _entityID with
         | None -> false
         | Some eid -> enm.HasAllComponents cts eid
     
-    member private this.HandleAction (requiredCTS:ComponentTypes[]) event =
+    member private this.HandleAction (requiredCTS:int[]) event =
         match this.HaveEntityAndRequiredComponents requiredCTS with
         | false -> ()
         | true -> event()
@@ -40,19 +40,19 @@ type InputHandler(evm:EventManager, enm:EntityManager, renderer_SetDisplay:strin
         match k.Key with 
         | ConsoleKey.UpArrow -> 
             let action() = evm.QueueEvent (EventData_Action_Movement(_entityID.Value,North))
-            this.HandleAction [| Component_Form; Component_Movement |] action
+            this.HandleAction [| 1; 2 |] action
         | ConsoleKey.DownArrow -> 
             let action() = evm.QueueEvent (EventData_Action_Movement(_entityID.Value,South))
-            this.HandleAction [| Component_Form; Component_Movement |] action
+            this.HandleAction [| 1; 2 |] action
         | ConsoleKey.LeftArrow -> 
             let action() = evm.QueueEvent (EventData_Action_Movement(_entityID.Value,West))
-            this.HandleAction [| Component_Form; Component_Movement |] action
+            this.HandleAction [| 1; 2 |] action
         | ConsoleKey.RightArrow -> 
             let action() = evm.QueueEvent (EventData_Action_Movement(_entityID.Value,East))
-            this.HandleAction [| Component_Form; Component_Movement |] action
+            this.HandleAction [| 1; 2 |] action
         | ConsoleKey.E -> 
             let action() = evm.QueueEvent(EventData_Generic(Action_Eat,_entityID.Value))
-            this.HandleAction [| Component_Eating |] action
+            this.HandleAction [| 3 |] action
         | _ -> ()  
 
         while Console.KeyAvailable do //Might help clear double movement keys entered in one turn

@@ -3,27 +3,27 @@ open AbstractComponent
 
 
 type private EntityComponentAgentMsg = 
-| AddEntity of AbstractComponent[]
+| AddEntity of uint32 * Component[]
 | Exists of uint32 * AsyncReplyChannel<bool>
-| GetComponents of uint32 * AsyncReplyChannel<AbstractComponent[]>
-| GetMap of AsyncReplyChannel< Map<uint32,AbstractComponent[]> >
-| Init of Map<uint32,AbstractComponent[]>
+| GetComponents of uint32 * AsyncReplyChannel<Component[]>
+| GetMap of AsyncReplyChannel< Map<uint32,Component[]> >
+| Init of Map<uint32,Component[]>
 | RemoveEntity of uint32
-| ReplaceComponent of AbstractComponent
+| ReplaceComponent of uint32 * Component
 
 
 type EntityComponentAgent() = 
     let agent =
-        let mutable _next = Map.empty<uint32,AbstractComponent[]>
+        let mutable _next = Map.empty<uint32,Component[]>
         MailboxProcessor<EntityComponentAgentMsg>.Start(
             fun inbox ->
                 async { 
                     while true do
                         let! msg = inbox.Receive()
                         match msg with
-                        | AddEntity cts ->
-                            if not (_next.ContainsKey(cts.[0].EntityID)) then 
-                                _next <- _next.Add(cts.[0].EntityID, cts)
+                        | AddEntity (e,cts) ->
+                            if not (_next.ContainsKey(e)) then 
+                                _next <- _next.Add(e,cts)
                         | Exists (eid,replyChannel) ->
                             replyChannel.Reply(_next.ContainsKey eid)
                         | GetComponents (eid,replyChannel) ->
@@ -38,19 +38,19 @@ type EntityComponentAgent() =
                             _next <- newMap
                         | RemoveEntity eid -> 
                             _next <- _next.Remove eid
-                        | ReplaceComponent c ->
-                            if (_next.ContainsKey c.EntityID) then
+                        | ReplaceComponent (e,c) ->
+                            if (_next.ContainsKey e) then
                                 _next <-
                                     let a = 
-                                        _next.Item(c.EntityID)
-                                        |> Array.filter (fun ac -> ac.ComponentType <> c.ComponentType)
+                                        _next.Item(e)
+                                        |> Array.filter (fun ac -> ac.ComponentID <> c.ComponentID)
                                         |> Array.append [|c|]
-                                    _next.Remove(c.EntityID).Add(c.EntityID,a)
+                                    _next.Remove(e).Add(e,a)
                 }
             )
 
-    member this.CreateEntity (cts:AbstractComponent[]) = 
-        agent.Post (AddEntity cts)
+    member this.CreateEntity (e,cts:Component[]) = 
+        agent.Post (AddEntity (e,cts))
 
     member this.Exists (eid:uint32) = 
         agent.PostAndReply (fun replyChannel -> Exists(eid,replyChannel))
@@ -67,10 +67,10 @@ type EntityComponentAgent() =
     member this.RemoveEntity (eid:uint32) = 
         agent.Post (RemoveEntity eid)
 
-    member this.ReplaceComponent (ac:AbstractComponent) =
-        agent.Post (ReplaceComponent ac)
+    member this.ReplaceComponent (e,c:Component) =
+        agent.Post (ReplaceComponent (e,c))
 
-    member this.Init (newMap:Map<uint32,AbstractComponent[]>) = 
+    member this.Init (newMap:Map<uint32,Component[]>) = 
         agent.Post (Init newMap)
 
 

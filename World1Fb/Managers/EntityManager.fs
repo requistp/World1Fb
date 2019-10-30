@@ -19,8 +19,8 @@ type EntityManager() =
         |> agentForEntities.GetComponents
         |> Array.Parallel.map (fun ct -> ct.Copy neweid)
 
-    member _.CreateEntity (cts:AbstractComponent[]) = 
-        agentForEntities.CreateEntity cts
+    member _.CreateEntity (e,cts:Component[]) = 
+        agentForEntities.CreateEntity (e,cts)
         agentForComponents.Add cts
         agentForLocations.Add cts
         Ok (Some "in async")
@@ -29,8 +29,8 @@ type EntityManager() =
 
     member _.GetComponents (eid:uint32) = agentForEntities.GetComponents eid
 
-    member me.GetComponent<'T when 'T:>AbstractComponent> (eid:uint32) : 'T =
-        (me.GetComponents eid |> Array.find (fun x -> x.GetType() = typeof<'T>)) :?> 'T
+    member me.GetComponent (cid:int) (eid:uint32) =
+        me.GetComponents eid |> Array.find (fun x -> x.ComponentID = cid)
 
     member _.GetEntitiesWithComponent ct = agentForComponents.Get ct
 
@@ -40,8 +40,8 @@ type EntityManager() =
 
     member _.GetNewID = agentForID.GetNewID
 
-    member _.HasAllComponents (cts:ComponentTypes[]) (eid:uint32) =
-        let ects = agentForEntities.GetComponents eid |> Array.Parallel.map (fun ct -> ct.ComponentType)
+    member _.HasAllComponents (cts:int[]) (eid:uint32) =
+        let ects = agentForEntities.GetComponents eid |> Array.Parallel.map (fun ct -> ct.ComponentID)
         cts |> Array.forall (fun ct -> ects |> Array.contains ct)
 
     member _.PendingUpdates = 
@@ -54,30 +54,32 @@ type EntityManager() =
         agentForEntities.RemoveEntity eid
         Ok (Some "in async")
         
-    member me.ReplaceComponent (ac:AbstractComponent) (changes:string option) =
+    member me.ReplaceComponent (ac:Component) (changes:string option) =
         let handleComponentSpecificIssues =
-            match ac.ComponentType with
-            | Component_Form ->
-                agentForLocations.Move (me.GetComponent<FormComponent> ac.EntityID) (ac :?> FormComponent)
+            match ac with
+            | Form (e,fd) ->
+                let (Form (e,old)) = (me.GetComponent 1 e)
+                agentForLocations.Move (e,old,fd) // (me.GetComponent 1 ac.EntityID) (ac :?> FormComponent)
             | _ -> ()
-
         handleComponentSpecificIssues
-        agentForEntities.ReplaceComponent ac
+
+        let (Form (e,_)) = ac
+        agentForEntities.ReplaceComponent (e,ac)
         Ok changes
 
     member _.TryGet (eid:uint32) =
         agentForEntities.Exists eid |> TrueSomeFalseNone (agentForEntities.GetComponents eid)
 
-    member me.TryGetComponent<'T when 'T:>AbstractComponent> (eid:uint32) : Option<'T> = 
+    member me.TryGetComponent (cid:int) (eid:uint32) : Option<Component> = 
         match me.TryGet eid with
         | None -> None
-        | Some cts -> match cts |> Array.filter (fun c -> c.GetType() = typeof<'T>) with
+        | Some cts -> match cts |> Array.filter (fun c -> c.ComponentID = cid) with
                       | [||] -> None
-                      | l -> Some (l.[0] :?> 'T)
+                      | l -> Some (l.[0])
 
-    member me.TryGetComponentForEntities<'T when 'T:>AbstractComponent> (eids:uint32[]) = 
+    member me.TryGetComponentForEntities (cid:int) (eids:uint32[]) = 
         eids
-        |> Array.Parallel.map (fun eid -> me.TryGetComponent<'T> eid)
+        |> Array.Parallel.map (fun eid -> me.TryGetComponent cid eid)
         |> Array.filter (fun aco -> aco.IsSome)
         |> Array.Parallel.map (fun aco -> aco.Value)
 
