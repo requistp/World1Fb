@@ -36,13 +36,6 @@
     <Compile Include="Console\ConsoleV1.fs" />
     <Compile Include="Renderer.fs" />
     <Compile Include="BuildNewWorld.fs" />
-    <Compile Include="Kill\PlantGrowthComponent.fs" />
-    <Compile Include="Kill\TerrainComponent.fs" />
-    <Compile Include="Kill\MovementComponent.fs" />
-    <Compile Include="Kill\FormComponent.fs" />
-    <Compile Include="Kill\EatingComponent.fs" />
-    <Compile Include="Kill\FoodComponent.fs" />
-    <Compile Include="Kill\ControllerComponent.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
