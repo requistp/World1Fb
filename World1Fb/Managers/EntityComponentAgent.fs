@@ -1,5 +1,5 @@
 ﻿module EntityComponentAgent
-open AbstractComponent
+open Component
 
 
 type private EntityComponentAgentMsg = 
@@ -9,7 +9,7 @@ type private EntityComponentAgentMsg =
 | GetMap of AsyncReplyChannel< Map<uint32,Component[]> >
 | Init of Map<uint32,Component[]>
 | RemoveEntity of uint32
-| ReplaceComponent of uint32 * Component
+| ReplaceComponent of Component
 
 
 type EntityComponentAgent() = 
@@ -38,14 +38,14 @@ type EntityComponentAgent() =
                             _next <- newMap
                         | RemoveEntity eid -> 
                             _next <- _next.Remove eid
-                        | ReplaceComponent (e,c) ->
-                            if (_next.ContainsKey e) then
+                        | ReplaceComponent (c:Component) ->
+                            if (_next.ContainsKey c.EntityID) then
                                 _next <-
                                     let a = 
-                                        _next.Item(e)
+                                        _next.Item(c.EntityID)
                                         |> Array.filter (fun ac -> ac.ComponentID <> c.ComponentID)
                                         |> Array.append [|c|]
-                                    _next.Remove(e).Add(e,a)
+                                    _next.Remove(c.EntityID).Add(c.EntityID,a)
                 }
             )
 
@@ -67,15 +67,10 @@ type EntityComponentAgent() =
     member this.RemoveEntity (eid:uint32) = 
         agent.Post (RemoveEntity eid)
 
-    member this.ReplaceComponent (e,c:Component) =
-        agent.Post (ReplaceComponent (e,c))
+    member this.ReplaceComponent (c:Component) =
+        agent.Post (ReplaceComponent c)
 
     member this.Init (newMap:Map<uint32,Component[]>) = 
         agent.Post (Init newMap)
-
-
-//member this.List () =
-//    _entDict |> Map.iter (fun k v -> printfn "%i | %i" k v.List.Length)
-       
 
 

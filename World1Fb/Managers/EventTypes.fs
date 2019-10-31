@@ -1,6 +1,6 @@
 ﻿module EventTypes
-open AbstractComponent
-open MovementComponent
+open Component
+open ComponentEnums
 
 type GameEventTypes =
     | Action_Eat
@@ -20,14 +20,15 @@ type GameEventTypes =
 type EventData_Generic(gameEventType:GameEventTypes, eid:uint32) =
     member _.EntityID = eid
     member _.GameEventType = gameEventType
-    member this.ToString = sprintf "%s (#%i)" (this.GameEventType.ToString()) eid
+    member this.ToString = sprintf "%-21s #%7i" (this.GameEventType.ToString()) eid
     new (gameEventType:GameEventTypes) = EventData_Generic(gameEventType, 0u)
+
 
 type ScheduledEvent(ed:EventData_Generic, frequency:uint32) =
     member _.EventData = ed
     member _.Frequency = frequency
     member this.ToString = sprintf "EventData:%s. Frequency:%i" (ed.ToString) frequency
-
+    
 //-------------------------------------------------------------------------------------------------------------------------------------------
 
 type EventData_Action_Movement(eid:uint32, direction:MovementDirection) =
@@ -35,8 +36,8 @@ type EventData_Action_Movement(eid:uint32, direction:MovementDirection) =
     member _.Direction = direction
     member this.ToString = base.ToString + (sprintf " Direction:%s" (direction.ToString()))
 
-type EventData_CreateEntity(eid:uint32, cts:Component[]) =
-    inherit EventData_Generic(CreateEntity, eid)
+type EventData_CreateEntity(cts:Component[]) =
+    inherit EventData_Generic(CreateEntity, cts.[0].EntityID)
     member _.Components = cts         
     member this.ToString = base.ToString + (sprintf " Components:%i" (cts.Length))
 

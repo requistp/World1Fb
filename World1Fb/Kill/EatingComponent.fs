@@ -1,7 +1,7 @@
 ﻿module EatingComponent
-open AbstractComponent
+open Component
 open CalendarTimings
-open FoodComponent
+//open FoodComponent
 open System
 
 

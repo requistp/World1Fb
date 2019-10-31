@@ -1,5 +1,5 @@
 ﻿module ControllerComponent
-open AbstractComponent
+open Component
 
 
 //type ControllerComponent(eid:uint32) = 

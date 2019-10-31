@@ -30,21 +30,20 @@ let display = windowMan.Display
 let g = new Game(RenderFrame, setContent, setDisplay, display, wmr.Update, wmr.MoveWindow)
 
 let startingEntities = 
-    MakeMap2 g.EntityManager
-    //|> Array.append (MakeGrasses g.EntityManager 10)
-    //|> Array.append (MakeRabbits g.EntityManager 1)
-    //don't think I need this anymore as everything is parallel... |> Array.rev 
-
+    MakeMap g.EntityManager
+    |> Array.append (MakeGrasses g.EntityManager 1)
+    |> Array.append (MakeRabbits g.EntityManager 1)
+    
 let ss =
     [|
-        //EatingSystem(g,true).Abstract
-        //FoodSystem(g,true).Abstract
+        EatingSystem(g,true).Abstract
+        FoodSystem(g,true).Abstract
         FormSystem(g,true).Abstract
-        //KillSystem(g,true).Abstract
-        //MovementSystem(g,true).Abstract
-        //PlantGrowthSystem(g,true).Abstract
-        //ScheduleSystem(g,true).Abstract
-        //TerrainSystem(g,true).Abstract
+        KillSystem(g,true).Abstract
+        MovementSystem(g,true).Abstract
+        PlantGrowthSystem(g,true).Abstract
+        ScheduleSystem(g,true).Abstract
+        TerrainSystem(g,true).Abstract
     |]
 
 g.Start ss startingEntities

@@ -1,11 +1,9 @@
 ﻿module Renderer
 open CommonGenericFunctions
-open AbstractComponent
+open Component
 open EntityManager
 open GameManager
 open LocationTypes
-open TerrainComponent
-open FormComponent
 
 
 let private DrawAt (c:char) location =
@@ -18,25 +16,24 @@ let private RenderAll (enm:EntityManager) =
         DrawAt fd.Symbol fd.Location
 
     let fs : FormData[] = 
-        enm.GetEntitiesWithComponent 1
-        |> Array.map (fun eid -> enm.TryGetComponent 1 eid)
+        enm.GetEntitiesWithComponent FormData.ID
+        |> Array.map (fun eid -> enm.TryGetComponent FormData.ID eid)
         |> Array.collect (fun fo -> fo |> Option.toArray)
         |> Array.map (fun f -> 
-            let (Form (_,fd)) = f
-            fd)
+            let (Form d) = f
+            d)
     let ts =
-        enm.GetEntitiesWithComponent 2
-        |> Array.map (fun eid -> enm.TryGetComponent 2 eid)
+        enm.GetEntitiesWithComponent TerrainData.ID
+        |> Array.map (fun eid -> enm.TryGetComponent TerrainData.ID eid)
         |> Array.collect (fun fo -> fo |> Option.toArray)
         |> Array.map (fun f -> 
-            let (Terrain (_,td)) = f
-            td)
+            let (Terrain d) = f
+            d)
 
     //ts |> Array.iter (fun t -> render t.EntityID fs)
     //fs |> Array.filter (fun f-> not (ts |> Array.exists (fun t -> t.EntityID=f.EntityID))) |> Array.iter (fun f -> render f.EntityID fs)
     let all = fs
     all |> Array.iter (fun f -> newrender f)
-    printfn "forms:%i" all.Length
     
 let RenderFrame (enm:EntityManager) (round:uint32) =
     System.Console.CursorVisible <- false 

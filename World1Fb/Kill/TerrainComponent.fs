@@ -1,5 +1,5 @@
 ﻿module TerrainComponent
-open AbstractComponent
+open Component
 
 
 //type TerrainType = 

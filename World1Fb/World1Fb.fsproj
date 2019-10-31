@@ -10,14 +10,8 @@
     <Compile Include="common\CalendarTimings.fs" />
     <Compile Include="common\LocationTypes.fs" />
     <Compile Include="common\Logging.fs" />
-    <Compile Include="Components\AbstractComponent.fs" />
-    <Compile Include="Components\ControllerComponent.fs" />
-    <Compile Include="Components\FoodComponent.fs" />
-    <Compile Include="Components\EatingComponent.fs" />
-    <Compile Include="Components\FormComponent.fs" />
-    <Compile Include="Components\MovementComponent.fs" />
-    <Compile Include="Components\TerrainComponent.fs" />
-    <Compile Include="Components\PlantGrowthComponent.fs" />
+    <Compile Include="Components\ComponentEnums.fs" />
+    <Compile Include="Components\Component.fs" />
     <Compile Include="Managers\ComponentEntityAgent.fs" />
     <Compile Include="Managers\LocationEntityAgent.fs" />
     <Compile Include="Managers\EntityIDAgent.fs" />
@@ -35,13 +29,20 @@
     <Compile Include="Systems\KillSystem.fs" />
     <Compile Include="Systems\MovementSystem.fs" />
     <Compile Include="Systems\PlantGrowthSystem.fs" />
-    <Compile Include="Systems\ScheduleAgent.fs" />
+    <Compile Include="Systems\agentSchedule.fs" />
     <Compile Include="Systems\ScheduleSystem.fs" />
     <Compile Include="Systems\TerrainSystem.fs" />
     <Compile Include="Console\WorldMapRenderer.fs" />
     <Compile Include="Console\ConsoleV1.fs" />
     <Compile Include="Renderer.fs" />
     <Compile Include="BuildNewWorld.fs" />
+    <Compile Include="Kill\PlantGrowthComponent.fs" />
+    <Compile Include="Kill\TerrainComponent.fs" />
+    <Compile Include="Kill\MovementComponent.fs" />
+    <Compile Include="Kill\FormComponent.fs" />
+    <Compile Include="Kill\EatingComponent.fs" />
+    <Compile Include="Kill\FoodComponent.fs" />
+    <Compile Include="Kill\ControllerComponent.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

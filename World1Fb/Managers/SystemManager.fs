@@ -11,6 +11,10 @@ type SystemManager(enm:EntityManager,evm:EventManager) =
     member this.Active = _systems |> Array.filter (fun s -> s.IsActive)
     member this.ActiveAndInitialized = _systems |> Array.filter (fun s -> s.IsActive && s.IsInitialized)
     
+    member private this.onCreateEntity (ge:EventData_Generic) =
+        let e = (ge :?> EventData_CreateEntity)
+        enm.CreateEntity (e.Components)
+
     member this.Initialize (ss:AbstractSystem[]) =
         _systems <- ss
         this.Active |> Array.Parallel.iter (fun s -> s.Initialize)
@@ -20,7 +24,4 @@ type SystemManager(enm:EntityManager,evm:EventManager) =
         this.ActiveAndInitialized 
         |> Array.Parallel.iter (fun s -> s.Update)
 
-    member private this.onCreateEntity (ge:EventData_Generic) =
-        let e = (ge :?> EventData_CreateEntity)
-        enm.CreateEntity (e.EntityID,e.Components)
 

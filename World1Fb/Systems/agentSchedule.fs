@@ -1,20 +1,20 @@
-﻿module ScheduleAgent
+﻿module agentSchedule
 open CalendarTimings
 open CommonGenericFunctions
 open EventTypes
 
 
-type private ScheduleAgentMsg =
+type private agentScheduleMsg =
 | Add of ScheduledEvent
 | Get of AsyncReplyChannel<ScheduledEvent[]>
 | List of AsyncReplyChannel<Map<uint32,ScheduledEvent[]> >
 | Reschedule of ScheduledEvent
 
 
-type ScheduleAgent(getRound:unit->uint32) =
+type agentSchedule(getRound:unit->uint32) =
     let agent =
         let mutable _schedule = Map.empty<uint32,ScheduledEvent[]>
-        MailboxProcessor<ScheduleAgentMsg>.Start(
+        MailboxProcessor<agentScheduleMsg>.Start(
             fun inbox ->
                 async { 
                     while true do

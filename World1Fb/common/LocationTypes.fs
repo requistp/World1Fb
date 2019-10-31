@@ -15,11 +15,11 @@ type LocationDataInt = {
     Y : int
     Z : int
     } with
-    member this.Add (l:LocationDataInt) = { X = this.X + l.X; Y = this.Y + l.Y; Z = this.Z + l.Z }
-    member this.AddOffset (rangeX:int) (rangeY:int) (rangeZ:int) (allow000:bool) (doubleRandom:bool) =
-        this.Add (LocationDataInt.Offset rangeX rangeY rangeZ allow000 doubleRandom)
-    member this.IsOnMap = if this.X >= 0 && this.X <= MapWidth-1 && this.Y >=0 && this.Y <= MapHeight-1 then true else false
-    member this.Print = sprintf "{X=%i, Y=%i, Z=%i}" this.X this.Y this.Z
+    member me.Add (l:LocationDataInt) = { X = me.X + l.X; Y = me.Y + l.Y; Z = me.Z + l.Z }
+    member me.AddOffset (rangeX:int) (rangeY:int) (rangeZ:int) (allow000:bool) (doubleRandom:bool) =
+        me.Add (LocationDataInt.Offset rangeX rangeY rangeZ allow000 doubleRandom)
+    member me.IsOnMap = if me.X >= 0 && me.X <= MapWidth-1 && me.Y >=0 && me.Y <= MapHeight-1 then true else false
+    override me.ToString() = sprintf "{X=%i, Y=%i, Z=%i}" me.X me.Y me.Z
 
     static member empty = { X = 0; Y = 0; Z = 0 }
     static member Is000 l = (l = LocationDataInt.empty)

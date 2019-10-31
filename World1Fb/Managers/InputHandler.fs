@@ -1,13 +1,10 @@
 ﻿module InputHandler
-open AbstractComponent
-open EatingComponent
+open Component
+open ComponentEnums
 open EntityManager
 open EventManager
-open FormComponent
 open EventTypes
-open MovementComponent
 open System
-open SystemManager
 
 type KeyboardResult = 
     | ExitGame
@@ -17,12 +14,12 @@ type KeyboardResult =
 type InputHandler(evm:EventManager, enm:EntityManager, renderer_SetDisplay:string->unit, wmrKeys:ConsoleKey->unit) =
     let mutable _entityID = None
 
-    member private this.HaveEntityAndRequiredComponents (cts:int[]) =
+    member private this.HaveEntityAndRequiredComponents (cts:byte[]) =
         match _entityID with
         | None -> false
         | Some eid -> enm.HasAllComponents cts eid
     
-    member private this.HandleAction (requiredCTS:int[]) event =
+    member private this.HandleAction (requiredCTS:byte[]) event =
         match this.HaveEntityAndRequiredComponents requiredCTS with
         | false -> ()
         | true -> event()
@@ -40,19 +37,19 @@ type InputHandler(evm:EventManager, enm:EntityManager, renderer_SetDisplay:strin
         match k.Key with 
         | ConsoleKey.UpArrow -> 
             let action() = evm.QueueEvent (EventData_Action_Movement(_entityID.Value,North))
-            this.HandleAction [| 1; 2 |] action
+            this.HandleAction [| FormData.ID; MovementData.ID |] action
         | ConsoleKey.DownArrow -> 
             let action() = evm.QueueEvent (EventData_Action_Movement(_entityID.Value,South))
-            this.HandleAction [| 1; 2 |] action
+            this.HandleAction [| FormData.ID; MovementData.ID |] action
         | ConsoleKey.LeftArrow -> 
             let action() = evm.QueueEvent (EventData_Action_Movement(_entityID.Value,West))
-            this.HandleAction [| 1; 2 |] action
+            this.HandleAction [| FormData.ID; MovementData.ID |] action
         | ConsoleKey.RightArrow -> 
             let action() = evm.QueueEvent (EventData_Action_Movement(_entityID.Value,East))
-            this.HandleAction [| 1; 2 |] action
+            this.HandleAction [| FormData.ID; MovementData.ID |] action
         | ConsoleKey.E -> 
             let action() = evm.QueueEvent(EventData_Generic(Action_Eat,_entityID.Value))
-            this.HandleAction [| 3 |] action
+            this.HandleAction [| EatingData.ID |] action
         | _ -> ()  
 
         while Console.KeyAvailable do //Might help clear double movement keys entered in one turn
@@ -76,18 +73,3 @@ type InputHandler(evm:EventManager, enm:EntityManager, renderer_SetDisplay:strin
         | ConsoleKey.NumPad8 -> wmrKeys ConsoleKey.UpArrow; InfoOnly
         | _ -> this.onKeyPressed k
                
-
-(*
-member this.HandleArrows k (alt:bool) =
-        match alt,k with
-        | false,ConsoleKey.UpArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (EventData_Action_Movement(_entityID.Value,North)))
-        | false,ConsoleKey.DownArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (EventData_Action_Movement(_entityID.Value,South)))
-        | false,ConsoleKey.LeftArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (EventData_Action_Movement(_entityID.Value,West)))
-        | false,ConsoleKey.RightArrow -> this.HandleAction [|typeof<FormComponent>; typeof<MovementComponent>|] (evm.QueueEvent (EventData_Action_Movement(_entityID.Value,East)))
-        | true, ConsoleKey.UpArrow -> wmrKeys k
-        | true, ConsoleKey.DownArrow -> wmrKeys k
-        | true, ConsoleKey.LeftArrow -> wmrKeys k
-        | true, ConsoleKey.RightArrow -> wmrKeys k
-        | _,_ -> ()
-*)
-//| ConsoleKey.F12 -> this.DisplayGameEvents (k.Modifiers = ConsoleModifiers.Shift) (k.Modifiers = ConsoleModifiers.Control)

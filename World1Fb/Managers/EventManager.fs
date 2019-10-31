@@ -12,29 +12,31 @@ type private GECallbackResult = string * GECallback * EventData_Generic * Result
 type private agentLogTypes =
     | CallbackResult of GECallbackResult
     | EndOfRoundCancelled
+    | ListenerRegistered of string
     | NoListeners of EventData_Generic
     override this.ToString() = 
         match this with
-        | CallbackResult (l,cb,ge,res) -> 
+        | CallbackResult (listener,cb,ge,res) -> 
             let res_ToStrings =
                 match res with
                 | Error x -> ("Err", " : " + x)
                 | Ok s -> ("Ok", if s.IsSome then " : " + s.Value else "")
-            sprintf "%-3s | %-20s -> %-25s%s" (fst res_ToStrings) l (ge.ToString) (snd res_ToStrings)
+            sprintf "%-3s | %-20s -> %-30s%s" (fst res_ToStrings) listener (ge.ToString) (snd res_ToStrings)
         | EndOfRoundCancelled ->
             sprintf "End of round cancelled pending more events"
+        | ListenerRegistered s -> 
+            sprintf "%-3s | %-20s -> %-30s" "Ok " "Registered System" s
         | NoListeners ge -> 
-            sprintf "%-3s | %-20s -> %-25s" " * " "<none>" (ge.ToString)
+            sprintf "%-3s | %-20s -> %-30s" " * " "<none>" (ge.ToString)
 
 type private agentLogMsg =
     | EndOfRound
-    | EndOfRound_Cancelled of uint32
-    | Log of uint32 * agentLogTypes
+    | EndOfRound_Cancelled
+    | Log of agentLogTypes
     | SetLogging of bool
 
 type private agentCallbackMsg =
     | Callback of string * GECallback * EventData_Generic
-    | Callback_NoListeners of EventData_Generic
     | EndRound of cancelled:AsyncReplyChannel<bool>
     | GetRound of AsyncReplyChannel<uint32>
 
@@ -43,6 +45,7 @@ type private agentListenersMsg =
     | Register of string * GameEventTypes * GECallback
 
 type EventManager(enm:EntityManager) =
+    let mutable _round = 0u
     let agentLog =
         let mutable _log = Array.empty<uint32*agentLogTypes>
         let mutable _logging = true
@@ -53,18 +56,17 @@ type EventManager(enm:EntityManager) =
                         let! msg = inbox.Receive()
                         match msg with
                         | EndOfRound ->
-                            if (_logging) then _log |> Array.iter (fun (r,lt) -> writeLog (sprintf "%5i | %s" r (lt.ToString())))
+                            if (_logging) then _log |> Array.iter (fun (r,lt) -> writeLog (sprintf "%7i | %s" r (lt.ToString())))
                             _log <- Array.empty
-                        | EndOfRound_Cancelled round ->
-                            _log <- [| round,EndOfRoundCancelled |] |> Array.append _log 
-                        | Log (round,result) -> 
-                            _log <- [| round,result |] |> Array.append _log 
+                        | EndOfRound_Cancelled ->
+                            _log <- [| _round,EndOfRoundCancelled |] |> Array.append _log
+                        | Log result -> 
+                            _log <- [| _round,result |] |> Array.append _log 
                         | SetLogging b ->
                             _logging <- b
                 }
             )
     let agentCallback =
-        let mutable _round = 0u
         MailboxProcessor<agentCallbackMsg>.Start(
             fun inbox ->
                 async { 
@@ -72,9 +74,7 @@ type EventManager(enm:EntityManager) =
                         let! msg = inbox.Receive()
                         match msg with 
                         | Callback (l,cb,ge) -> 
-                            agentLog.Post (Log (_round, CallbackResult (l,cb,ge,cb ge)))
-                        | Callback_NoListeners ge ->
-                            agentLog.Post (Log (_round, NoListeners ge))
+                            agentLog.Post (Log (CallbackResult (l,cb,ge,cb ge)))
                         | EndRound replyChannel -> 
                             match (inbox.CurrentQueueLength > 0 || enm.PendingUpdates) with
                             | true -> 
@@ -99,12 +99,13 @@ type EventManager(enm:EntityManager) =
                         | Execute ge ->
                             match _listeners.ContainsKey ge.GameEventType with
                             | false -> 
-                                agentCallback.Post (Callback_NoListeners ge)
+                                agentLog.Post (Log (NoListeners ge))
                             | true ->
                                 _listeners.Item ge.GameEventType
                                 |> Array.Parallel.iter (fun (l,cb) -> agentCallback.Post (Callback (l,cb,ge)))
                         | Register (l,et,cb) -> 
                             _listeners <- Map_AppendValueToArray _listeners et (l,cb)
+                            agentLog.Post (Log (ListenerRegistered l))
                 }
             )
 

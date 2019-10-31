@@ -1,5 +1,5 @@
 ﻿module FormComponent
-open AbstractComponent
+open Component
 open LocationTypes
 
 
