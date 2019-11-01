@@ -10,10 +10,9 @@ open LocationTypes
 let MakeMap (enm:EntityManager) = 
     let AddTerrain l = 
         let eid = enm.GetNewID
-        let t = //match random.Next(1,50) with
-                //| 1 -> Rock
-                //| _ -> Dirt
-                Dirt
+        let t = match random.Next(1,50) with
+                | 1 -> Rock
+                | _ -> Dirt
         let mutable baseTerrain =
             [| 
                 Form { EntityID=eid; IsPassable=t.IsPassable; Name=t.ToString(); Symbol=t.Symbol; Location=l }
@@ -37,7 +36,7 @@ let MakeGrasses (enm:EntityManager) n =
         [| 
             Food { EntityID=eid; FoodType=Food_Carrot; Quantity=20; QuantityMax=20 }
             Form { EntityID=eid; IsPassable=true; Name=Food_Carrot.ToString(); Symbol=Food_Carrot.Symbol.Value; Location={X=x;Y=y;Z=0} }
-            PlantGrowth { EntityID=eid; GrowsInTerrain=[|Dirt|]; RegrowRate=0.1; ReproductionRate=0.95; ReproductionRange=5; ReproductionRequiredFoodQuantity=0.75 }
+            PlantGrowth { EntityID=eid; GrowsInTerrain=[|Dirt|]; RegrowRate=0.1; ReproductionRate=0.25; ReproductionRange=5; ReproductionRequiredFoodQuantity=0.75 }
         |] 
     match n with 
     | 0 -> Array.empty<Component[]>

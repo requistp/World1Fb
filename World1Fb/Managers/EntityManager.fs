@@ -1,17 +1,17 @@
 ﻿module EntityManager
+open agent_ComponentEntity
+open agent_EntityComponent
+open agent_EntityID
+open agent_LocationEntity
 open Component
 open CommonGenericFunctions
-open ComponentEntityAgent
-open EntityComponentAgent
-open EntityIDAgent
-open LocationEntityAgent
 
 
 type EntityManager() =
-    let agentForID = new EntityIDAgent()
-    let agentForComponents = new ComponentEntityAgent()
-    let agentForLocations = new LocationEntityAgent()
-    let agentForEntities = new EntityComponentAgent() 
+    let agentForID = new agent_EntityID()
+    let agentForComponents = new agent_ComponentEntity()
+    let agentForLocations = new agent_LocationEntity()
+    let agentForEntities = new agent_EntityComponent() 
 
     member _.CopyEntity (oldeid:uint32) (neweid:uint32) =
         oldeid
@@ -22,7 +22,7 @@ type EntityManager() =
         agentForEntities.CreateEntity (cts.[0].EntityID,cts)
         agentForComponents.Add cts
         agentForLocations.Add cts
-        Ok (Some "in async")
+        Ok None
 
     member _.Exists eid = agentForEntities.Exists eid
 
@@ -35,7 +35,7 @@ type EntityManager() =
 
     member _.GetEntitiesAtLocation location = agentForLocations.Get location
 
-    member _.GetMaxID = agentForID.GetMaxID
+    member _.GetMaxID = agentForID.GetMaxID 
 
     member _.GetNewID = agentForID.GetNewID
 
@@ -51,7 +51,7 @@ type EntityManager() =
         agentForComponents.Remove cts
         agentForLocations.Remove cts
         agentForEntities.RemoveEntity eid
-        Ok (Some "in async")
+        Ok None
         
     member me.ReplaceComponent (ac:Component) (changes:string option) =
         let handleComponentSpecificIssues =

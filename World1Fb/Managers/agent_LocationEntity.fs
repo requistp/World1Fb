@@ -1,10 +1,10 @@
-﻿module LocationEntityAgent
+﻿module agent_LocationEntity
 open Component
 open CommonGenericFunctions
 open LocationTypes
 
 
-type private LocationEntityAgentMsg =
+type private agent_LocationEntityMsg =
     | Add of FormData
     | Get of LocationDataInt * AsyncReplyChannel<uint32[]>
     | GetMap of AsyncReplyChannel<Map<LocationDataInt,uint32[]> >
@@ -12,10 +12,10 @@ type private LocationEntityAgentMsg =
     | Remove of FormData
 
 
-type LocationEntityAgent() = 
+type agent_LocationEntity() = 
     let agent =
         let mutable _map = MapLocations |> Array.fold (fun (m:Map<LocationDataInt,uint32[]>) l -> m.Add(l,Array.empty)) Map.empty
-        MailboxProcessor<LocationEntityAgentMsg>.Start(
+        MailboxProcessor<agent_LocationEntityMsg>.Start(
             fun inbox ->
                 async { 
                     while true do

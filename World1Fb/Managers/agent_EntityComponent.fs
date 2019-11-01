@@ -1,8 +1,8 @@
-﻿module EntityComponentAgent
+﻿module agent_EntityComponent
 open Component
 
 
-type private EntityComponentAgentMsg = 
+type private agent_EntityComponentMsg = 
 | AddEntity of uint32 * Component[]
 | Exists of uint32 * AsyncReplyChannel<bool>
 | GetComponents of uint32 * AsyncReplyChannel<Component[]>
@@ -12,10 +12,10 @@ type private EntityComponentAgentMsg =
 | ReplaceComponent of Component
 
 
-type EntityComponentAgent() = 
+type agent_EntityComponent() = 
     let agent =
         let mutable _next = Map.empty<uint32,Component[]>
-        MailboxProcessor<EntityComponentAgentMsg>.Start(
+        MailboxProcessor<agent_EntityComponentMsg>.Start(
             fun inbox ->
                 async { 
                     while true do

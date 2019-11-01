@@ -96,11 +96,20 @@ type Component =
         match me with
         | Form d -> d.IsPassable
         | _ -> true
+    member me.ToController = 
+        let (Controller d) = me
+        d
+    member me.ToEating = 
+        let (Eating d) = me
+        d
     member me.ToFood = 
         let (Food d) = me
         d
     member me.ToForm = 
         let (Form d) = me
+        d
+    member me.ToMovement = 
+        let (Movement d) = me
         d
     member me.ToPlantGrowth = 
         let (PlantGrowth d) = me

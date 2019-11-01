@@ -1,9 +1,9 @@
-﻿module ComponentEntityAgent
+﻿module agent_ComponentEntity
 open Component
 open CommonGenericFunctions
 
 
-type private ComponentEntityAgentMsg = 
+type private agent_ComponentEntityMsg = 
 | Add of Component
 | Get of byte * AsyncReplyChannel<uint32[]>
 | GetMap of AsyncReplyChannel<Map<byte,uint32[]> >
@@ -11,10 +11,10 @@ type private ComponentEntityAgentMsg =
 | Remove of Component
 
 
-type ComponentEntityAgent() = 
+type agent_ComponentEntity() = 
     let agent =
         let mutable _map = Map.empty<byte,uint32[]>
-        MailboxProcessor<ComponentEntityAgentMsg>.Start(
+        MailboxProcessor<agent_ComponentEntityMsg>.Start(
             fun inbox ->
                 async { 
                     while true do

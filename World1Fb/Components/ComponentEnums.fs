@@ -2,7 +2,6 @@
 open LocationTypes
 
 
-
 type FoodClassifications =
     | Meat
     | Plant

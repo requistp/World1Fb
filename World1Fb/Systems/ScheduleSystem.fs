@@ -1,6 +1,6 @@
 ﻿module ScheduleSystem
 open AbstractSystem
-open agentSchedule
+open agent_Schedule
 open EventTypes
 open GameManager
 
@@ -9,7 +9,7 @@ type ScheduleSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
     let enm = game.EntityManager
     let evm = game.EventManager    
-    let schedule = new agentSchedule(game.Round)
+    let schedule = new agent_Schedule(game.Round)
 
     //member _.List = schedule.List
 

@@ -1,16 +1,16 @@
-﻿module EntityIDAgent
+﻿module agent_EntityID
 
 
-type private EntityIDAgentMsg = 
+type private agent_EntityIDMsg = 
 | GetMax of AsyncReplyChannel<uint32>
 | GetNew of AsyncReplyChannel<uint32>
 | Init of uint32
 
 
-type EntityIDAgent() = 
+type agent_EntityID() = 
     let agent =
         let mutable _maxEntityID = 0u
-        MailboxProcessor<EntityIDAgentMsg>.Start(
+        MailboxProcessor<agent_EntityIDMsg>.Start(
             fun inbox ->
                 async { 
                     while true do
