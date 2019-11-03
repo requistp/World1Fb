@@ -14,44 +14,45 @@ type FoodSystem(game:Game, isActive:bool) =
     let enm = game.EntityManager
     let evm = game.EventManager    
     
-    member private me.onAllEaten (ge:EventData_Generic) =
-        match (ge.EntityID|>enm.GetComponent FoodData.ID).ToFood.FoodType.KillOnAllEaten with
+    member private me.onAllEaten (ge:GameEventTypes) =
+        let e = ge.ToFoodAllEaten
+        match (e.EateeID |> enm.GetComponent FoodComponent.ID).ToFood.FoodType.KillOnAllEaten with
         | false -> Ok None
         | true -> 
-            evm.QueueEvent (EventData_Generic(Kill_AllEaten,ge.EntityID))
+            evm.QueueEvent (Kill_AllEaten { EaterID=e.EaterID; EateeID=e.EateeID })
             Ok None
 
-    member private me.onEaten (ge:EventData_Generic) =
-        let e = ge :?> EventData_Eaten
-        
-        match enm.TryGetComponent FoodData.ID e.EateeID with
+    member private me.onEaten (ge:GameEventTypes) =
+        let e = ge.ToEaten        
+        match enm.TryGetComponent FoodComponent.ID e.EateeID with
         | None -> Error "Something else ate it first"
         | Some c -> 
-            let (Food f) = c
+            let f = c.ToFood
             let allEaten = (f.Quantity - e.Quantity) <= 0
             let changes = Some (sprintf "All eaten:%b" allEaten)
-            if allEaten then evm.QueueEvent (EventData_Generic(Kill_AllEaten,f.EntityID))
+            if allEaten then evm.QueueEvent (Food_AllEaten { EaterID=e.EaterID; EateeID=e.EateeID })
             enm.ReplaceComponent (Food (f.Update None (Some (f.Quantity-e.Quantity)) None)) changes
        
-    member private me.onRegrowth (ge:EventData_Generic) =
-        let tryRegrowFood (f:FoodData) = 
-            let (PlantGrowth pg) = enm.GetComponent PlantGrowthData.ID ge.EntityID
+    member private me.onRegrowth (ge:GameEventTypes) =
+        let e = ge.ToPlantRegrowth
+        let tryRegrowFood (f:FoodComponent) = 
+            let pg = (e.EntityID|>enm.GetComponent PlantGrowthComponent.ID).ToPlantGrowth
             let missing = f.QuantityMax - f.Quantity
             match (missing, pg.RegrowRate) with
             | (0,_) -> Ok None
             | (_,0.0) -> Ok None
             | (_,_) -> 
                 let quantity = Math.Clamp((int (Math.Round(pg.RegrowRate * (float f.QuantityMax),0))), 1, missing)
-                let result = sprintf "EntityID:%i. Regrown quantity:%i" ge.EntityID quantity
+                let result = sprintf "EntityID:%i. Regrown quantity:%i" e.EntityID quantity
                 enm.ReplaceComponent (Food (f.Update None (Some (f.Quantity+quantity)) None)) (Some result)
-        match (ge.EntityID |> enm.TryGetComponent FoodData.ID) with
+        match (e.EntityID|>enm.TryGetComponent FoodComponent.ID) with
         | None -> Ok None
         | Some c -> tryRegrowFood c.ToFood
         
     override me.Initialize = 
-        evm.RegisterListener "FoodSystem" Eaten me.onEaten
-        evm.RegisterListener "FoodSystem" Food_AllEaten me.onAllEaten
-        evm.RegisterListener "FoodSystem" PlantRegrowth me.onRegrowth
+        evm.RegisterListener "FoodSystem" Event_Eaten.ID        me.onEaten
+        evm.RegisterListener "FoodSystem" Event_FoodAllEaten.ID me.onAllEaten
+        evm.RegisterListener "FoodSystem" Event_PlantGrowth.ID  me.onRegrowth
         base.SetToInitialized
 
     override me.Update = 

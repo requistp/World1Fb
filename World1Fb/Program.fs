@@ -8,7 +8,6 @@ open KillSystem
 open MovementSystem
 open PlantGrowthSystem
 open Renderer
-open ScheduleSystem
 open TerrainSystem
 open ConsoleV1
 open WorldMapRenderer
@@ -42,7 +41,6 @@ let ss =
         KillSystem(g,true).Abstract
         MovementSystem(g,true).Abstract
         PlantGrowthSystem(g,true).Abstract
-        ScheduleSystem(g,true).Abstract
         TerrainSystem(g,true).Abstract
     |]
 

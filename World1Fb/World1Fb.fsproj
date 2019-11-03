@@ -29,8 +29,6 @@
     <Compile Include="Systems\KillSystem.fs" />
     <Compile Include="Systems\MovementSystem.fs" />
     <Compile Include="Systems\PlantGrowthSystem.fs" />
-    <Compile Include="Systems\agent_Schedule.fs" />
-    <Compile Include="Systems\ScheduleSystem.fs" />
     <Compile Include="Systems\TerrainSystem.fs" />
     <Compile Include="Console\WorldMapRenderer.fs" />
     <Compile Include="Console\ConsoleV1.fs" />

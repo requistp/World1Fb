@@ -4,11 +4,11 @@ open ComponentEnums
 open LocationTypes
 open System
 
-type ControllerData = { EntityID:uint32 }
+type ControllerComponent = { EntityID:uint32 }
     with 
     static member ID = 4uy
 
-type EatingData = { EntityID:uint32; Calories:int; CaloriesPerDay:int; Foods:FoodTypes[]; Quantity:int; QuantityMax:int; QuantityPerAction:int }
+type EatingComponent = { EntityID:uint32; Calories:int; CaloriesPerDay:int; Foods:FoodTypes[]; Quantity:int; QuantityMax:int; QuantityPerAction:int }
     with 
     static member ID = 5uy
     member me.CaloriesPerMetabolize = Math.Clamp(convertAmountByFrequency me.CaloriesPerDay Day MetabolismFrequency,1,me.CaloriesPerDay)
@@ -22,7 +22,7 @@ type EatingData = { EntityID:uint32; Calories:int; CaloriesPerDay:int; Foods:Foo
                 Calories = if caloriesUpdate.IsSome then caloriesUpdate.Value else me.Calories
         }
 
-type FoodData = { EntityID:uint32; FoodType:FoodTypes; Quantity:int; QuantityMax:int } 
+type FoodComponent = { EntityID:uint32; FoodType:FoodTypes; Quantity:int; QuantityMax:int } 
     with 
     static member ID = 3uy
     member me.Update (foodTypeUpdate:FoodTypes option) (quantityUpdate:int option) (quantityMaxUpdate:int option) =
@@ -33,7 +33,7 @@ type FoodData = { EntityID:uint32; FoodType:FoodTypes; Quantity:int; QuantityMax
                 QuantityMax = if quantityMaxUpdate.IsSome then quantityMaxUpdate.Value else me.QuantityMax
         }
     
-type FormData = { EntityID:uint32; IsPassable:bool; Location:LocationDataInt; Name:string; Symbol:char }
+type FormComponent = { EntityID:uint32; IsPassable:bool; Location:LocationDataInt; Name:string; Symbol:char }
     with 
     static member ID = 1uy
     member me.Update (isPassableUpdate:bool option) (nameUpdate:string option) (symbolUpdate:char option) (locationUpdate:LocationDataInt option) =
@@ -45,26 +45,26 @@ type FormData = { EntityID:uint32; IsPassable:bool; Location:LocationDataInt; Na
                 Symbol = if symbolUpdate.IsSome then symbolUpdate.Value else me.Symbol
         }
 
-type MovementData = { EntityID:uint32; MovesPerTurn:int }
+type MovementComponent = { EntityID:uint32; MovesPerTurn:int }
     with 
     static member ID = 6uy
 
-type PlantGrowthData = { EntityID:uint32; GrowsInTerrain:TerrainType[]; RegrowRate:float; ReproductionRate:float; ReproductionRange:int; ReproductionRequiredFoodQuantity:float }
+type PlantGrowthComponent = { EntityID:uint32; GrowsInTerrain:TerrainType[]; RegrowRate:float; ReproductionRate:float; ReproductionRange:int; ReproductionRequiredFoodQuantity:float }
     with 
     static member ID = 7uy
 
-type TerrainData = { EntityID:uint32; Terrain:TerrainType }
+type TerrainComponent = { EntityID:uint32; Terrain:TerrainType }
     with 
     static member ID = 2uy
 
 type Component = 
-    | Controller of ControllerData
-    | Eating of EatingData
-    | Food of FoodData
-    | Form of FormData
-    | Movement of MovementData
-    | PlantGrowth of PlantGrowthData
-    | Terrain of TerrainData
+    | Controller of ControllerComponent
+    | Eating of EatingComponent
+    | Food of FoodComponent
+    | Form of FormComponent
+    | Movement of MovementComponent
+    | PlantGrowth of PlantGrowthComponent
+    | Terrain of TerrainComponent
     member me.Copy newEID = 
         match me with
         | Controller d -> Controller { d with EntityID = newEID }
@@ -76,13 +76,13 @@ type Component =
         | Terrain d -> Terrain { d with EntityID = newEID }
     member me.ComponentID =
         match me with
-        | Controller _ -> ControllerData.ID
-        | Eating _ -> EatingData.ID
-        | Food _ -> FoodData.ID
-        | Form _ -> FormData.ID
-        | Movement _ -> MovementData.ID
-        | PlantGrowth _ -> PlantGrowthData.ID
-        | Terrain _ -> TerrainData.ID
+        | Controller _ -> ControllerComponent.ID
+        | Eating _ -> EatingComponent.ID
+        | Food _ -> FoodComponent.ID
+        | Form _ -> FormComponent.ID
+        | Movement _ -> MovementComponent.ID
+        | PlantGrowth _ -> PlantGrowthComponent.ID
+        | Terrain _ -> TerrainComponent.ID
     member me.EntityID =
         match me with
         | Controller d -> d.EntityID

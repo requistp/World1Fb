@@ -11,6 +11,6 @@ type FormSystem(game:Game, isActive:bool) =
     let enm = game.EntityManager
     let evm = game.EventManager    
 
-    override this.Update = 
+    override me.Update = 
         ()
 

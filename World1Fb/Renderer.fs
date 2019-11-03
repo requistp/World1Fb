@@ -12,19 +12,19 @@ let private DrawAt (c:char) location =
    
 
 let private RenderAll (enm:EntityManager) =
-    let newrender (fd:FormData) =
+    let newrender (fd:FormComponent) =
         DrawAt fd.Symbol fd.Location
 
-    let fs : FormData[] = 
-        enm.GetEntitiesWithComponent FormData.ID
-        |> Array.map (fun eid -> enm.TryGetComponent FormData.ID eid)
+    let fs : FormComponent[] = 
+        enm.GetEntitiesWithComponent FormComponent.ID
+        |> Array.map (fun eid -> enm.TryGetComponent FormComponent.ID eid)
         |> Array.collect (fun fo -> fo |> Option.toArray)
         |> Array.map (fun f -> 
             let (Form d) = f
             d)
     let ts =
-        enm.GetEntitiesWithComponent TerrainData.ID
-        |> Array.map (fun eid -> enm.TryGetComponent TerrainData.ID eid)
+        enm.GetEntitiesWithComponent TerrainComponent.ID
+        |> Array.map (fun eid -> enm.TryGetComponent TerrainComponent.ID eid)
         |> Array.collect (fun fo -> fo |> Option.toArray)
         |> Array.map (fun f -> 
             let (Terrain d) = f

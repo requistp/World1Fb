@@ -57,7 +57,7 @@ type EntityManager() =
         let handleComponentSpecificIssues =
             match ac with
             | Form fd ->
-                let old = (me.GetComponent FormData.ID ac.EntityID).ToForm
+                let old = (me.GetComponent FormComponent.ID ac.EntityID).ToForm
                 agentForLocations.Move (old,fd)
             | _ -> ()
         handleComponentSpecificIssues

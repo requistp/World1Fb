@@ -33,17 +33,17 @@ type WorldMapRenderer() =
 
         for y in rangeY do
             for x in rangeX do
-                let selectForm (fds:FormData[]) = 
+                let selectForm (fds:FormComponent[]) = 
                     match fds.Length with
                     | 1 -> fds.[0]
                     | _ ->
-                        match fds |> Array.tryFind (fun c -> (enm.TryGetComponent ControllerData.ID c.EntityID).IsSome) with
+                        match fds |> Array.tryFind (fun c -> (enm.TryGetComponent ControllerComponent.ID c.EntityID).IsSome) with
                         | Some f -> f
                         | None ->
-                            (fds |> Array.sortBy (fun c -> (enm.TryGetComponent TerrainData.ID c.EntityID).IsSome)).[0]
+                            (fds |> Array.sortBy (fun c -> (enm.TryGetComponent TerrainComponent.ID c.EntityID).IsSome)).[0]
                 let fs = 
                     enm.GetEntitiesAtLocation { X = x; Y = y; Z = 0 } 
-                    |> enm.TryGetComponentForEntities FormData.ID
+                    |> enm.TryGetComponentForEntities FormComponent.ID
                     |> Array.map (fun c -> c.ToForm)
 
                 match fs.Length with

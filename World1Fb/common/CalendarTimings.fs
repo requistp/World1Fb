@@ -38,7 +38,7 @@ let ExecuteTiming (frequency:int) (offset:int) (round:int) =
     | 0 -> false
     | _ -> (round % frequency = offset)
 
-let TimingOffset (max:int) = 1 + random.Next(0,max) // Add 1 because the frequency timing is being done off the current round, but that round is really over. So a zero offset should be done next round
+let TimingOffset (max:int) = random.Next(1,max) // Add 1 because the frequency timing is being done off the current round, but that round is really over. So a zero offset should be done next round
 
 let AllTimingAccelerator = 100
 let MetabolismFrequency = 7 //roundsPerHour * 2 / AllTimingAccelerator

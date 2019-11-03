@@ -11,47 +11,50 @@ open System
 
 
 type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*string)[]->bool->Async<unit>, renderer_SetDisplay:string->unit, renderer_Display:string->unit, wmr:EntityManager->unit, wmrKeys:ConsoleKey->unit) =
-    let mutable _round = 0u // I do this because when I wasn't getting the round there were problems
     let entityMan = new EntityManager()
     let eventMan = new EventManager(entityMan)
     let systemMan = new SystemManager(entityMan, eventMan)
     let inputMan = new InputHandler(eventMan, entityMan, renderer_SetDisplay, wmrKeys)
  
-    member this.EventManager = eventMan
-    member this.EntityManager = entityMan
-    member this.SystemManager = systemMan
-    member this.Round() = _round
+    member _.EventManager = eventMan
+    member _.EntityManager = entityMan
+    member _.SystemManager = systemMan
 
-    member private this.assignController =
-        match entityMan.GetEntitiesWithComponent ControllerData.ID with
+    member private me.assignController =
+        match entityMan.GetEntitiesWithComponent ControllerComponent.ID with
         | [||] -> None
         | l -> Some l.[0]
 
-    member private this.setInitialForms (initialForms:Component[][]) = 
+    member private me.setInitialForms (initialForms:Component[][]) = 
         initialForms 
         |> Array.Parallel.iter (fun cts -> 
             if (cts.Length > 0) then 
-                eventMan.QueueEvent (EventData_CreateEntity cts)
+                eventMan.QueueEvent (CreateEntity { EntityID=cts.[0].EntityID; Components=cts })
             )
 
-    member this.Start (ss:AbstractSystem[]) (initialForms:Component[][]) = 
+    member me.Start (ss:AbstractSystem[]) (initialForms:Component[][]) = 
         systemMan.Initialize ss
-        this.setInitialForms initialForms
+        me.setInitialForms initialForms
         
-        this.gameLoop
+        me.gameLoop
 
-        this.assignController |> inputMan.SetEntityID
+        me.assignController |> inputMan.SetEntityID
 
         let mutable r = inputMan.AwaitKeyboardInput
         while r <> ExitGame do
-            if r = GameAction then this.gameLoop
+            if r = GameAction then me.gameLoop
             r <- inputMan.AwaitKeyboardInput
 
-    member private this.gameLoop =
+    member private me.gameLoop =
+    
+        eventMan.ExecuteScheduledEvents
+        
+
         systemMan.UpdateSystems
 
-        _round <- eventMan.EndRound
-        printfn "%i    " _round // EndRound seems to hang if I don't print this.
+        eventMan.EndRound
+
+        printfn "%i    " (eventMan.GetRound())
 
         wmr entityMan
         

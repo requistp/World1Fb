@@ -19,8 +19,8 @@ type InputHandler(evm:EventManager, enm:EntityManager, renderer_SetDisplay:strin
         | None -> false
         | Some eid -> enm.HasAllComponents cts eid
     
-    member private this.HandleAction (requiredCTS:byte[]) event =
-        match this.HaveEntityAndRequiredComponents requiredCTS with
+    member private this.HandleAction (requiredComponents:byte[]) event =
+        match this.HaveEntityAndRequiredComponents requiredComponents with
         | false -> ()
         | true -> event()
 
@@ -36,20 +36,20 @@ type InputHandler(evm:EventManager, enm:EntityManager, renderer_SetDisplay:strin
     member private this.onKeyPressed (k:ConsoleKeyInfo) = 
         match k.Key with 
         | ConsoleKey.UpArrow -> 
-            let action() = evm.QueueEvent (EventData_Action_Movement(_entityID.Value,North))
-            this.HandleAction [| FormData.ID; MovementData.ID |] action
+            let action() = evm.QueueEvent (Action_Movement { EntityID=_entityID.Value; Direction=North })
+            this.HandleAction [| FormComponent.ID; MovementComponent.ID |] action
         | ConsoleKey.DownArrow -> 
-            let action() = evm.QueueEvent (EventData_Action_Movement(_entityID.Value,South))
-            this.HandleAction [| FormData.ID; MovementData.ID |] action
+            let action() = evm.QueueEvent (Action_Movement { EntityID=_entityID.Value; Direction=South })
+            this.HandleAction [| FormComponent.ID; MovementComponent.ID |] action
         | ConsoleKey.LeftArrow -> 
-            let action() = evm.QueueEvent (EventData_Action_Movement(_entityID.Value,West))
-            this.HandleAction [| FormData.ID; MovementData.ID |] action
+            let action() = evm.QueueEvent (Action_Movement { EntityID=_entityID.Value; Direction=West })
+            this.HandleAction [| FormComponent.ID; MovementComponent.ID |] action
         | ConsoleKey.RightArrow -> 
-            let action() = evm.QueueEvent (EventData_Action_Movement(_entityID.Value,East))
-            this.HandleAction [| FormData.ID; MovementData.ID |] action
+            let action() = evm.QueueEvent (Action_Movement { EntityID=_entityID.Value; Direction=East })
+            this.HandleAction [| FormComponent.ID; MovementComponent.ID |] action
         | ConsoleKey.E -> 
-            let action() = evm.QueueEvent(EventData_Generic(Action_Eat,_entityID.Value))
-            this.HandleAction [| EatingData.ID |] action
+            let action() = evm.QueueEvent (Action_Eat { EntityID=_entityID.Value })
+            this.HandleAction [| EatingComponent.ID |] action
         | _ -> ()  
 
         while Console.KeyAvailable do //Might help clear double movement keys entered in one turn

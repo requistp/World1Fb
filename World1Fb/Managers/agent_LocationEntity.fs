@@ -5,11 +5,11 @@ open LocationTypes
 
 
 type private agent_LocationEntityMsg =
-    | Add of FormData
+    | Add of FormComponent
     | Get of LocationDataInt * AsyncReplyChannel<uint32[]>
     | GetMap of AsyncReplyChannel<Map<LocationDataInt,uint32[]> >
     | Init of Map<LocationDataInt,uint32[]>    
-    | Remove of FormData
+    | Remove of FormComponent
 
 
 type agent_LocationEntity() = 
@@ -37,12 +37,12 @@ type agent_LocationEntity() =
                 }
             )
 
-    member this.Add (fd:FormData) =
+    member this.Add (fd:FormComponent) =
         agent.Post (Add fd)
 
     member this.Add (cts:Component[]) =
         cts
-        |> Array.filter (fun ct -> ct.ComponentID = FormData.ID)
+        |> Array.filter (fun ct -> ct.ComponentID = FormComponent.ID)
         |> Array.iter (fun ct -> 
             let (Form fd)=ct
             this.Add fd)
@@ -56,7 +56,7 @@ type agent_LocationEntity() =
     member this.Init (newMap:Map<LocationDataInt,uint32[]>) =
         agent.Post (Init newMap)
 
-    member this.Move (oldForm:FormData,newForm:FormData) =
+    member this.Move (oldForm:FormComponent,newForm:FormComponent) =
         this.Remove oldForm 
         this.Add newForm 
 
@@ -67,12 +67,12 @@ type agent_LocationEntity() =
         this.GetMap()
         |> Map.iter (fun k v -> printfn "%s | %i" (k.ToString()) v.Length)
         
-    member this.Remove (fd:FormData) =
+    member this.Remove (fd:FormComponent) =
         agent.Post (Remove fd)
 
     member this.Remove (cts:Component[]) =
         cts
-        |> Array.filter (fun ct -> ct.ComponentID = FormData.ID)
+        |> Array.filter (fun ct -> ct.ComponentID = FormComponent.ID)
         |> Array.iter (fun ct -> 
             let (Form fd)=ct
             this.Remove fd)
