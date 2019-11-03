@@ -21,7 +21,7 @@ type EntityManager() =
     member _.CreateEntity (cts:Component[]) = 
         agentForEntities.CreateEntity (cts.[0].EntityID,cts)
         agentForComponents.Add cts
-        agentForLocations.Add cts
+        agentForLocations.Add cts  
         Ok None
 
     member _.Exists eid = agentForEntities.Exists eid

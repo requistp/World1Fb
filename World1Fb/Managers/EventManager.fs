@@ -1,4 +1,6 @@
 ﻿module EventManager
+open agent_Round
+open CalendarTimings
 open CommonGenericFunctions
 open EntityManager
 open EventTypes
@@ -51,25 +53,10 @@ type private agent_ScheduleMsg =
     | ExecuteScheduled of round:uint32 
     | Schedule of round:uint32 * GameEventTypes
 
-type agentRoundMsg =
-    | Get of AsyncReplyChannel<uint32>
-    | Increment
 
 type EventManager(enm:EntityManager) =
-    let agentRound =
-        let mutable _round = 0u
-        MailboxProcessor<agentRoundMsg>.Start(
-            fun inbox ->
-                async { 
-                    while true do
-                        let! msg = inbox.Receive()
-                        match msg with
-                        | Get replyChannel ->
-                            replyChannel.Reply(_round)
-                        | Increment ->
-                            _round <- _round + 1u
-                }
-            )
+    let agentForRound = new agent_Round()
+
     let agentLog =
         let mutable _log = Array.empty<uint32*agentLogTypes>
         let mutable _logging = true
@@ -80,13 +67,13 @@ type EventManager(enm:EntityManager) =
                         let! msg = inbox.Receive()
                         match msg with
                         | EndOfRound ->
-                            agentRound.Post Increment
+                            agentForRound.Increment
                             if (_logging) then _log |> Array.iter (fun (r,lt) -> writeLog (sprintf "%7i | %s" r (lt.ToString())))
                             _log <- Array.empty
                         | EndOfRound_Cancelled ->
-                            _log <- [| agentRound.PostAndReply Get,EndOfRoundCancelled |] |> Array.append _log
+                            _log <- [| agentForRound.Get,EndOfRoundCancelled |] |> Array.append _log
                         | Log result -> 
-                            _log <- [| agentRound.PostAndReply Get,result |] |> Array.append _log 
+                            _log <- [| agentForRound.Get,result |] |> Array.append _log
                         | SetLogging b ->
                             _logging <- b
                 }
@@ -142,7 +129,7 @@ type EventManager(enm:EntityManager) =
                             let interval = 
                                 match isNew with
                                 | false -> sed.Frequency
-                                | true -> sed.Frequency //uint32 (TimingOffset (int sed.Frequency))
+                                | true -> uint32 (TimingOffset (int sed.Frequency))
                             _schedule <- Map_AppendValueToArray _schedule (r+interval) se
                             agentLog.Post (Log (ScheduledEvent se))
                         match msg with
@@ -157,7 +144,7 @@ type EventManager(enm:EntityManager) =
                             match _schedule.ContainsKey(round) with
                             | false -> ()
                             | true -> 
-                                _schedule.Item(round) |> Array.Parallel.iter (fun se -> executeAndReschedule se)
+                                _schedule.Item(round) |> Array.iter (fun se -> executeAndReschedule se)
                                 _schedule <- _schedule.Remove(round)
                         | Schedule (round,se) -> 
                             addToSchedule round se true
@@ -170,16 +157,16 @@ type EventManager(enm:EntityManager) =
             System.Threading.Thread.Sleep 1
 
     member _.GetRound() =
-        agentRound.PostAndReply Get
+        agentForRound.Get
 
     member _.QueueEvent (ge:GameEventTypes) = 
         agentListeners.Post (Execute ge)
 
     member _.ScheduleEvent (se:GameEventTypes) = 
-        agentSchedule.Post (Schedule (agentRound.PostAndReply Get,se))
-    
+        agentSchedule.Post (Schedule (agentForRound.Get,se))
+        
     member _.ExecuteScheduledEvents = 
-        agentSchedule.Post (ExecuteScheduled (agentRound.PostAndReply Get))
+        agentSchedule.Post (ExecuteScheduled (agentForRound.Get))
         while (agentCallback.CurrentQueueLength > 0 || agentListeners.CurrentQueueLength > 0 || agentSchedule.CurrentQueueLength > 0 || enm.PendingUpdates) do
             Console.Write '!'
             System.Threading.Thread.Sleep 1

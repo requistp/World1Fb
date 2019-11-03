@@ -18,6 +18,7 @@
     <Compile Include="Managers\agent_EntityComponent.fs" />
     <Compile Include="Managers\EntityManager.fs" />
     <Compile Include="Managers\EventTypes.fs" />
+    <Compile Include="Managers\agent_Round.fs" />
     <Compile Include="Managers\EventManager.fs" />
     <Compile Include="Managers\AbstractSystem.fs" />
     <Compile Include="Managers\SystemManager.fs" />

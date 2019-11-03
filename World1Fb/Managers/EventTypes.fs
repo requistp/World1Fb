@@ -11,49 +11,59 @@ type Event_ActionMovement = { EntityID:uint32; Direction:MovementDirection }
     with 
     static member ID = 2uy
 
-type Event_CreateEntity = { EntityID:uint32;  Components:Component[] }
+type Event_ComponentAdded_Eating = { EntityID:uint32; Component:Component }
     with 
     static member ID = 3uy
 
-type Event_Eaten = { EaterID:uint32; EateeID:uint32; Quantity:int }
+type Event_ComponentAdded_PlantGrowth = { EntityID:uint32; Component:Component }
     with 
     static member ID = 4uy
 
-type Event_FoodAllEaten = { EaterID:uint32; EateeID:uint32 }
+type Event_CreateEntity = { EntityID:uint32;  Components:Component[] }
     with 
     static member ID = 5uy
 
-type Event_KillAllEaten = { EaterID:uint32; EateeID:uint32 }
+type Event_Eaten = { EaterID:uint32; EateeID:uint32; Quantity:int }
     with 
     static member ID = 6uy
 
-type Event_Metabolize = { EntityID:uint32 }
+type Event_FoodAllEaten = { EaterID:uint32; EateeID:uint32 }
     with 
     static member ID = 7uy
 
-type Event_Movement = { EntityID:uint32; Direction:MovementDirection }
+type Event_KillAllEaten = { EaterID:uint32; EateeID:uint32 }
     with 
     static member ID = 8uy
 
-type Event_PlantGrowth = { EntityID:uint32 }
+type Event_Metabolize = { EntityID:uint32 }
     with 
     static member ID = 9uy
 
-type Event_PlantReproduce = { EntityID:uint32 }
+type Event_Movement = { EntityID:uint32; Direction:MovementDirection }
     with 
     static member ID = 10uy
 
-type Event_ScheduleEvent = { Frequency:uint32 }
+type Event_PlantGrowth = { EntityID:uint32 }
     with 
     static member ID = 11uy
 
-type Event_Starving = { EntityID:uint32 }
+type Event_PlantReproduce = { EntityID:uint32 }
     with 
     static member ID = 12uy
+
+type Event_ScheduleEvent = { Frequency:uint32 }
+    with 
+    static member ID = 13uy
+
+type Event_Starving = { EntityID:uint32 }
+    with 
+    static member ID = 14uy
 
 type GameEventTypes =
     | Action_Eat of Event_ActionEat
     | Action_Movement of Event_ActionMovement
+    | ComponentAdded_Eating of Event_ComponentAdded_Eating
+    | ComponentAdded_PlantGrowth of Event_ComponentAdded_PlantGrowth
     | CreateEntity of Event_CreateEntity
     | Eaten of Event_Eaten
     | Food_AllEaten of Event_FoodAllEaten
@@ -68,6 +78,8 @@ type GameEventTypes =
         match me with
         | Action_Eat d -> d.EntityID
         | Action_Movement d -> d.EntityID
+        | ComponentAdded_Eating d -> d.EntityID
+        | ComponentAdded_PlantGrowth d -> d.EntityID
         | CreateEntity d -> d.EntityID
         | Eaten d -> d.EaterID
         | Food_AllEaten d -> d.EateeID
@@ -82,20 +94,24 @@ type GameEventTypes =
         match me with
         | Action_Eat _ -> Event_ActionEat.ID
         | Action_Movement _ -> Event_ActionMovement.ID
+        | ComponentAdded_Eating _ -> Event_ComponentAdded_Eating.ID
+        | ComponentAdded_PlantGrowth _ -> Event_ComponentAdded_PlantGrowth.ID
         | CreateEntity _ -> Event_CreateEntity.ID
         | Eaten _ -> Event_Eaten.ID
         | Food_AllEaten _ -> Event_FoodAllEaten.ID
         | Kill_AllEaten _ -> Event_KillAllEaten.ID
         | Metabolize _ -> Event_Metabolize.ID
         | Movement _ -> Event_Movement.ID
-        | PlantRegrowth _ -> PlantGrowthComponent.ID
+        | PlantRegrowth _ -> Event_PlantGrowth.ID
         | PlantReproduce _ -> Event_PlantReproduce.ID
         | ScheduleEvent _ -> Event_ScheduleEvent.ID
         | Starving _ -> Event_Starving.ID
     member me.GameEventType() = 
         match me with
         | Action_Eat _ -> "Action_Eat"
-        | Action_Movement _ -> "Action_Movement"
+        | Action_Movement _ -> "Action_Movement"        
+        | ComponentAdded_Eating _ -> "ComponentAdded_Eating"
+        | ComponentAdded_PlantGrowth _ -> "ComponentAdded_PlantGrowth"
         | CreateEntity _ -> "CreateEntity"
         | Eaten _ -> "Eaten"
         | Food_AllEaten _ -> "Food_AllEaten"
@@ -111,6 +127,12 @@ type GameEventTypes =
         d
     member me.ToAction_Movement = 
         let (Action_Movement d) = me
+        d
+    member me.ToComponentAddedEating =
+        let (ComponentAdded_Eating d) = me
+        d
+    member me.ToComponentAddedPlantGrowth =
+        let (ComponentAdded_PlantGrowth d) = me
         d
     member me.ToCreateEntity = 
         let (CreateEntity d) = me

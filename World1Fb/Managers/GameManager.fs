@@ -46,16 +46,14 @@ type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*stri
             r <- inputMan.AwaitKeyboardInput
 
     member private me.gameLoop =
-    
         eventMan.ExecuteScheduledEvents
         
-
         systemMan.UpdateSystems
 
         eventMan.EndRound
 
         printfn "%i    " (eventMan.GetRound())
 
-        wmr entityMan
+        //wmr entityMan
         
 

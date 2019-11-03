@@ -8,30 +8,11 @@ open EventTypes
 open GameManager
 open System
 
-
 type EatingSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
     let enm = game.EntityManager
     let evm = game.EventManager    
     
-    member private me.onCreateEntity (ge:GameEventTypes) =
-        let e = ge.ToCreateEntity
-        match e.Components |> Array.filter (fun ct -> ct.ComponentID = EatingComponent.ID) with
-        | [||] -> Ok (Some "No EatingComponent")
-        | _ -> 
-            evm.ScheduleEvent (ScheduleEvent ({ Frequency=uint32 MetabolismFrequency }, Metabolize { EntityID=e.EntityID }))
-            Ok (Some "Queued Metabolize to schedule")
-        
-    member private me.onMetabolize (ge:GameEventTypes) =
-        let e = ge.ToMetabolize
-        let ed = (enm.GetComponent EatingComponent.ID e.EntityID).ToEating
-        let newC = ed.Calories - ed.CaloriesPerMetabolize
-        let newQ = ed.Quantity - ed.QuantityPerMetabolize
-        let starving = newC < 0
-        let result = sprintf "Quantity:-%i=%i. Calories:-%i=%i. Starving:%b" ed.QuantityPerMetabolize newQ ed.CaloriesPerMetabolize newC starving
-        if starving then evm.QueueEvent (Starving { EntityID=e.EntityID })
-        enm.ReplaceComponent (Eating (ed.Update (Some newQ) (Some newC))) (Some result)
-        
     member private me.onEat (ge:GameEventTypes) =
         let e = ge.ToActionEat
         let eco = enm.TryGetComponent EatingComponent.ID e.EntityID
@@ -64,10 +45,26 @@ type EatingSystem(game:Game, isActive:bool) =
             | [||] -> Error "No food at location"
             | fs -> eatIt fs.[0]
 
+    member private me.onComponentAdded (ge:GameEventTypes) =
+        let e = ge.ToComponentAddedEating
+        evm.ScheduleEvent (ScheduleEvent ({ Frequency=uint32 MetabolismFrequency }, Metabolize { EntityID=e.EntityID }))
+        Ok (Some (sprintf "Queued Metabolize to schedule. EntityID:%i" e.EntityID))
+        
+    member private me.onMetabolize (ge:GameEventTypes) =
+        printfn "%A\n\n\n" ge
+        let e = ge.ToMetabolize
+        let ed = (enm.GetComponent EatingComponent.ID e.EntityID).ToEating
+        let newC = ed.Calories - ed.CaloriesPerMetabolize
+        let newQ = ed.Quantity - ed.QuantityPerMetabolize
+        let starving = newC < 0
+        let result = sprintf "Quantity:-%i=%i. Calories:-%i=%i. Starving:%b" ed.QuantityPerMetabolize newQ ed.CaloriesPerMetabolize newC starving
+        if starving then evm.QueueEvent (Starving { EntityID=e.EntityID })
+        enm.ReplaceComponent (Eating (ed.Update (Some newQ) (Some newC))) (Some result)
+        
     override me.Initialize = 
-        evm.RegisterListener "EatingSystem" Event_ActionEat.ID    me.onEat
-        evm.RegisterListener "EatingSystem" Event_CreateEntity.ID me.onCreateEntity
-        evm.RegisterListener "EatingSystem" Event_Metabolize.ID   me.onMetabolize
+        evm.RegisterListener "EatingSystem" Event_ActionEat.ID             me.onEat
+        evm.RegisterListener "EatingSystem" Event_ComponentAdded_Eating.ID me.onComponentAdded
+        evm.RegisterListener "EatingSystem" Event_Metabolize.ID            me.onMetabolize
         base.SetToInitialized
 
     override me.Update = 

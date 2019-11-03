@@ -13,15 +13,12 @@ type PlantGrowthSystem(game:Game, isActive:bool) =
     let enm = game.EntityManager
     let evm = game.EventManager    
 
-    member private me.onCreateEntity (ge:GameEventTypes) =
-        let e = ge.ToCreateEntity
-        match e.Components|>Array.filter (fun c -> c.ComponentID = PlantGrowthComponent.ID) with
-        | [||] -> Ok (Some "No PlantGrowthComponent")
-        | c -> 
-            let pd = c.[0].ToPlantGrowth 
-            if pd.RegrowRate > 0.0 then evm.ScheduleEvent (ScheduleEvent ({ Frequency=uint32 PlantGrowthFrequency }, PlantRegrowth { EntityID=e.EntityID }))
-            if pd.ReproductionRate > 0.0 then evm.ScheduleEvent (ScheduleEvent ({ Frequency=uint32 PlantReproductionFrequency }, PlantReproduce { EntityID=e.EntityID }))
-            Ok (Some (sprintf "Queued Regrow to Schedule:%b. Queued Repopulate to Schedule:%b" (pd.RegrowRate > 0.0) (pd.ReproductionRate > 0.0)))
+    member private me.onComponentAdded (ge:GameEventTypes) =
+        let e = ge.ToComponentAddedPlantGrowth
+        let pd = e.Component.ToPlantGrowth
+        if pd.RegrowRate > 0.0 then evm.ScheduleEvent (ScheduleEvent ({ Frequency=uint32 PlantGrowthFrequency }, PlantRegrowth { EntityID=e.EntityID }))
+        if pd.ReproductionRate > 0.0 then evm.ScheduleEvent (ScheduleEvent ({ Frequency=uint32 PlantReproductionFrequency }, PlantReproduce { EntityID=e.EntityID }))
+        Ok (Some (sprintf "Queued Regrow to Schedule:%b. Queued Repopulate to Schedule:%b" (pd.RegrowRate > 0.0) (pd.ReproductionRate > 0.0)))
     
     member private me.onReproduce (ge:GameEventTypes) =
         let e = ge.ToPlantReproduce
@@ -72,8 +69,8 @@ type PlantGrowthSystem(game:Game, isActive:bool) =
         | Ok (l,r) -> makePlant l r
 
     override me.Initialize = 
-        evm.RegisterListener "PlantGrowthSystem" Event_CreateEntity.ID   me.onCreateEntity
-        evm.RegisterListener "PlantGrowthSystem" Event_PlantReproduce.ID me.onReproduce
+        evm.RegisterListener "PlantGrowthSystem" Event_ComponentAdded_PlantGrowth.ID me.onComponentAdded
+        evm.RegisterListener "PlantGrowthSystem" Event_PlantReproduce.ID             me.onReproduce
         base.SetToInitialized
 
     override this.Update = 
