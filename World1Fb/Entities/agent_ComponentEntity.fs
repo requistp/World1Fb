@@ -4,10 +4,10 @@ open CommonGenericFunctions
 
 
 type private agent_ComponentEntityMsg = 
-    | Add of Component
-    | Get of byte * AsyncReplyChannel<uint32[]>
-    | Init of Map<byte,uint32[]>    
-    | Remove of Component
+| Add of Component
+| Get of byte * AsyncReplyChannel<uint32[]>
+| Init of Map<byte,uint32[]>    
+| Remove of Component
 
 
 type agent_ComponentEntity() = 
@@ -36,25 +36,20 @@ type agent_ComponentEntity() =
                 }
             )
 
-    member _.Add (ct:Component) = 
-        agent.Post (Add ct)
+    member _.Add (ct:Component) = agent.Post (Add ct)
 
-    member me.Add (cts:Component[]) =
+    member me.Add (cts:Component[]) = 
         cts |> Array.Parallel.iter (fun ct -> me.Add ct)
     
-    member _.Get (cid:byte) = 
-        agent.PostAndReply (fun replyChannel -> Get (cid,replyChannel))
+    member _.Get (cid:byte) = agent.PostAndReply (fun replyChannel -> Get (cid,replyChannel))
 
-    member _.Init (newMap:Map<byte,uint32[]>) =
-        agent.Post (Init newMap)
+    member _.Init (newMap:Map<byte,uint32[]>) = agent.Post (Init newMap)
     
-    member _.PendingUpdates = 
-        agent.CurrentQueueLength > 0
+    member _.PendingUpdates = agent.CurrentQueueLength > 0
 
-    member _.Remove (ct:Component) =
-        agent.Post (Remove ct)
+    member _.Remove (ct:Component) = agent.Post (Remove ct)
 
-    member me.Remove (cts:Component[]) =
+    member me.Remove (cts:Component[]) = 
         cts |> Array.Parallel.iter (fun ct -> me.Remove ct)
 
  

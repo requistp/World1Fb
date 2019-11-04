@@ -6,12 +6,17 @@ let castEnumToStringArray<'a> = Enum.GetNames(typeof<'a>)
 
 let random = Random(System.DateTime.Now.DayOfYear*1000000 + System.DateTime.Now.Hour*10000000 + System.DateTime.Now.Minute*100000 + System.DateTime.Now.Second*1000 + System.DateTime.Now.Millisecond)
 
-let Keys(map: Map<'K,'V>) =
-    seq {
-        for KeyValue(key,value) in map do
-            yield key
-    } |> Set.ofSeq
+//let MapKeys(map: Map<'K,'V>) =
+//    seq {
+//        for KeyValue(key,_) in map do
+//            yield key
+//    } |> Set.ofSeq
 
+let MapValuesToArray (map:Map<'K,'V>) =
+    seq {
+        for KeyValue(_,value) in map do
+            yield value
+    } |> Set.ofSeq |> Seq.toArray
 
 let TrueSomeFalseNone ifTrueFx statement =
     match statement with

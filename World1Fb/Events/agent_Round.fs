@@ -2,8 +2,9 @@
 
 
 type agentRoundMsg =
-    | Get of AsyncReplyChannel<uint32>
-    | Increment
+| Get of AsyncReplyChannel<uint32>
+| Increment
+| Init of uint32
 
 
 type agent_Round() =
@@ -20,6 +21,8 @@ type agent_Round() =
                             replyChannel.Reply(_round)
                         | Increment ->
                             _round <- _round + 1u
+                        | Init round ->
+                            _round <- round
                 }
             )
 
@@ -27,6 +30,7 @@ type agent_Round() =
 
     member _.Increment = agent.Post Increment
 
-    member _.PendingUpdates = 
-        agent.CurrentQueueLength > 0
+    member _.Init round = agent.Post (Init round)
+
+    member _.PendingUpdates = agent.CurrentQueueLength > 0
 

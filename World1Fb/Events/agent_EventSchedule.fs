@@ -8,8 +8,10 @@ open EventTypes
 
 
 type private agent_ScheduleMsg =
-    | ExecuteScheduled of round:uint32 
-    | Schedule of round:uint32 * GameEventTypes
+| ExecuteScheduled of round:uint32 
+| Init of Map<uint32,GameEventTypes[]>
+| Get  of AsyncReplyChannel<Map<uint32,GameEventTypes[]> >
+| Schedule of round:uint32 * GameEventTypes
 
 
 type agent_EventSchedule(agentForLog:agent_GameEventLog, agentForListeners:agent_EventListeners, enm:EntityManager) =
@@ -43,18 +45,23 @@ type agent_EventSchedule(agentForLog:agent_GameEventLog, agentForListeners:agent
                             | true -> 
                                 _schedule.Item(round) |> Array.Parallel.iter (fun se -> executeAndReschedule se)
                                 _schedule <- _schedule.Remove(round)
+                        | Get replyChannel ->
+                            replyChannel.Reply(_schedule)
+                        | Init map ->
+                            _schedule <- map
                         | Schedule (round,se) -> 
                             addToSchedule round se true
                 }
             )
 
-    member _.ExecuteScheduled round =
-        agent.Post (ExecuteScheduled round)
+    member _.ExecuteScheduled round = agent.Post (ExecuteScheduled round)
 
-    member _.PendingUpdates = 
-        agent.CurrentQueueLength > 0
+    member _.Init map = agent.Post (Init map)
 
-    member _.Schedule round se =
-        agent.Post (Schedule (round,se))
+    member _.Get = agent.PostAndReply Get
+
+    member _.PendingUpdates = agent.CurrentQueueLength > 0
+
+    member _.Schedule round se = agent.Post (Schedule (round,se))
 
 

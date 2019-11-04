@@ -22,11 +22,12 @@ type SystemManager() =
 
     member _.Active = _systems |> Array.filter (fun s -> s.IsActive)
     member _.ActiveAndInitialized = _systems |> Array.filter (fun s -> s.IsActive && s.IsInitialized)
-            
-    member me.Initialize (ss:AbstractSystem[]) =
+    member _.GetSystems = _systems
+
+    member me.Init (ss:AbstractSystem[]) =
         _systems <- ss
         me.Active |> Array.Parallel.iter (fun s -> s.Initialize)
-                
+
     member me.UpdateSystems =
         me.ActiveAndInitialized |> Array.Parallel.iter (fun s -> s.Update)
 

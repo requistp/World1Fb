@@ -29,9 +29,9 @@ type private agentLogTypes =
             sprintf "%-3s | %-20s -> %-30s #%7i : Frequency:%i" "-->" "Scheduled Event" (ge.GameEventType()) ge.EntityID sed.Frequency
 
 type private agentLogMsg =
-    | Log of uint32 * agentLogTypes
-    | SetLogging of bool
-    | WriteLog
+| Log of uint32 * agentLogTypes
+| SetLogging of bool
+| WriteLog
 
 type agent_GameEventLog() =
     let agent =
@@ -55,27 +55,19 @@ type agent_GameEventLog() =
                 }
             )
 
-    member _.Log_CallbackResult round (listener,callback,gameEvent,result) =
-        agent.Post (Log (round, CallbackResult (listener,callback,gameEvent,result)))
+    member _.Log_CallbackResult round (listener,callback,gameEvent,result) = agent.Post (Log (round, CallbackResult (listener,callback,gameEvent,result)))
 
-    member _.Log_EndOfRoundCancelled round step =
-        agent.Post (Log (round, EndOfRoundCancelled step))
+    member _.Log_EndOfRoundCancelled round step = agent.Post (Log (round, EndOfRoundCancelled step))
    
-    member _.Log_NoListeners round ge =
-        agent.Post (Log (round, NoListeners ge))
+    member _.Log_NoListeners round ge = agent.Post (Log (round, NoListeners ge))
 
-    member _.Log_ListenerRegistered round listener =
-        agent.Post (Log (round, ListenerRegistered listener))
+    member _.Log_ListenerRegistered round listener = agent.Post (Log (round, ListenerRegistered listener))
 
-    member _.Log_ScheduledEvent round se =
-        agent.Post (Log (round, ScheduledEvent se))
+    member _.Log_ScheduledEvent round se = agent.Post (Log (round, ScheduledEvent se))
     
-    member _.PendingUpdates = 
-        agent.CurrentQueueLength > 0
+    member _.PendingUpdates = agent.CurrentQueueLength > 0
 
-    member _.SetLogging b =
-        agent.Post (SetLogging b)
+    member _.SetLogging b = agent.Post (SetLogging b)
 
-    member _.WriteLog =
-        agent.Post WriteLog
+    member _.WriteLog = agent.Post WriteLog
 

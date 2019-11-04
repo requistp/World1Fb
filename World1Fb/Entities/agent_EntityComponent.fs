@@ -3,74 +3,68 @@ open Component
 
 
 type private agent_EntityComponentMsg = 
-    | AddEntity of uint32 * Component[]
-    | Exists of uint32 * AsyncReplyChannel<bool>
-    | GetComponents of uint32 * AsyncReplyChannel<Component[]>
-    | GetMap of AsyncReplyChannel< Map<uint32,Component[]> >
-    | Init of Map<uint32,Component[]>
-    | RemoveEntity of uint32
-    | ReplaceComponent of Component
+| Add of uint32 * Component[]
+| Exists of uint32 * AsyncReplyChannel<bool>
+| GetComponents of uint32 * AsyncReplyChannel<Component[]>
+| GetMap of AsyncReplyChannel<Map<uint32,Component[]> >
+| Init of Map<uint32,Component[]>
+| Remove of uint32
+| ReplaceComponent of Component
 
 
 type agent_EntityComponent() = 
     let agent =
-        let mutable _next = Map.empty<uint32,Component[]>
+        let mutable _ecmap = Map.empty<uint32,Component[]>
         MailboxProcessor<agent_EntityComponentMsg>.Start(
             fun inbox ->
                 async { 
                     while true do
                         let! msg = inbox.Receive()
                         match msg with
-                        | AddEntity (e,cts) ->
-                            if not (_next.ContainsKey(e)) then 
-                                _next <- _next.Add(e,cts)
+                        | Add (e,cts) ->
+                            if not (_ecmap.ContainsKey(e)) then 
+                                _ecmap <- _ecmap.Add(e,cts)
                         | Exists (eid,replyChannel) ->
-                            replyChannel.Reply(_next.ContainsKey eid)
+                            replyChannel.Reply(_ecmap.ContainsKey eid)
                         | GetComponents (eid,replyChannel) ->
                             replyChannel.Reply(
-                                match _next.ContainsKey eid with
+                                match _ecmap.ContainsKey eid with
                                 | false -> [||]
-                                | true -> _next.Item(eid)
+                                | true -> _ecmap.Item(eid)
                             )
                         | GetMap replyChannel ->
-                            replyChannel.Reply(_next)
-                        | Init newMap -> 
-                            _next <- newMap
-                        | RemoveEntity eid -> 
-                            _next <- _next.Remove eid
+                            replyChannel.Reply(_ecmap)
+                        | Init map -> 
+                            _ecmap <- map
+                        | Remove eid -> 
+                            _ecmap <- _ecmap.Remove eid
                         | ReplaceComponent (c:Component) ->
-                            if (_next.ContainsKey c.EntityID) then
-                                _next <-
+                            if (_ecmap.ContainsKey c.EntityID) then
+                                _ecmap <-
                                     let a = 
-                                        _next.Item(c.EntityID)
+                                        _ecmap.Item(c.EntityID)
                                         |> Array.filter (fun ac -> ac.ComponentID <> c.ComponentID)
                                         |> Array.append [|c|]
-                                    _next.Remove(c.EntityID).Add(c.EntityID,a)
+                                    _ecmap.Remove(c.EntityID).Add(c.EntityID,a)
                 }
             )
 
-    member _.CreateEntity (e,cts:Component[]) = 
-        agent.Post (AddEntity (e,cts))
+    member _.CreateEntity (e,cts:Component[]) = agent.Post (Add (e,cts))
 
-    member _.Exists (eid:uint32) = 
-        agent.PostAndReply (fun replyChannel -> Exists(eid,replyChannel))
+    member _.Exists (eid:uint32) = agent.PostAndReply (fun replyChannel -> Exists(eid,replyChannel))
 
-    member _.GetComponents (eid:uint32) = 
-        agent.PostAndReply (fun replyChannel -> GetComponents(eid,replyChannel))
+    member _.Get = agent.PostAndReply GetMap
 
-    member _.GetMap() = 
-        agent.PostAndReply GetMap
+    member _.GetComponents (eid:uint32) = agent.PostAndReply (fun replyChannel -> GetComponents(eid,replyChannel))
 
-    member _.PendingUpdates = 
-        agent.CurrentQueueLength > 0
+    member _.Init (map:Map<uint32,Component[]>) = agent.Post (Init map)
 
-    member _.RemoveEntity (eid:uint32) = 
-        agent.Post (RemoveEntity eid)
+    member _.PendingUpdates = agent.CurrentQueueLength > 0
 
-    member _.ReplaceComponent (c:Component) =
-        agent.Post (ReplaceComponent c)
+    member _.RemoveEntity (eid:uint32) = agent.Post (Remove eid)
 
-    member _.Init (newMap:Map<uint32,Component[]>) = 
-        agent.Post (Init newMap)
+    member _.ReplaceComponent (c:Component) = agent.Post (ReplaceComponent c)
+
+
 
 

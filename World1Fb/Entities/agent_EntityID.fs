@@ -2,9 +2,9 @@
 
 
 type private agent_EntityIDMsg = 
-    | GetMax of AsyncReplyChannel<uint32>
-    | GetNew of AsyncReplyChannel<uint32>
-    | Init of uint32
+| Get of AsyncReplyChannel<uint32>
+| Init of uint32
+| New of AsyncReplyChannel<uint32>
 
 
 type agent_EntityID() = 
@@ -17,9 +17,9 @@ type agent_EntityID() =
                     while true do
                         let! msg = inbox.Receive()
                         match msg with
-                        | GetMax replyChannel -> 
+                        | Get replyChannel -> 
                             replyChannel.Reply(_maxEntityID)
-                        | GetNew replyChannel -> 
+                        | New replyChannel -> 
                             _maxEntityID <- _maxEntityID + 1u
                             replyChannel.Reply(_maxEntityID)
                         | Init startMax -> 
@@ -27,16 +27,12 @@ type agent_EntityID() =
                 }
             )
 
-    member _.GetMaxID = 
-        agent.PostAndReply GetMax
+    member _.GetMaxID = agent.PostAndReply Get
     
-    member _.GetNewID = 
-        agent.PostAndReply GetNew
+    member _.GetNewID = agent.PostAndReply New
     
-    member _.Init (startMax:uint32) = 
-        agent.Post (Init startMax)
+    member _.Init (startMax:uint32) = agent.Post (Init startMax)
 
-    member _.PendingUpdates = 
-        agent.CurrentQueueLength > 0
+    member _.PendingUpdates = agent.CurrentQueueLength > 0
 
 

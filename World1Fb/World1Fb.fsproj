@@ -26,6 +26,7 @@
     <Compile Include="Managers\SystemManager.fs" />
     <Compile Include="Managers\InputHandler.fs" />
     <Compile Include="Managers\GameManager.fs" />
+    <Compile Include="Managers\LoadAndSave.fs" />
     <Compile Include="Systems\EatingSystem.fs" />
     <Compile Include="Systems\EntitySystem.fs" />
     <Compile Include="Systems\FoodSystem.fs" />
@@ -38,6 +39,10 @@
     <Compile Include="Console\ConsoleV1.fs" />
     <Compile Include="BuildNewWorld.fs" />
     <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FsPickler" Version="5.2.2" />
   </ItemGroup>
 
 </Project>

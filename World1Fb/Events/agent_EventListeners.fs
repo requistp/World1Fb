@@ -5,8 +5,8 @@ open EventTypes
 
 
 type private agentListenersMsg =
-    | Execute of uint32 * GameEventTypes 
-    | Register of uint32 * string * byte * GameEventCallback
+| Execute of uint32 * GameEventTypes 
+| Register of uint32 * string * byte * GameEventCallback
 
 
 type agent_EventListeners(agentForLog:agent_GameEventLog) =
@@ -32,12 +32,9 @@ type agent_EventListeners(agentForLog:agent_GameEventLog) =
                 }
             )
 
-    member _.Execute round ge =
-        agent.Post (Execute (round,ge))
+    member _.Execute round ge = agent.Post (Execute (round,ge))
     
-    member _.PendingUpdates = 
-        agent.CurrentQueueLength > 0
+    member _.PendingUpdates = agent.CurrentQueueLength > 0
 
-    member _.Register round listener eventTypeID callback =
-        agent.Post (Register (round,listener,eventTypeID,callback))
+    member _.Register round listener eventTypeID callback = agent.Post (Register (round,listener,eventTypeID,callback))
 

@@ -47,21 +47,17 @@ type EventManager(enm:EntityManager) =
         agentForLog.WriteLog
         agentForRound.Increment
 
-    member _.ExecuteEvent (ge:GameEventTypes) = 
-        agentForListeners.Execute agentForRound.Get ge
+    member _.ExecuteEvent (ge:GameEventTypes) = agentForListeners.Execute agentForRound.Get ge
 
-    member _.ExecuteScheduledEvents = 
-        agentForSchedule.ExecuteScheduled agentForRound.Get
+    member _.ExecuteScheduledEvents = agentForSchedule.ExecuteScheduled agentForRound.Get
 
-    member _.GetRound() =
-        agentForRound.Get
+    member _.GetRound() = agentForRound.Get
 
-    member _.RegisterListener (listener:string) (eventTypeID:byte) (callback:GameEventCallback) = 
-        agentForListeners.Register agentForRound.Get listener eventTypeID callback
+    member _.GetSchedule = agentForSchedule.Get
+
+    member _.RegisterListener (listener:string) (eventTypeID:byte) (callback:GameEventCallback) = agentForListeners.Register agentForRound.Get listener eventTypeID callback
     
-    member _.ScheduleEvent (se:GameEventTypes) = 
-        agentForSchedule.Schedule agentForRound.Get se
+    member _.ScheduleEvent (se:GameEventTypes) = agentForSchedule.Schedule agentForRound.Get se
         
-    member _.SetLogging (toggle:bool) = 
-        agentForLog.SetLogging toggle
+    member _.SetLogging (toggle:bool) = agentForLog.SetLogging toggle
 

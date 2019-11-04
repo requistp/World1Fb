@@ -5,10 +5,10 @@ open LocationTypes
 
 
 type private agent_LocationEntityMsg =
-    | Add of FormComponent
-    | Get of LocationDataInt * AsyncReplyChannel<uint32[]>
-    | Init of Map<LocationDataInt,uint32[]>    
-    | Remove of FormComponent
+| Add of FormComponent
+| Get of LocationDataInt * AsyncReplyChannel<uint32[]>
+| Init of Map<LocationDataInt,uint32[]>    
+| Remove of FormComponent
 
 
 type agent_LocationEntity() = 
@@ -31,29 +31,24 @@ type agent_LocationEntity() =
                 }
             )
 
-    member _.Add (fd:FormComponent) =
-        agent.Post (Add fd)
+    member _.Add (fd:FormComponent) = agent.Post (Add fd)
 
     member me.Add (cts:Component[]) =
         cts
         |> Array.filter (fun ct -> ct.ComponentID = FormComponent.ID)
         |> Array.Parallel.iter (fun ct -> me.Add ct.ToForm)
 
-    member _.Get (location:LocationDataInt) =
-        agent.PostAndReply (fun replyChannel -> Get (location,replyChannel))
+    member _.Get (location:LocationDataInt) = agent.PostAndReply (fun replyChannel -> Get (location,replyChannel))
 
-    member _.Init (newMap:Map<LocationDataInt,uint32[]>) =
-        agent.Post (Init newMap)
+    member _.Init (newMap:Map<LocationDataInt,uint32[]>) = agent.Post (Init newMap)
 
     member me.Move (oldForm:FormComponent,newForm:FormComponent) =
         me.Remove oldForm 
         me.Add newForm 
 
-    member _.PendingUpdates = 
-        agent.CurrentQueueLength > 0
+    member _.PendingUpdates = agent.CurrentQueueLength > 0
 
-    member _.Remove (fd:FormComponent) =
-        agent.Post (Remove fd)
+    member _.Remove (fd:FormComponent) = agent.Post (Remove fd)
 
     member me.Remove (cts:Component[]) =
         cts

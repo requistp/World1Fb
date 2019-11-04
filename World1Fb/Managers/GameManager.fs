@@ -34,7 +34,7 @@ type Game(renderer_SetDisplay:string->unit, wmr:EntityManager->unit, wmrKeys:Con
         printfn "Round#%i      " (eventMan.GetRound())
 
     member me.Start (ss:AbstractSystem[]) (initialForms:Component[][]) = 
-        systemMan.Initialize ss
+        systemMan.Init ss
         me.setInitialForms initialForms
         me.assignController |> inputMan.SetEntityID
         

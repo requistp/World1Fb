@@ -35,6 +35,8 @@ type EntityManager() =
 
     member _.GetEntitiesAtLocation location = agentForLocations.Get location
 
+    member _.GetMap = agentForEntities.Get
+
     member _.GetMaxID = agentForID.GetMaxID 
 
     member _.GetNewID = agentForID.GetNewID
@@ -43,6 +45,12 @@ type EntityManager() =
         let ects = agentForEntities.GetComponents eid |> Array.Parallel.map (fun ct -> ct.ComponentID)
         cts |> Array.forall (fun ct -> ects |> Array.contains ct)
 
+    member _.Init (map:Map<uint32,Component[]>) =
+        agentForEntities.Init map
+        let ctss = map |> MapValuesToArray
+        ctss |> Array.Parallel.iter (fun cts -> agentForComponents.Add cts)
+        ctss |> Array.Parallel.iter (fun cts -> cts |> Array.filter (fun c -> c.ComponentID=FormComponent.ID) |> Array.Parallel.iter (fun c -> agentForLocations.Add c.ToForm))
+    
     member _.PendingUpdates = 
         agentForEntities.PendingUpdates || agentForID.PendingUpdates || agentForComponents.PendingUpdates || agentForLocations.PendingUpdates
 
