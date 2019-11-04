@@ -29,7 +29,7 @@ type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*stri
         initialForms 
         |> Array.Parallel.iter (fun cts -> 
             if (cts.Length > 0) then 
-                eventMan.QueueEvent (CreateEntity { EntityID=cts.[0].EntityID; Components=cts })
+                eventMan.ExecuteEvent (CreateEntity { EntityID=cts.[0].EntityID; Components=cts })
             )
 
     member me.Start (ss:AbstractSystem[]) (initialForms:Component[][]) = 
@@ -54,6 +54,6 @@ type Game(renderer:EntityManager->uint32->unit, renderer_SetContent:(string*stri
 
         printfn "%i    " (eventMan.GetRound())
 
-        //wmr entityMan
+        wmr entityMan
         
 

@@ -2,12 +2,13 @@
 
 
 type private agent_EntityIDMsg = 
-| GetMax of AsyncReplyChannel<uint32>
-| GetNew of AsyncReplyChannel<uint32>
-| Init of uint32
+    | GetMax of AsyncReplyChannel<uint32>
+    | GetNew of AsyncReplyChannel<uint32>
+    | Init of uint32
 
 
 type agent_EntityID() = 
+
     let agent =
         let mutable _maxEntityID = 0u
         MailboxProcessor<agent_EntityIDMsg>.Start(
@@ -26,16 +27,16 @@ type agent_EntityID() =
                 }
             )
 
-    member this.GetMaxID = 
+    member _.GetMaxID = 
         agent.PostAndReply GetMax
     
-    member this.GetNewID = 
+    member _.GetNewID = 
         agent.PostAndReply GetNew
     
-    member this.Init (startMax:uint32) = 
+    member _.Init (startMax:uint32) = 
         agent.Post (Init startMax)
 
-    member this.PendingUpdates = 
+    member _.PendingUpdates = 
         agent.CurrentQueueLength > 0
 
 

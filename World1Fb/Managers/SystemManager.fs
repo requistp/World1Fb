@@ -16,8 +16,8 @@ type SystemManager(enm:EntityManager,evm:EventManager) =
         let e = ge.ToCreateEntity
         let checkComponent (c:Component) =
             match c.ComponentID with 
-            | x when x = EatingComponent.ID -> evm.QueueEvent (ComponentAdded_Eating { EntityID=c.EntityID; Component=c })
-            | x when x = PlantGrowthComponent.ID -> evm.QueueEvent (ComponentAdded_PlantGrowth { EntityID=c.EntityID; Component=c })
+            | x when x = EatingComponent.ID -> evm.ExecuteEvent (ComponentAdded_Eating { EntityID=c.EntityID; Component=c })
+            | x when x = PlantGrowthComponent.ID -> evm.ExecuteEvent (ComponentAdded_PlantGrowth { EntityID=c.EntityID; Component=c })
             | _ -> ()
         e.Components |> Array.Parallel.iter (fun c -> checkComponent c)
         enm.CreateEntity (e.Components)

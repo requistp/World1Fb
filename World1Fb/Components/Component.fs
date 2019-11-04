@@ -4,9 +4,7 @@ open ComponentEnums
 open LocationTypes
 open System
 
-type ControllerComponent = { EntityID:uint32 }
-    with 
-    static member ID = 4uy
+type ControllerComponent = { EntityID:uint32 } with static member ID = 4uy
 
 type EatingComponent = { EntityID:uint32; Calories:int; CaloriesPerDay:int; Foods:FoodTypes[]; Quantity:int; QuantityMax:int; QuantityPerAction:int }
     with 
@@ -45,17 +43,11 @@ type FormComponent = { EntityID:uint32; IsPassable:bool; Location:LocationDataIn
                 Symbol = if symbolUpdate.IsSome then symbolUpdate.Value else me.Symbol
         }
 
-type MovementComponent = { EntityID:uint32; MovesPerTurn:int }
-    with 
-    static member ID = 6uy
+type MovementComponent = { EntityID:uint32; MovesPerTurn:int } with static member ID = 6uy
 
-type PlantGrowthComponent = { EntityID:uint32; GrowsInTerrain:TerrainType[]; RegrowRate:float; ReproductionRate:float; ReproductionRange:int; ReproductionRequiredFoodQuantity:float }
-    with 
-    static member ID = 7uy
+type PlantGrowthComponent = { EntityID:uint32; GrowsInTerrain:TerrainType[]; RegrowRate:float; ReproductionRate:float; ReproductionRange:int; ReproductionRequiredFoodQuantity:float } with static member ID = 7uy
 
-type TerrainComponent = { EntityID:uint32; Terrain:TerrainType }
-    with 
-    static member ID = 2uy
+type TerrainComponent = { EntityID:uint32; Terrain:TerrainType } with static member ID = 2uy
 
 type Component = 
     | Controller of ControllerComponent

@@ -35,7 +35,7 @@ type EatingSystem(game:Game, isActive:bool) =
             match quantity with
             | 0 -> Error "Stomach is full"
             | _ -> 
-                evm.QueueEvent (Eaten { EaterID=ed.EntityID; EateeID=f.EntityID; Quantity=quantity })
+                evm.ExecuteEvent (Eaten { EaterID=ed.EntityID; EateeID=f.EntityID; Quantity=quantity })
                 enm.ReplaceComponent (Eating (ed.Update (Some (ed.Quantity+quantity)) (Some (ed.Calories+calories)))) changes
                                 
         match eco.IsSome && fco.IsSome with
@@ -51,14 +51,13 @@ type EatingSystem(game:Game, isActive:bool) =
         Ok (Some (sprintf "Queued Metabolize to schedule. EntityID:%i" e.EntityID))
         
     member private me.onMetabolize (ge:GameEventTypes) =
-        printfn "%A\n\n\n" ge
         let e = ge.ToMetabolize
         let ed = (enm.GetComponent EatingComponent.ID e.EntityID).ToEating
         let newC = ed.Calories - ed.CaloriesPerMetabolize
         let newQ = ed.Quantity - ed.QuantityPerMetabolize
         let starving = newC < 0
         let result = sprintf "Quantity:-%i=%i. Calories:-%i=%i. Starving:%b" ed.QuantityPerMetabolize newQ ed.CaloriesPerMetabolize newC starving
-        if starving then evm.QueueEvent (Starving { EntityID=e.EntityID })
+        if starving then evm.ExecuteEvent (Starving { EntityID=e.EntityID })
         enm.ReplaceComponent (Eating (ed.Update (Some newQ) (Some newC))) (Some result)
         
     override me.Initialize = 

@@ -3,13 +3,13 @@ open Component
 
 
 type private agent_EntityComponentMsg = 
-| AddEntity of uint32 * Component[]
-| Exists of uint32 * AsyncReplyChannel<bool>
-| GetComponents of uint32 * AsyncReplyChannel<Component[]>
-| GetMap of AsyncReplyChannel< Map<uint32,Component[]> >
-| Init of Map<uint32,Component[]>
-| RemoveEntity of uint32
-| ReplaceComponent of Component
+    | AddEntity of uint32 * Component[]
+    | Exists of uint32 * AsyncReplyChannel<bool>
+    | GetComponents of uint32 * AsyncReplyChannel<Component[]>
+    | GetMap of AsyncReplyChannel< Map<uint32,Component[]> >
+    | Init of Map<uint32,Component[]>
+    | RemoveEntity of uint32
+    | ReplaceComponent of Component
 
 
 type agent_EntityComponent() = 
@@ -49,28 +49,28 @@ type agent_EntityComponent() =
                 }
             )
 
-    member this.CreateEntity (e,cts:Component[]) = 
+    member _.CreateEntity (e,cts:Component[]) = 
         agent.Post (AddEntity (e,cts))
 
-    member this.Exists (eid:uint32) = 
+    member _.Exists (eid:uint32) = 
         agent.PostAndReply (fun replyChannel -> Exists(eid,replyChannel))
 
-    member this.GetComponents (eid:uint32) = 
+    member _.GetComponents (eid:uint32) = 
         agent.PostAndReply (fun replyChannel -> GetComponents(eid,replyChannel))
 
-    member this.GetMap() = 
+    member _.GetMap() = 
         agent.PostAndReply GetMap
 
-    member this.PendingUpdates = 
+    member _.PendingUpdates = 
         agent.CurrentQueueLength > 0
 
-    member this.RemoveEntity (eid:uint32) = 
+    member _.RemoveEntity (eid:uint32) = 
         agent.Post (RemoveEntity eid)
 
-    member this.ReplaceComponent (c:Component) =
+    member _.ReplaceComponent (c:Component) =
         agent.Post (ReplaceComponent c)
 
-    member this.Init (newMap:Map<uint32,Component[]>) = 
+    member _.Init (newMap:Map<uint32,Component[]>) = 
         agent.Post (Init newMap)
 
 

@@ -36,19 +36,19 @@ type InputHandler(evm:EventManager, enm:EntityManager, renderer_SetDisplay:strin
     member private this.onKeyPressed (k:ConsoleKeyInfo) = 
         match k.Key with 
         | ConsoleKey.UpArrow -> 
-            let action() = evm.QueueEvent (Action_Movement { EntityID=_entityID.Value; Direction=North })
+            let action() = evm.ExecuteEvent (Action_Movement { EntityID=_entityID.Value; Direction=North })
             this.HandleAction [| FormComponent.ID; MovementComponent.ID |] action
         | ConsoleKey.DownArrow -> 
-            let action() = evm.QueueEvent (Action_Movement { EntityID=_entityID.Value; Direction=South })
+            let action() = evm.ExecuteEvent (Action_Movement { EntityID=_entityID.Value; Direction=South })
             this.HandleAction [| FormComponent.ID; MovementComponent.ID |] action
         | ConsoleKey.LeftArrow -> 
-            let action() = evm.QueueEvent (Action_Movement { EntityID=_entityID.Value; Direction=West })
+            let action() = evm.ExecuteEvent (Action_Movement { EntityID=_entityID.Value; Direction=West })
             this.HandleAction [| FormComponent.ID; MovementComponent.ID |] action
         | ConsoleKey.RightArrow -> 
-            let action() = evm.QueueEvent (Action_Movement { EntityID=_entityID.Value; Direction=East })
+            let action() = evm.ExecuteEvent (Action_Movement { EntityID=_entityID.Value; Direction=East })
             this.HandleAction [| FormComponent.ID; MovementComponent.ID |] action
         | ConsoleKey.E -> 
-            let action() = evm.QueueEvent (Action_Eat { EntityID=_entityID.Value })
+            let action() = evm.ExecuteEvent (Action_Eat { EntityID=_entityID.Value })
             this.HandleAction [| EatingComponent.ID |] action
         | _ -> ()  
 

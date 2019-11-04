@@ -19,7 +19,7 @@ type FoodSystem(game:Game, isActive:bool) =
         match (e.EateeID |> enm.GetComponent FoodComponent.ID).ToFood.FoodType.KillOnAllEaten with
         | false -> Ok None
         | true -> 
-            evm.QueueEvent (Kill_AllEaten { EaterID=e.EaterID; EateeID=e.EateeID })
+            evm.ExecuteEvent (Kill_AllEaten { EaterID=e.EaterID; EateeID=e.EateeID })
             Ok None
 
     member private me.onEaten (ge:GameEventTypes) =
@@ -28,10 +28,11 @@ type FoodSystem(game:Game, isActive:bool) =
         | None -> Error "Something else ate it first"
         | Some c -> 
             let f = c.ToFood
-            let allEaten = (f.Quantity - e.Quantity) <= 0
-            let changes = Some (sprintf "All eaten:%b" allEaten)
-            if allEaten then evm.QueueEvent (Food_AllEaten { EaterID=e.EaterID; EateeID=e.EateeID })
-            enm.ReplaceComponent (Food (f.Update None (Some (f.Quantity-e.Quantity)) None)) changes
+            let newQ = Math.Clamp(f.Quantity - e.Quantity, 0, f.QuantityMax)
+            let allEaten = newQ <= 0
+            let changes = Some (sprintf "Quantity:-%i=%i. All eaten:%b" e.Quantity newQ allEaten)
+            if allEaten then evm.ExecuteEvent (Food_AllEaten { EaterID=e.EaterID; EateeID=e.EateeID })
+            enm.ReplaceComponent (Food (f.Update None (Some newQ) None)) changes
        
     member private me.onRegrowth (ge:GameEventTypes) =
         let e = ge.ToPlantRegrowth

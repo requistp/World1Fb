@@ -2,62 +2,20 @@
 open Component
 open ComponentEnums
 
-
-type Event_ActionEat = { EntityID:uint32 }
-    with 
-    static member ID = 1uy
-
-type Event_ActionMovement = { EntityID:uint32; Direction:MovementDirection }
-    with 
-    static member ID = 2uy
-
-type Event_ComponentAdded_Eating = { EntityID:uint32; Component:Component }
-    with 
-    static member ID = 3uy
-
-type Event_ComponentAdded_PlantGrowth = { EntityID:uint32; Component:Component }
-    with 
-    static member ID = 4uy
-
-type Event_CreateEntity = { EntityID:uint32;  Components:Component[] }
-    with 
-    static member ID = 5uy
-
-type Event_Eaten = { EaterID:uint32; EateeID:uint32; Quantity:int }
-    with 
-    static member ID = 6uy
-
-type Event_FoodAllEaten = { EaterID:uint32; EateeID:uint32 }
-    with 
-    static member ID = 7uy
-
-type Event_KillAllEaten = { EaterID:uint32; EateeID:uint32 }
-    with 
-    static member ID = 8uy
-
-type Event_Metabolize = { EntityID:uint32 }
-    with 
-    static member ID = 9uy
-
-type Event_Movement = { EntityID:uint32; Direction:MovementDirection }
-    with 
-    static member ID = 10uy
-
-type Event_PlantGrowth = { EntityID:uint32 }
-    with 
-    static member ID = 11uy
-
-type Event_PlantReproduce = { EntityID:uint32 }
-    with 
-    static member ID = 12uy
-
-type Event_ScheduleEvent = { Frequency:uint32 }
-    with 
-    static member ID = 13uy
-
-type Event_Starving = { EntityID:uint32 }
-    with 
-    static member ID = 14uy
+type Event_ActionEat = { EntityID:uint32 } with static member ID = 1uy
+type Event_ActionMovement = { EntityID:uint32; Direction:MovementDirection } with static member ID = 2uy
+type Event_ComponentAdded_Eating = { EntityID:uint32; Component:Component } with static member ID = 3uy
+type Event_ComponentAdded_PlantGrowth = { EntityID:uint32; Component:Component } with static member ID = 4uy
+type Event_CreateEntity = { EntityID:uint32; Components:Component[] } with static member ID = 5uy
+type Event_Eaten = { EaterID:uint32; EateeID:uint32; Quantity:int } with static member ID = 6uy
+type Event_FoodAllEaten = { EaterID:uint32; EateeID:uint32 } with static member ID = 7uy
+type Event_KillAllEaten = { EaterID:uint32; EateeID:uint32 } with static member ID = 8uy
+type Event_Metabolize = { EntityID:uint32 } with static member ID = 9uy
+type Event_Movement = { EntityID:uint32; Direction:MovementDirection } with static member ID = 10uy
+type Event_PlantGrowth = { EntityID:uint32 } with static member ID = 11uy
+type Event_PlantReproduce = { EntityID:uint32 } with static member ID = 12uy
+type Event_ScheduleEvent = { Frequency:uint32 } with static member ID = 13uy
+type Event_Starving = { EntityID:uint32 } with static member ID = 14uy
 
 type GameEventTypes =
     | Action_Eat of Event_ActionEat
@@ -164,5 +122,4 @@ type GameEventTypes =
     member me.ToStarving = 
         let (Starving d) = me
         d
-
 

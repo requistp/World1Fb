@@ -23,8 +23,10 @@ type agent_Round() =
                 }
             )
 
-
     member _.Get = agent.PostAndReply Get
 
     member _.Increment = agent.Post Increment
+
+    member _.PendingUpdates = 
+        agent.CurrentQueueLength > 0
 
