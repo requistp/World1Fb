@@ -21,8 +21,10 @@ type EntitySystem(game:Game, isActive:bool) =
         enm.CreateEntity (e.Components)
 
     override me.Initialize =
-        evm.RegisterListener "SystemManager" Event_CreateEntity.ID me.onCreateEntity
+        evm.RegisterListener me.ToString Event_CreateEntity.ID me.onCreateEntity
         base.SetToInitialized
+
+    override _.ToString = "SystemManager"
 
     override me.Update = 
         ()

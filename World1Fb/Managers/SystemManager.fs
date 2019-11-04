@@ -8,6 +8,8 @@ type AbstractSystem(isActive:bool) =
     member _.IsActive = isActive
     member _.IsInitialized = _isInitialized
     member _.SetToInitialized = _isInitialized <- true
+    
+    abstract member ToString : string
 
     abstract member Initialize : unit
     default me.Initialize = me.SetToInitialized
@@ -22,11 +24,13 @@ type SystemManager() =
 
     member _.Active = _systems |> Array.filter (fun s -> s.IsActive)
     member _.ActiveAndInitialized = _systems |> Array.filter (fun s -> s.IsActive && s.IsInitialized)
-    member _.GetSystems = _systems
 
     member me.Init (ss:AbstractSystem[]) =
         _systems <- ss
         me.Active |> Array.Parallel.iter (fun s -> s.Initialize)
+
+    member me.Init (s:string[]) =
+        ()
 
     member me.UpdateSystems =
         me.ActiveAndInitialized |> Array.Parallel.iter (fun s -> s.Update)

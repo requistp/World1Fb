@@ -69,9 +69,11 @@ type PlantGrowthSystem(game:Game, isActive:bool) =
         | Ok (l,r) -> makePlant l r
 
     override me.Initialize = 
-        evm.RegisterListener "PlantGrowthSystem" Event_ComponentAdded_PlantGrowth.ID me.onComponentAdded
-        evm.RegisterListener "PlantGrowthSystem" Event_PlantReproduce.ID             me.onReproduce
+        evm.RegisterListener me.ToString Event_ComponentAdded_PlantGrowth.ID me.onComponentAdded
+        evm.RegisterListener me.ToString Event_PlantReproduce.ID             me.onReproduce
         base.SetToInitialized
+
+    override _.ToString = "PlantGrowthSystem"
 
     override me.Update = 
         ()

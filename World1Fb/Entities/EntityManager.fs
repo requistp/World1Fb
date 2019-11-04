@@ -8,7 +8,7 @@ open CommonGenericFunctions
 
 
 type EntityManager() =
-    let agentForID = new agent_EntityID()
+    let agentForEntityID = new agent_EntityID()
     let agentForComponents = new agent_ComponentEntity()
     let agentForLocations = new agent_LocationEntity()
     let agentForEntities = new agent_EntityComponent() 
@@ -37,9 +37,9 @@ type EntityManager() =
 
     member _.GetMap = agentForEntities.Get
 
-    member _.GetMaxID = agentForID.GetMaxID 
+    member _.GetMaxID = agentForEntityID.GetMaxID 
 
-    member _.GetNewID = agentForID.GetNewID
+    member _.GetNewID = agentForEntityID.GetNewID
 
     member _.HasAllComponents (cts:byte[]) (eid:uint32) =
         let ects = agentForEntities.GetComponents eid |> Array.Parallel.map (fun ct -> ct.ComponentID)
@@ -51,8 +51,11 @@ type EntityManager() =
         ctss |> Array.Parallel.iter (fun cts -> agentForComponents.Add cts)
         ctss |> Array.Parallel.iter (fun cts -> cts |> Array.filter (fun c -> c.ComponentID=FormComponent.ID) |> Array.Parallel.iter (fun c -> agentForLocations.Add c.ToForm))
     
+    member _.Init (maxEntityID:uint32) =
+        agentForEntityID.Init maxEntityID
+
     member _.PendingUpdates = 
-        agentForEntities.PendingUpdates || agentForID.PendingUpdates || agentForComponents.PendingUpdates || agentForLocations.PendingUpdates
+        agentForEntities.PendingUpdates || agentForEntityID.PendingUpdates || agentForComponents.PendingUpdates || agentForLocations.PendingUpdates
 
     member _.RemoveEntity (eid:uint32) =
         let cts = agentForEntities.GetComponents eid

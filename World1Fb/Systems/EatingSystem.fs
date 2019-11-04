@@ -58,13 +58,15 @@ type EatingSystem(game:Game, isActive:bool) =
         let result = sprintf "Quantity:-%i=%i. Calories:-%i=%i. Starving:%b" ed.QuantityPerMetabolize newQ ed.CaloriesPerMetabolize newC starving
         if starving then evm.ExecuteEvent (Starving { EntityID=e.EntityID })
         enm.ReplaceComponent (Eating (ed.Update (Some newQ) (Some newC))) (Some result)
-        
+    
     override me.Initialize = 
-        evm.RegisterListener "EatingSystem" Event_ActionEat.ID             me.onEat
-        evm.RegisterListener "EatingSystem" Event_ComponentAdded_Eating.ID me.onComponentAdded
-        evm.RegisterListener "EatingSystem" Event_Metabolize.ID            me.onMetabolize
+        evm.RegisterListener me.ToString Event_ActionEat.ID             me.onEat
+        evm.RegisterListener me.ToString Event_ComponentAdded_Eating.ID me.onComponentAdded
+        evm.RegisterListener me.ToString Event_Metabolize.ID            me.onMetabolize
         base.SetToInitialized
 
+    override _.ToString = "EatingSystem"
+       
     override me.Update = 
         ()
 

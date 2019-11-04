@@ -5,6 +5,7 @@ open agent_GameEventLog
 open agent_Round
 open EntityManager
 open EventTypes
+open LocationTypes
 open System
 
 
@@ -16,35 +17,61 @@ type EventManager(enm:EntityManager) =
 
     member _.EndRound =
         let round = agentForRound.Get
-        while (agentForListeners.PendingUpdates || agentForSchedule.PendingUpdates || enm.PendingUpdates) do
-            //agentForLog.Log_EndOfRoundCancelled round 1
-            Console.Write "1"
-            System.Threading.Thread.Sleep 7
-        while (agentForListeners.PendingUpdates || agentForSchedule.PendingUpdates || enm.PendingUpdates) do
-            agentForLog.Log_EndOfRoundCancelled round 2
-            Console.Write "2"
-            System.Threading.Thread.Sleep 6
-        while (agentForListeners.PendingUpdates || agentForSchedule.PendingUpdates || enm.PendingUpdates) do
-            agentForLog.Log_EndOfRoundCancelled round 3
-            Console.Write "3"
+        System.Console.SetCursorPosition(0,MapHeight+1)
+        Console.Write "   "
+        while (agentForListeners.PendingUpdates || agentForSchedule.PendingUpdates ) do 
+            agentForLog.Log_EndOfRoundCancelled round 1 "Events"
+            System.Console.SetCursorPosition(0,MapHeight+1)
+            Console.Write "1 "
             System.Threading.Thread.Sleep 5
-        while (agentForListeners.PendingUpdates || agentForSchedule.PendingUpdates || enm.PendingUpdates) do
-            agentForLog.Log_EndOfRoundCancelled round 4
-            Console.Write "4"
-            System.Threading.Thread.Sleep 4
-        while (agentForListeners.PendingUpdates || agentForSchedule.PendingUpdates || enm.PendingUpdates) do
-            agentForLog.Log_EndOfRoundCancelled round 5
-            Console.Write "5"
-            System.Threading.Thread.Sleep 3
-        while (agentForListeners.PendingUpdates || agentForSchedule.PendingUpdates || enm.PendingUpdates) do
-            agentForLog.Log_EndOfRoundCancelled round 6
-            Console.Write "6"
-            System.Threading.Thread.Sleep 2
-        while (agentForListeners.PendingUpdates || agentForSchedule.PendingUpdates || enm.PendingUpdates) do
-            agentForLog.Log_EndOfRoundCancelled round 7
-            Console.Write "7"
-            System.Threading.Thread.Sleep 1
+        while (agentForListeners.PendingUpdates || agentForSchedule.PendingUpdates ) do 
+            agentForLog.Log_EndOfRoundCancelled round 2 "Events"
+            System.Console.SetCursorPosition(0,MapHeight+1)
+            Console.Write "2 "
+            System.Threading.Thread.Sleep 5
+        while (agentForListeners.PendingUpdates || agentForSchedule.PendingUpdates ) do 
+            agentForLog.Log_EndOfRoundCancelled round 3 "Events"
+            System.Console.SetCursorPosition(0,MapHeight+1)
+            Console.Write "3 "
+            System.Threading.Thread.Sleep 5
+        while (agentForListeners.PendingUpdates || agentForSchedule.PendingUpdates ) do
+            agentForLog.Log_EndOfRoundCancelled round 4 "Events"
+            System.Console.SetCursorPosition(0,MapHeight+1)
+            Console.Write "4 "
+            System.Threading.Thread.Sleep 5
+        while (agentForListeners.PendingUpdates || agentForSchedule.PendingUpdates ) do 
+            agentForLog.Log_EndOfRoundCancelled round 5 "Events"
+            System.Console.SetCursorPosition(0,MapHeight+1)
+            Console.Write "5 "
+            System.Threading.Thread.Sleep 5
         agentForLog.WriteLog
+        System.Console.SetCursorPosition(0,MapHeight+2)
+        Console.Write "                          "
+        while enm.PendingUpdates do
+            agentForLog.Log_EndOfRoundCancelled round 1 "Entities"
+            System.Console.SetCursorPosition(0,MapHeight+2)
+            Console.Write "entity events: 1 "
+            System.Threading.Thread.Sleep 5
+        while enm.PendingUpdates do
+            agentForLog.Log_EndOfRoundCancelled round 2 "Entities"
+            System.Console.SetCursorPosition(0,MapHeight+2)
+            Console.Write "entity events: 2 "
+            System.Threading.Thread.Sleep 5
+        while enm.PendingUpdates do
+            agentForLog.Log_EndOfRoundCancelled round 3 "Entities"
+            System.Console.SetCursorPosition(0,MapHeight+2)
+            Console.Write "entity events: 3 "
+            System.Threading.Thread.Sleep 5
+        while enm.PendingUpdates do
+            agentForLog.Log_EndOfRoundCancelled round 4 "Entities"
+            System.Console.SetCursorPosition(0,MapHeight+2)
+            Console.Write "entity events: 4 "
+            System.Threading.Thread.Sleep 5
+        while enm.PendingUpdates do
+            agentForLog.Log_EndOfRoundCancelled round 5 "Entities"
+            System.Console.SetCursorPosition(0,MapHeight+2)
+            Console.Write "entity events: 5 "
+            System.Threading.Thread.Sleep 5
         agentForRound.Increment
 
     member _.ExecuteEvent (ge:GameEventTypes) = agentForListeners.Execute agentForRound.Get ge
@@ -54,6 +81,8 @@ type EventManager(enm:EntityManager) =
     member _.GetRound() = agentForRound.Get
 
     member _.GetSchedule = agentForSchedule.Get
+
+    member _.InitRound round = agentForRound.Init round 
 
     member _.RegisterListener (listener:string) (eventTypeID:byte) (callback:GameEventCallback) = agentForListeners.Register agentForRound.Get listener eventTypeID callback
     

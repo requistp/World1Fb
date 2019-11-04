@@ -6,7 +6,7 @@ type GameEventCallback = GameEventTypes -> Result<string option,string>
 
 type private agentLogTypes =
     | CallbackResult of listener:string * callback:GameEventCallback * gameEvent:GameEventTypes * result:Result<string option,string>
-    | EndOfRoundCancelled of step:int
+    | EndOfRoundCancelled of step:int * reason:string
     | ListenerRegistered of listener:string
     | NoListeners of GameEventTypes
     | ScheduledEvent of GameEventTypes
@@ -18,8 +18,8 @@ type private agentLogTypes =
                 | Error x -> ("Err", " : " + x)
                 | Ok s -> ("Ok", if s.IsSome then " : " + s.Value else "")
             sprintf "%-3s | %-20s -> %-30s #%7i%s" (fst res_ToStrings) listener (ge.GameEventType()) ge.EntityID (snd res_ToStrings)
-        | EndOfRoundCancelled step ->
-            sprintf "%-3s | %-20s -> %-30s #%7i" "xld" "End of round" "Cancelled pending more events" step
+        | EndOfRoundCancelled (step,reason) ->
+            sprintf "%-3s | %-20s -> %-30s #%7i : %s" "xld" "End of round" "Cancelled pending more events" step reason
         | ListenerRegistered s -> 
             sprintf "%-3s | %-20s -> %-30s" "Ok " "Registered System" s
         | NoListeners ge -> 
@@ -57,7 +57,7 @@ type agent_GameEventLog() =
 
     member _.Log_CallbackResult round (listener,callback,gameEvent,result) = agent.Post (Log (round, CallbackResult (listener,callback,gameEvent,result)))
 
-    member _.Log_EndOfRoundCancelled round step = agent.Post (Log (round, EndOfRoundCancelled step))
+    member _.Log_EndOfRoundCancelled round step reason = agent.Post (Log (round, EndOfRoundCancelled (step,reason)))
    
     member _.Log_NoListeners round ge = agent.Post (Log (round, NoListeners ge))
 

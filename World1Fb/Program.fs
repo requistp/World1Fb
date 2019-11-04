@@ -11,6 +11,7 @@ open TerrainSystem
 open ConsoleV1
 open WorldMapRenderer
 
+let format = LoadAndSave.SaveGameFormats.XML
 
 let wmr = new WorldMapRenderer()
 
@@ -23,7 +24,7 @@ let windowMan = new WindowManager(windows)
 
 let setDisplay = windowMan.SetDisplay
 
-let g = new Game(setDisplay, wmr.Update, wmr.MoveWindow)
+let g = new Game(setDisplay, wmr.Update, wmr.MoveWindow, format)
 
 let startingEntities = 
     MakeMap g.EntityManager
@@ -42,8 +43,7 @@ let systems =
         TerrainSystem(g,true).Abstract
     |]
 
-g.Start systems startingEntities
+g.Start systems startingEntities ""
 
-
-
+//g.Start systems Array.empty "Save_201911041343"
 
