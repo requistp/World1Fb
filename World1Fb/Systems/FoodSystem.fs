@@ -1,12 +1,9 @@
 ﻿module FoodSystem
-open AbstractSystem
-open CalendarTimings
 open Component
-open EntityManager
 open EventTypes
 open GameManager
-open SystemManager
 open System
+open SystemManager
 
 
 type FoodSystem(game:Game, isActive:bool) =

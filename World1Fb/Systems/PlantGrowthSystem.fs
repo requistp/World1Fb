@@ -1,12 +1,12 @@
 ﻿module PlantGrowthSystem
 open Component
-open AbstractSystem
 open CalendarTimings
 open CommonGenericFunctions
-open EntityManager
 open EventTypes
 open GameManager
 open LocationTypes
+open SystemManager
+
 
 type PlantGrowthSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
@@ -73,7 +73,7 @@ type PlantGrowthSystem(game:Game, isActive:bool) =
         evm.RegisterListener "PlantGrowthSystem" Event_PlantReproduce.ID             me.onReproduce
         base.SetToInitialized
 
-    override this.Update = 
+    override me.Update = 
         ()
 
 

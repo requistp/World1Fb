@@ -19,26 +19,30 @@ type EventManager(enm:EntityManager) =
         while (agentForListeners.PendingUpdates || agentForSchedule.PendingUpdates || enm.PendingUpdates) do
             //agentForLog.Log_EndOfRoundCancelled round 1
             Console.Write "1"
-            System.Threading.Thread.Sleep 6
+            System.Threading.Thread.Sleep 7
         while (agentForListeners.PendingUpdates || agentForSchedule.PendingUpdates || enm.PendingUpdates) do
             agentForLog.Log_EndOfRoundCancelled round 2
             Console.Write "2"
-            System.Threading.Thread.Sleep 5
+            System.Threading.Thread.Sleep 6
         while (agentForListeners.PendingUpdates || agentForSchedule.PendingUpdates || enm.PendingUpdates) do
             agentForLog.Log_EndOfRoundCancelled round 3
             Console.Write "3"
-            System.Threading.Thread.Sleep 4
+            System.Threading.Thread.Sleep 5
         while (agentForListeners.PendingUpdates || agentForSchedule.PendingUpdates || enm.PendingUpdates) do
             agentForLog.Log_EndOfRoundCancelled round 4
             Console.Write "4"
-            System.Threading.Thread.Sleep 3
+            System.Threading.Thread.Sleep 4
         while (agentForListeners.PendingUpdates || agentForSchedule.PendingUpdates || enm.PendingUpdates) do
             agentForLog.Log_EndOfRoundCancelled round 5
             Console.Write "5"
-            System.Threading.Thread.Sleep 2
+            System.Threading.Thread.Sleep 3
         while (agentForListeners.PendingUpdates || agentForSchedule.PendingUpdates || enm.PendingUpdates) do
             agentForLog.Log_EndOfRoundCancelled round 6
             Console.Write "6"
+            System.Threading.Thread.Sleep 2
+        while (agentForListeners.PendingUpdates || agentForSchedule.PendingUpdates || enm.PendingUpdates) do
+            agentForLog.Log_EndOfRoundCancelled round 7
+            Console.Write "7"
             System.Threading.Thread.Sleep 1
         agentForLog.WriteLog
         agentForRound.Increment

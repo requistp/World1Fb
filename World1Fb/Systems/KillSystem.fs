@@ -1,8 +1,7 @@
 ﻿module KillSystem
-open AbstractSystem
-open EntityManager
 open EventTypes
 open GameManager
+open SystemManager
 
 
 type KillSystem(game:Game, isActive:bool) =

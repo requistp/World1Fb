@@ -1,8 +1,8 @@
 ﻿module MovementSystem
-open AbstractSystem
 open Component
 open EventTypes
 open GameManager
+open SystemManager
 
 
 type MovementSystem(game:Game, isActive:bool) =

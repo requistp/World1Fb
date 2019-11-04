@@ -1,8 +1,5 @@
 ﻿module FormSystem
-open AbstractSystem
-open EventTypes
 open GameManager
-open LocationTypes
 open SystemManager
 
 

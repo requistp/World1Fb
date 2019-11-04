@@ -4,11 +4,10 @@ open ComponentEnums
 open LocationTypes
 open System
 
-type ControllerComponent = { EntityID:uint32 } with static member ID = 4uy
+type ControllerComponent = { EntityID:uint32 } with static member ID = 1uy
 
-type EatingComponent = { EntityID:uint32; Calories:int; CaloriesPerDay:int; Foods:FoodTypes[]; Quantity:int; QuantityMax:int; QuantityPerAction:int }
-    with 
-    static member ID = 5uy
+type EatingComponent = { EntityID:uint32; Calories:int; CaloriesPerDay:int; Foods:FoodTypes[]; Quantity:int; QuantityMax:int; QuantityPerAction:int } with 
+    static member ID = 2uy
     member me.CaloriesPerMetabolize = Math.Clamp(convertAmountByFrequency me.CaloriesPerDay Day MetabolismFrequency,1,me.CaloriesPerDay)
     member me.CanEat (fd:FoodTypes) = me.Foods |> Array.contains fd    
     member me.QuantityPerMetabolize = Math.Clamp(convertAmountByFrequency me.QuantityMax Day MetabolismFrequency,1,me.QuantityMax)
@@ -20,8 +19,7 @@ type EatingComponent = { EntityID:uint32; Calories:int; CaloriesPerDay:int; Food
                 Calories = if caloriesUpdate.IsSome then caloriesUpdate.Value else me.Calories
         }
 
-type FoodComponent = { EntityID:uint32; FoodType:FoodTypes; Quantity:int; QuantityMax:int } 
-    with 
+type FoodComponent = { EntityID:uint32; FoodType:FoodTypes; Quantity:int; QuantityMax:int } with 
     static member ID = 3uy
     member me.Update (foodTypeUpdate:FoodTypes option) (quantityUpdate:int option) (quantityMaxUpdate:int option) =
         {
@@ -31,9 +29,8 @@ type FoodComponent = { EntityID:uint32; FoodType:FoodTypes; Quantity:int; Quanti
                 QuantityMax = if quantityMaxUpdate.IsSome then quantityMaxUpdate.Value else me.QuantityMax
         }
     
-type FormComponent = { EntityID:uint32; IsPassable:bool; Location:LocationDataInt; Name:string; Symbol:char }
-    with 
-    static member ID = 1uy
+type FormComponent = { EntityID:uint32; IsPassable:bool; Location:LocationDataInt; Name:string; Symbol:char } with 
+    static member ID = 4uy
     member me.Update (isPassableUpdate:bool option) (nameUpdate:string option) (symbolUpdate:char option) (locationUpdate:LocationDataInt option) =
         {
             me with
@@ -43,11 +40,11 @@ type FormComponent = { EntityID:uint32; IsPassable:bool; Location:LocationDataIn
                 Symbol = if symbolUpdate.IsSome then symbolUpdate.Value else me.Symbol
         }
 
-type MovementComponent = { EntityID:uint32; MovesPerTurn:int } with static member ID = 6uy
+type MovementComponent = { EntityID:uint32; MovesPerTurn:int } with static member ID = 5uy
 
-type PlantGrowthComponent = { EntityID:uint32; GrowsInTerrain:TerrainType[]; RegrowRate:float; ReproductionRate:float; ReproductionRange:int; ReproductionRequiredFoodQuantity:float } with static member ID = 7uy
+type PlantGrowthComponent = { EntityID:uint32; GrowsInTerrain:TerrainType[]; RegrowRate:float; ReproductionRate:float; ReproductionRange:int; ReproductionRequiredFoodQuantity:float } with static member ID = 6uy
 
-type TerrainComponent = { EntityID:uint32; Terrain:TerrainType } with static member ID = 2uy
+type TerrainComponent = { EntityID:uint32; Terrain:TerrainType } with static member ID = 7uy
 
 type Component = 
     | Controller of ControllerComponent

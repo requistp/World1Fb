@@ -1,13 +1,12 @@
-﻿open AbstractSystem
-open BuildNewWorld
+﻿open BuildNewWorld
 open EatingSystem
+open EntitySystem
 open FoodSystem
 open FormSystem
 open GameManager
 open KillSystem
 open MovementSystem
 open PlantGrowthSystem
-open Renderer
 open TerrainSystem
 open ConsoleV1
 open WorldMapRenderer
@@ -22,20 +21,19 @@ let windows =
     |]
 let windowMan = new WindowManager(windows)
 
-let setContent = windowMan.SetContent
 let setDisplay = windowMan.SetDisplay
-let display = windowMan.Display
 
-let g = new Game(RenderFrame, setContent, setDisplay, display, wmr.Update, wmr.MoveWindow)
+let g = new Game(setDisplay, wmr.Update, wmr.MoveWindow)
 
 let startingEntities = 
     MakeMap g.EntityManager
     |> Array.append (MakeGrasses g.EntityManager 1)
     |> Array.append (MakeRabbits g.EntityManager 1)
     
-let ss =
+let systems =
     [|
         EatingSystem(g,true).Abstract
+        EntitySystem(g,true).Abstract
         FoodSystem(g,true).Abstract
         FormSystem(g,true).Abstract
         KillSystem(g,true).Abstract
@@ -44,7 +42,7 @@ let ss =
         TerrainSystem(g,true).Abstract
     |]
 
-g.Start ss startingEntities
+g.Start systems startingEntities
 
 
 

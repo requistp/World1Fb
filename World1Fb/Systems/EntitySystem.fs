@@ -1,0 +1,31 @@
+﻿module EntitySystem
+open Component
+open EventTypes
+open GameManager
+open SystemManager
+
+
+type EntitySystem(game:Game, isActive:bool) =
+    inherit AbstractSystem(isActive) 
+    let enm = game.EntityManager
+    let evm = game.EventManager    
+
+    member private me.onCreateEntity (ge:GameEventTypes) =
+        let e = ge.ToCreateEntity
+        let checkComponent (c:Component) =
+            match c.ComponentID with 
+            | x when x = EatingComponent.ID -> evm.ExecuteEvent (ComponentAdded_Eating { EntityID=c.EntityID; Component=c })
+            | x when x = PlantGrowthComponent.ID -> evm.ExecuteEvent (ComponentAdded_PlantGrowth { EntityID=c.EntityID; Component=c })
+            | _ -> ()
+        e.Components |> Array.Parallel.iter (fun c -> checkComponent c)
+        enm.CreateEntity (e.Components)
+
+    override me.Initialize =
+        evm.RegisterListener "SystemManager" Event_CreateEntity.ID me.onCreateEntity
+        base.SetToInitialized
+
+    override me.Update = 
+        ()
+
+
+        

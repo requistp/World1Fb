@@ -1,34 +1,33 @@
 ﻿module SystemManager
-open AbstractSystem
-open Component
-open EntityManager
-open EventManager
-open EventTypes
-    
 
-type SystemManager(enm:EntityManager,evm:EventManager) =
+
+[<AbstractClass>]
+type AbstractSystem(isActive:bool) =
+    let mutable _isInitialized = false
+
+    member _.IsActive = isActive
+    member _.IsInitialized = _isInitialized
+    member _.SetToInitialized = _isInitialized <- true
+
+    abstract member Initialize : unit
+    default me.Initialize = me.SetToInitialized
+
+    abstract member Update : unit
+
+    member me.Abstract = me :> AbstractSystem
+
+
+type SystemManager() =
     let mutable _systems = Array.empty<AbstractSystem>
 
-    member me.Active = _systems |> Array.filter (fun s -> s.IsActive)
-    member me.ActiveAndInitialized = _systems |> Array.filter (fun s -> s.IsActive && s.IsInitialized)
-    
-    member private me.onCreateEntity (ge:GameEventTypes) =
-        let e = ge.ToCreateEntity
-        let checkComponent (c:Component) =
-            match c.ComponentID with 
-            | x when x = EatingComponent.ID -> evm.ExecuteEvent (ComponentAdded_Eating { EntityID=c.EntityID; Component=c })
-            | x when x = PlantGrowthComponent.ID -> evm.ExecuteEvent (ComponentAdded_PlantGrowth { EntityID=c.EntityID; Component=c })
-            | _ -> ()
-        e.Components |> Array.Parallel.iter (fun c -> checkComponent c)
-        enm.CreateEntity (e.Components)
-        
+    member _.Active = _systems |> Array.filter (fun s -> s.IsActive)
+    member _.ActiveAndInitialized = _systems |> Array.filter (fun s -> s.IsActive && s.IsInitialized)
+            
     member me.Initialize (ss:AbstractSystem[]) =
         _systems <- ss
         me.Active |> Array.Parallel.iter (fun s -> s.Initialize)
-        evm.RegisterListener "SystemManager" Event_CreateEntity.ID me.onCreateEntity
                 
     member me.UpdateSystems =
-        me.ActiveAndInitialized 
-        |> Array.Parallel.iter (fun s -> s.Update)
+        me.ActiveAndInitialized |> Array.Parallel.iter (fun s -> s.Update)
 
 

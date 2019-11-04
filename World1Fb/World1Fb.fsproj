@@ -23,11 +23,11 @@
     <Compile Include="Events\agent_EventListeners.fs" />
     <Compile Include="Events\agent_EventSchedule.fs" />
     <Compile Include="Events\EventManager.fs" />
-    <Compile Include="Managers\AbstractSystem.fs" />
     <Compile Include="Managers\SystemManager.fs" />
     <Compile Include="Managers\InputHandler.fs" />
     <Compile Include="Managers\GameManager.fs" />
     <Compile Include="Systems\EatingSystem.fs" />
+    <Compile Include="Systems\EntitySystem.fs" />
     <Compile Include="Systems\FoodSystem.fs" />
     <Compile Include="Systems\FormSystem.fs" />
     <Compile Include="Systems\KillSystem.fs" />
@@ -36,7 +36,6 @@
     <Compile Include="Systems\TerrainSystem.fs" />
     <Compile Include="Console\WorldMapRenderer.fs" />
     <Compile Include="Console\ConsoleV1.fs" />
-    <Compile Include="Renderer.fs" />
     <Compile Include="BuildNewWorld.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

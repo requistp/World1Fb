@@ -1,12 +1,11 @@
 ﻿module EatingSystem
 open Component
-open ComponentEnums
-open AbstractSystem
 open CalendarTimings
-open EntityManager
 open EventTypes
 open GameManager
 open System
+open SystemManager
+
 
 type EatingSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
