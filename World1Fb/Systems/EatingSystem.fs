@@ -1,7 +1,9 @@
 ﻿module EatingSystem
 open Component
+open ComponentEnums
 open CalendarTimings
 open EventTypes
+open FoodComponent
 open GameManager
 open System
 open SystemManager
@@ -14,8 +16,8 @@ type EatingSystem(game:Game, isActive:bool) =
     
     member private me.onEat (ge:GameEventTypes) =
         let e = ge.ToActionEat
-        let eco = enm.TryGetComponent EatingComponent.ID e.EntityID
-        let fco = enm.TryGetComponent FormComponent.ID e.EntityID
+        let eco = enm.TryGetComponent EatingComponentID e.EntityID
+        let fco = enm.TryGetComponent FormComponentID e.EntityID
         let ed = eco.Value.ToEating
         let fc = fco.Value.ToForm
 
@@ -23,7 +25,7 @@ type EatingSystem(game:Game, isActive:bool) =
             fc.Location
             |> enm.GetEntitiesAtLocation // Food here
             |> Array.filter (fun eid -> eid <> e.EntityID) // Not me
-            |> enm.TryGetComponentForEntities FoodComponent.ID
+            |> enm.TryGetComponentForEntities FoodComponentID
             |> Array.map (fun c -> c.ToFood)
             |> Array.filter (fun f -> ed.CanEat f.FoodType && f.Quantity > 0) // Types I can eat & Food remaining
             |> Array.sortByDescending (fun f -> f.FoodType.Calories) // Highest caloric food first
@@ -47,12 +49,12 @@ type EatingSystem(game:Game, isActive:bool) =
 
     member private me.onComponentAdded (ge:GameEventTypes) =
         let e = ge.ToComponentAddedEating
-        evm.ScheduleEvent (ScheduleEvent ({ Frequency=uint32 MetabolismFrequency }, Metabolize { EntityID=e.EntityID }))
+        evm.ScheduleEvent (ScheduleEvent ({ Schedule=RepeatIndefinitely; Frequency=uint32 MetabolismFrequency }, Metabolize { EntityID=e.EntityID }))
         Ok (Some (sprintf "Queued Metabolize to schedule. EntityID:%i" e.EntityID))
         
     member private me.onMetabolize (ge:GameEventTypes) =
         let e = ge.ToMetabolize
-        let ed = (enm.GetComponent EatingComponent.ID e.EntityID).ToEating
+        let ed = (enm.GetComponent EatingComponentID e.EntityID).ToEating
         let newC = ed.Calories - ed.CaloriesPerMetabolize
         let newQ = ed.Quantity - ed.QuantityPerMetabolize
         let starving = newC < 0

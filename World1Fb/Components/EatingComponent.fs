@@ -13,8 +13,7 @@ type EatingComponent =
         Quantity:int
         QuantityMax:int
         QuantityPerAction:int 
-    } 
-    with 
+    } with 
 
     member me.CaloriesPerMetabolize = Math.Clamp(convertAmountByFrequency me.CaloriesPerDay Day MetabolismFrequency,1,me.CaloriesPerDay)
     

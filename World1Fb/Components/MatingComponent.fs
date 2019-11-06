@@ -9,8 +9,7 @@ type MatingComponent =
         LastMatingAttempt:uint32
         MatingStatus:MatingStatus
         Species:Species 
-    } 
-    with 
+    } with 
 
     member me.CanTryMating round =
         me.MatingStatus <> MatingStatus.Female_Pregnant && (me.LastMatingAttempt = 0u || me.LastMatingAttempt + me.Species.MaxMatingFrequency <= round)

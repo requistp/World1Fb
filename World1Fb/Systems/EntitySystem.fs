@@ -1,5 +1,6 @@
 ﻿module EntitySystem
 open Component
+open ComponentEnums
 open EventTypes
 open GameManager
 open SystemManager
@@ -14,8 +15,8 @@ type EntitySystem(game:Game, isActive:bool) =
         let e = ge.ToCreateEntity
         let checkComponent (c:Component) =
             match c.ComponentID with 
-            | x when x = EatingComponent.ID -> evm.ExecuteEvent (ComponentAdded_Eating { EntityID=c.EntityID; Component=c })
-            | x when x = PlantGrowthComponent.ID -> evm.ExecuteEvent (ComponentAdded_PlantGrowth { EntityID=c.EntityID; Component=c })
+            | x when x = EatingComponentID -> evm.ExecuteEvent (ComponentAdded_Eating { EntityID=c.EntityID; Component=c })
+            | x when x = PlantGrowthComponentID -> evm.ExecuteEvent (ComponentAdded_PlantGrowth { EntityID=c.EntityID; Component=c })
             | _ -> ()
         e.Components |> Array.Parallel.iter (fun c -> checkComponent c)
         enm.CreateEntity (e.Components)

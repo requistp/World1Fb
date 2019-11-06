@@ -26,20 +26,29 @@ type agent_EventSchedule(agentForLog:agent_GameEventLog, agentForListeners:agent
                         let addToSchedule round (se:GameEventTypes) isNew =
                             let sed,_ = se.ToScheduleEvent
                             let interval = 
-                                match isNew with
-                                | false -> sed.Frequency
+                                match isNew && sed.Schedule = RepeatIndefinitely with
                                 | true -> uint32 (TimingOffset (int sed.Frequency))
+                                | false -> sed.Frequency                                
                             _schedule <- Map_AppendValueToArrayNonUnique _schedule (round+interval) se
                             agentForLog.Log_ScheduledEvent round se
                         match msg with
                         | ExecuteScheduled round ->
+                            let reschedule (se:GameEventTypes) =
+                                let sed,ge = se.ToScheduleEvent
+                                match sed.Schedule with
+                                | RunOnce -> ()
+                                | RepeatIndefinitely -> addToSchedule round se false 
+                                | RepeatFinite x -> 
+                                    match x with
+                                    | 1u -> () // Done, that 1 is the last one
+                                    | _ -> addToSchedule round (ScheduleEvent ({ sed with Schedule = RepeatFinite (x - 1u) }, ge)) false                                 
                             let executeAndReschedule (se:GameEventTypes) =
                                 let _,ge = se.ToScheduleEvent
                                 match enm.Exists ge.EntityID with
                                 | false -> ()
                                 | true ->
                                     agentForListeners.Execute round ge
-                                    addToSchedule round se false 
+                                    reschedule se
                             match _schedule.ContainsKey(round) with
                             | false -> ()
                             | true -> 

@@ -37,22 +37,22 @@ type InputHandler(evm:EventManager, enm:EntityManager, renderer_SetDisplay:strin
         match k.Key with 
         | ConsoleKey.UpArrow -> 
             let action() = evm.ExecuteEvent (Action_Movement { EntityID=_entityID.Value; Direction=North })
-            me.HandleAction [| FormComponent.ID; MovementComponent.ID |] action
+            me.HandleAction [| FormComponentID; MovementComponentID |] action
         | ConsoleKey.DownArrow -> 
             let action() = evm.ExecuteEvent (Action_Movement { EntityID=_entityID.Value; Direction=South })
-            me.HandleAction [| FormComponent.ID; MovementComponent.ID |] action
+            me.HandleAction [| FormComponentID; MovementComponentID |] action
         | ConsoleKey.LeftArrow -> 
             let action() = evm.ExecuteEvent (Action_Movement { EntityID=_entityID.Value; Direction=West })
-            me.HandleAction [| FormComponent.ID; MovementComponent.ID |] action
+            me.HandleAction [| FormComponentID; MovementComponentID |] action
         | ConsoleKey.RightArrow -> 
             let action() = evm.ExecuteEvent (Action_Movement { EntityID=_entityID.Value; Direction=East })
-            me.HandleAction [| FormComponent.ID; MovementComponent.ID |] action
+            me.HandleAction [| FormComponentID; MovementComponentID |] action
         | ConsoleKey.E -> 
             let action() = evm.ExecuteEvent (Action_Eat { EntityID=_entityID.Value })
-            me.HandleAction [| EatingComponent.ID |] action
+            me.HandleAction [| EatingComponentID |] action
         | ConsoleKey.M -> 
             let action() = evm.ExecuteEvent (Action_Mate { EntityID=_entityID.Value })
-            me.HandleAction [| MatingComponent.ID |] action
+            me.HandleAction [| MatingComponentID |] action
         | _ -> ()  
 
         while Console.KeyAvailable do //Might help clear double movement keys entered in one turn

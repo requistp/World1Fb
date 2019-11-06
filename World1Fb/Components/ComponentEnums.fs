@@ -1,14 +1,14 @@
 ﻿module ComponentEnums
 open LocationTypes
 
-let ControllerComponent_ID = 1uy
-let EatingComponent_ID = 2uy
-let FoodComponent_ID = 3uy
-let FormComponent_ID = 4uy
-let MatingComponent_ID = 5uy
-let MovementComponent_ID = 6uy
-let PlantGrowthComponent_ID = 7uy
-let TerrainComponent_ID = 7uy
+let ControllerComponentID = 1uy
+let EatingComponentID = 2uy
+let FoodComponentID = 3uy
+let FormComponentID = 4uy
+let MatingComponentID = 5uy
+let MovementComponentID = 6uy
+let PlantGrowthComponentID = 7uy
+let TerrainComponentID = 8uy
 
 
 type FoodClassifications =
@@ -37,6 +37,7 @@ type FoodTypes =
         match this.Classification with
         | Plant -> Some '!'
         | Meat -> None
+
 
 type MatingStatus =
     | Female
@@ -73,7 +74,10 @@ type Species =
         match me with
         | Rabbit -> 10u
         | NotRabbit -> 100u
-
+    member me.Gestation =
+        match me with
+        | Rabbit -> 15u
+        | NotRabbit -> 200u
 
 
 type TerrainType = 

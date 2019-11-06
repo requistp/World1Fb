@@ -1,5 +1,6 @@
 ﻿module WorldMapRenderer
-open ComponentTypes
+open ComponentEnums
+open FormComponent
 open EntityManager
 open LocationTypes
 open System
@@ -37,13 +38,13 @@ type WorldMapRenderer() =
                     match fds.Length with
                     | 1 -> fds.[0]
                     | _ ->
-                        match fds |> Array.tryFind (fun c -> (enm.TryGetComponent ControllerComponent.ID c.EntityID).IsSome) with
+                        match fds |> Array.tryFind (fun c -> (enm.TryGetComponent ControllerComponentID c.EntityID).IsSome) with
                         | Some f -> f
                         | None ->
-                            (fds |> Array.sortBy (fun c -> (enm.TryGetComponent TerrainComponent.ID c.EntityID).IsSome)).[0]
+                            (fds |> Array.sortBy (fun c -> (enm.TryGetComponent TerrainComponentID c.EntityID).IsSome)).[0]
                 let fs = 
                     enm.GetEntitiesAtLocation { X = x; Y = y; Z = 0 } 
-                    |> enm.TryGetComponentForEntities FormComponent.ID
+                    |> enm.TryGetComponentForEntities FormComponentID
                     |> Array.map (fun c -> c.ToForm)
 
                 match fs.Length with
@@ -57,41 +58,3 @@ type WorldMapRenderer() =
 
 
 
-    //let mutable _windows = Map.empty<string,Window>
-    //let mutable _current = (fst wds.[0])
-       
-    //let setContent (wds:(string * string)[]) =
-    //       _windows <-
-    //           wds
-    //           |> Array.fold (fun ws w -> ws.Add((fst w),Window(w))) Map.empty<string,Window>
-
-    //do 
-    //    System.Console.CursorVisible <- false
-    //    setContent wds
-    //    Console.Title <- _current
-
-    //member this.Count = _windows.Count
-
-    //member this.Display (s:string) =
-    //    match _current with
-    //    | "Game Events List" -> Console.Clear()
-    //    | _ -> ()
-
-    //    _windows.Item(_current).Display
-    //    Console.WriteLine s
-
-    //member this.SetContent (wds:(string * string)[]) (display:bool) =
-    //    async
-    //        {
-    //            setContent wds
-    //            if display then this.Display ""
-    //        }
-    //member this.SetDisplay (uniqueName:string) =
-    //    match uniqueName <> _current && _windows.ContainsKey(uniqueName) with
-    //    | false -> ()
-    //    | true -> 
-    //        _current <- uniqueName
-    //        Console.Title <- uniqueName
-    //        Console.Clear()
-    //        this.Display ""
-        

@@ -30,14 +30,14 @@ type Component =
         | Terrain d -> Terrain { d with EntityID = newEID }
     member me.ComponentID =
         match me with
-        | Controller _ -> ControllerComponent_ID
-        | Eating _ -> EatingComponent_ID
-        | Food _ -> FoodComponent_ID
-        | Form _ -> FormComponent_ID
-        | Mating _ -> MatingComponent_ID
-        | Movement _ -> MovementComponent_ID
-        | PlantGrowth _ -> PlantGrowthComponent_ID
-        | Terrain _ -> TerrainComponent_ID
+        | Controller _ -> ControllerComponentID
+        | Eating _ -> EatingComponentID
+        | Food _ -> FoodComponentID
+        | Form _ -> FormComponentID
+        | Mating _ -> MatingComponentID
+        | Movement _ -> MovementComponentID
+        | PlantGrowth _ -> PlantGrowthComponentID
+        | Terrain _ -> TerrainComponentID
     member me.EntityID =
         match me with
         | Controller d -> d.EntityID

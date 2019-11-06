@@ -1,6 +1,6 @@
 ﻿module MovementSystem
 open Component
-open ComponentTypes
+open ComponentEnums
 open EventTypes
 open GameManager
 open SystemManager
@@ -14,7 +14,7 @@ type MovementSystem(game:Game, isActive:bool) =
     member private me.onMovementKeyPressed (ge:GameEventTypes) =
         let e = ge.ToAction_Movement
 
-        let formo = enm.TryGetComponent FormComponent.ID e.EntityID
+        let formo = enm.TryGetComponent FormComponentID e.EntityID
 
         let checkIfMovementIsValid (c:Component) = 
             let form = c.ToForm
@@ -29,7 +29,7 @@ type MovementSystem(game:Game, isActive:bool) =
                         dest
                         |> enm.GetEntitiesAtLocation
                         |> Array.filter (fun eid -> eid <> e.EntityID) // Not me
-                        |> Array.Parallel.map (fun eid -> eid|>enm.GetComponent FormComponent.ID)
+                        |> Array.Parallel.map (fun eid -> eid|>enm.GetComponent FormComponentID)
                         |> Array.exists (fun f -> not f.ToForm.IsPassable)
                     match formImpassableAtLocation with
                     | true -> Error (sprintf "Form at location %s" (dest.ToString()))

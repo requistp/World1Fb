@@ -11,7 +11,6 @@
     <Compile Include="common\LocationTypes.fs" />
     <Compile Include="common\Logging.fs" />
     <Compile Include="Components\ComponentEnums.fs" />
-    <Compile Include="Components\ComponentTypes.fs" />
     <Compile Include="Components\ControllerComponent.fs" />
     <Compile Include="Components\EatingComponent.fs" />
     <Compile Include="Components\FoodComponent.fs" />

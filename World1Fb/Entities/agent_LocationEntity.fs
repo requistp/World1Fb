@@ -1,7 +1,8 @@
 ﻿module agent_LocationEntity
 open Component
-open ComponentTypes
+open ComponentEnums
 open CommonGenericFunctions
+open FormComponent
 open LocationTypes
 
 
@@ -36,7 +37,7 @@ type agent_LocationEntity() =
 
     member me.Add (cts:Component[]) =
         cts
-        |> Array.filter (fun ct -> ct.ComponentID = FormComponent.ID)
+        |> Array.filter (fun ct -> ct.ComponentID = FormComponentID)
         |> Array.Parallel.iter (fun ct -> me.Add ct.ToForm)
 
     member _.Get (location:LocationDataInt) = agent.PostAndReply (fun replyChannel -> Get (location,replyChannel))
@@ -53,7 +54,7 @@ type agent_LocationEntity() =
 
     member me.Remove (cts:Component[]) =
         cts
-        |> Array.filter (fun ct -> ct.ComponentID = FormComponent.ID)
+        |> Array.filter (fun ct -> ct.ComponentID = FormComponentID)
         |> Array.Parallel.iter (fun ct -> me.Remove ct.ToForm)
 
 

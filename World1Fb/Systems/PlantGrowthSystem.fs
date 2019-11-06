@@ -1,5 +1,6 @@
 ﻿module PlantGrowthSystem
 open Component
+open ComponentEnums
 open CalendarTimings
 open CommonGenericFunctions
 open EventTypes
@@ -16,31 +17,31 @@ type PlantGrowthSystem(game:Game, isActive:bool) =
     member private me.onComponentAdded (ge:GameEventTypes) =
         let e = ge.ToComponentAddedPlantGrowth
         let pd = e.Component.ToPlantGrowth
-        if pd.RegrowRate > 0.0 then evm.ScheduleEvent (ScheduleEvent ({ Frequency=uint32 PlantGrowthFrequency }, PlantRegrowth { EntityID=e.EntityID }))
-        if pd.ReproductionRate > 0.0 then evm.ScheduleEvent (ScheduleEvent ({ Frequency=uint32 PlantReproductionFrequency }, PlantReproduce { EntityID=e.EntityID }))
+        if pd.RegrowRate > 0.0 then evm.ScheduleEvent (ScheduleEvent ({ Schedule=RepeatIndefinitely; Frequency=uint32 PlantGrowthFrequency }, PlantRegrowth { EntityID=e.EntityID }))
+        if pd.ReproductionRate > 0.0 then evm.ScheduleEvent (ScheduleEvent ({ Schedule=RepeatIndefinitely; Frequency=uint32 PlantReproductionFrequency }, PlantReproduce { EntityID=e.EntityID }))
         Ok (Some (sprintf "Queued Regrow to Schedule:%b. Queued Repopulate to Schedule:%b" (pd.RegrowRate > 0.0) (pd.ReproductionRate > 0.0)))
     
     member private me.onReproduce (ge:GameEventTypes) =
         let e = ge.ToPlantReproduce
-        let pd = (enm.GetComponent PlantGrowthComponent.ID e.EntityID).ToPlantGrowth
+        let pd = (enm.GetComponent PlantGrowthComponentID e.EntityID).ToPlantGrowth
         let tryMakeNewPlant =            
             let r = random.NextDouble()
             match pd.ReproductionRate >= r with
             | false -> Error (sprintf "Failed: reproduction rate (%f<%f)" pd.ReproductionRate r)
             | true -> 
-                let form = (enm.GetComponent FormComponent.ID e.EntityID).ToForm
+                let form = (enm.GetComponent FormComponentID e.EntityID).ToForm
                 let newLocation = form.Location.AddOffset pd.ReproductionRange pd.ReproductionRange 0 false true
                 match newLocation.IsOnMap with
                 | false -> Error (sprintf "Failed: location not on map:%s" (newLocation.ToString()))
                 | true ->
                     let eids = enm.GetEntitiesAtLocation newLocation
-                    match (eids |> enm.TryGetComponentForEntities PlantGrowthComponent.ID).Length with 
+                    match (eids |> enm.TryGetComponentForEntities PlantGrowthComponentID).Length with 
                     | x when x > 0 -> Error (sprintf "Failed: plant exists at location:%s" (newLocation.ToString()))
                     | _ -> 
-                        match pd.GrowsInTerrain|>Array.contains (eids|>enm.TryGetComponentForEntities TerrainComponent.ID).[0].ToTerrain.Terrain with
+                        match pd.GrowsInTerrain|>Array.contains (eids|>enm.TryGetComponentForEntities TerrainComponentID).[0].ToTerrain.Terrain with
                         | false -> Error "Failed: terrain is not suitable"
                         | true -> 
-                            let fco = e.EntityID |> enm.TryGetComponent FoodComponent.ID 
+                            let fco = e.EntityID |> enm.TryGetComponent FoodComponentID 
                             match fco.IsNone with
                             | true -> Ok (newLocation,r)
                             | false ->
@@ -57,12 +58,11 @@ type PlantGrowthSystem(game:Game, isActive:bool) =
                 Form (d.Update None None None (Some l))
             | _ -> c        
         let makePlant (l:LocationDataInt) (r:float) = 
-            let neweid = enm.GetNewID
             let newcts = 
-                enm.CopyEntity e.EntityID neweid
+                enm.CopyEntity e.EntityID 
                 |> Array.Parallel.map (fun c -> makePlant_AdjustComponents c l)
-            evm.ExecuteEvent (CreateEntity { EntityID=neweid; Components=newcts })
-            Ok (Some (sprintf "Passed reproduction (%f>%f). EntityID:%i. Location:%s" pd.ReproductionRate r neweid (l.ToString())))
+            evm.ExecuteEvent (CreateEntity { EntityID=newcts.[0].EntityID; Components=newcts })
+            Ok (Some (sprintf "Passed reproduction (%f>%f). EntityID:%i. Location:%s" pd.ReproductionRate r (newcts.[0].EntityID) (l.ToString())))
 
         match tryMakeNewPlant with
         | Error s -> Error s

@@ -4,7 +4,7 @@ open agent_EntityComponent
 open agent_EntityID
 open agent_LocationEntity
 open Component
-open ComponentTypes
+open ComponentEnums
 open CommonGenericFunctions
 
 
@@ -14,15 +14,19 @@ type EntityManager() =
     let agentForLocations = new agent_LocationEntity()
     let agentForEntities = new agent_EntityComponent() 
 
-    member _.CopyEntity (oldeid:uint32) (neweid:uint32) =
+    member _.CopyEntity (oldeid:uint32) =
+        let neweid = agentForEntityID.GetNewID
         oldeid
         |> agentForEntities.GetComponents
         |> Array.Parallel.map (fun ct -> ct.Copy neweid)
 
     member _.CreateEntity (cts:Component[]) = 
-        agentForEntities.CreateEntity (cts.[0].EntityID,cts)
-        agentForComponents.Add cts
-        agentForLocations.Add cts  
+        Async.Parallel 
+        (
+            agentForEntities.CreateEntity (cts.[0].EntityID,cts)
+            agentForComponents.Add cts
+            agentForLocations.Add cts
+        ) |> ignore
         Ok None
 
     member _.Exists eid = agentForEntities.Exists eid
@@ -50,7 +54,7 @@ type EntityManager() =
         agentForEntities.Init map
         let ctss = map |> MapValuesToArray
         ctss |> Array.Parallel.iter (fun cts -> agentForComponents.Add cts)
-        ctss |> Array.Parallel.iter (fun cts -> cts |> Array.filter (fun c -> c.ComponentID=FormComponent.ID) |> Array.Parallel.iter (fun c -> agentForLocations.Add c.ToForm))
+        ctss |> Array.Parallel.iter (fun cts -> cts |> Array.filter (fun c -> c.ComponentID=FormComponentID) |> Array.Parallel.iter (fun c -> agentForLocations.Add c.ToForm))
     
     member _.Init (maxEntityID:uint32) =
         agentForEntityID.Init maxEntityID
@@ -69,7 +73,7 @@ type EntityManager() =
         let handleComponentSpecificIssues =
             match ac with
             | Form fd ->
-                let old = (me.GetComponent FormComponent.ID ac.EntityID).ToForm
+                let old = (me.GetComponent FormComponentID ac.EntityID).ToForm
                 agentForLocations.Move (old,fd)
             | _ -> ()
         handleComponentSpecificIssues

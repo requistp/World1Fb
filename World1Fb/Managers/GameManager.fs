@@ -1,5 +1,6 @@
 ﻿module GameManager
 open Component
+open ComponentEnums
 open EntityManager
 open EventManager
 open EventTypes
@@ -19,7 +20,7 @@ type Game(renderer_SetDisplay:string->unit, wmr:EntityManager->unit, wmrKeys:Con
     member _.EntityManager = entityMan
 
     member private me.assignController =
-        match entityMan.GetEntitiesWithComponent ControllerComponent.ID with
+        match entityMan.GetEntitiesWithComponent ControllerComponentID with
         | [||] -> None
         | l -> Some l.[0]
 

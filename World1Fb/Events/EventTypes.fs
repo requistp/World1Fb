@@ -2,10 +2,16 @@
 open Component
 open ComponentEnums
 
+type ScheduleType =
+    | RepeatFinite of uint32
+    | RepeatIndefinitely
+    | RunOnce
+
 type Event_ActionEat = { EntityID:uint32 } with static member ID = 1uy
 type Event_ActionMate = { EntityID:uint32 } with static member ID = Event_ActionEat.ID + 1uy
 type Event_ActionMovement = { EntityID:uint32; Direction:MovementDirection } with static member ID = Event_ActionMate.ID + 1uy
-type Event_ComponentAdded_Eating = { EntityID:uint32; Component:Component } with static member ID = Event_ActionMovement.ID + 1uy
+type Event_Birth = { MomID:uint32; DadID:uint32 } with static member ID = Event_ActionMovement.ID + 1uy
+type Event_ComponentAdded_Eating = { EntityID:uint32; Component:Component } with static member ID = Event_Birth.ID + 1uy
 type Event_ComponentAdded_PlantGrowth = { EntityID:uint32; Component:Component } with static member ID = Event_ComponentAdded_Eating.ID + 1uy
 type Event_CreateEntity = { EntityID:uint32; Components:Component[] } with static member ID = Event_ComponentAdded_PlantGrowth.ID + 1uy
 type Event_Eaten = { EaterID:uint32; EateeID:uint32; Quantity:int } with static member ID = Event_CreateEntity.ID + 1uy
@@ -15,13 +21,14 @@ type Event_Metabolize = { EntityID:uint32 } with static member ID = Event_KillAl
 type Event_Movement = { EntityID:uint32; Direction:MovementDirection } with static member ID = Event_Metabolize.ID + 1uy
 type Event_PlantGrowth = { EntityID:uint32 } with static member ID = Event_Movement.ID + 1uy
 type Event_PlantReproduce = { EntityID:uint32 } with static member ID = Event_PlantGrowth.ID + 1uy
-type Event_ScheduleEvent = { Frequency:uint32 } with static member ID = Event_PlantReproduce.ID + 1uy
+type Event_ScheduleEvent = { Frequency:uint32; Schedule:ScheduleType } with static member ID = Event_PlantReproduce.ID + 1uy
 type Event_Starving = { EntityID:uint32 } with static member ID = Event_ScheduleEvent.ID + 1uy
 
 type GameEventTypes =
     | Action_Eat of Event_ActionEat
     | Action_Mate of Event_ActionMate
     | Action_Movement of Event_ActionMovement
+    | Birth of Event_Birth
     | ComponentAdded_Eating of Event_ComponentAdded_Eating
     | ComponentAdded_PlantGrowth of Event_ComponentAdded_PlantGrowth
     | CreateEntity of Event_CreateEntity
@@ -39,6 +46,7 @@ type GameEventTypes =
         | Action_Eat d -> d.EntityID
         | Action_Mate d -> d.EntityID
         | Action_Movement d -> d.EntityID
+        | Birth d -> d.MomID
         | ComponentAdded_Eating d -> d.EntityID
         | ComponentAdded_PlantGrowth d -> d.EntityID
         | CreateEntity d -> d.EntityID
@@ -56,6 +64,7 @@ type GameEventTypes =
         | Action_Eat _ -> Event_ActionEat.ID
         | Action_Mate _ -> Event_ActionMate.ID
         | Action_Movement _ -> Event_ActionMovement.ID
+        | Birth _ -> Event_Birth.ID
         | ComponentAdded_Eating _ -> Event_ComponentAdded_Eating.ID
         | ComponentAdded_PlantGrowth _ -> Event_ComponentAdded_PlantGrowth.ID
         | CreateEntity _ -> Event_CreateEntity.ID
@@ -72,7 +81,8 @@ type GameEventTypes =
         match me with
         | Action_Eat _ -> "Action_Eat"
         | Action_Mate _ -> "Action_Mate"
-        | Action_Movement _ -> "Action_Movement"        
+        | Action_Movement _ -> "Action_Movement"
+        | Birth _ -> "Birth"
         | ComponentAdded_Eating _ -> "ComponentAdded_Eating"
         | ComponentAdded_PlantGrowth _ -> "ComponentAdded_PlantGrowth"
         | CreateEntity _ -> "CreateEntity"
@@ -93,6 +103,9 @@ type GameEventTypes =
         d
     member me.ToAction_Movement = 
         let (Action_Movement d) = me
+        d
+    member me.ToBirth = 
+        let (Birth d) = me
         d
     member me.ToComponentAddedEating =
         let (ComponentAdded_Eating d) = me
