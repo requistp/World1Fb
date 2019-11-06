@@ -19,8 +19,9 @@ type EatingSystem(game:Game, isActive:bool) =
         let ed = eco.Value.ToEating
         let fc = fco.Value.ToForm
 
-        let foodsAtLocation l = 
-            enm.GetEntitiesAtLocation l // Food here
+        let foodsAtLocation = 
+            fc.Location
+            |> enm.GetEntitiesAtLocation // Food here
             |> Array.filter (fun eid -> eid <> e.EntityID) // Not me
             |> enm.TryGetComponentForEntities FoodComponent.ID
             |> Array.map (fun c -> c.ToFood)
@@ -40,7 +41,7 @@ type EatingSystem(game:Game, isActive:bool) =
         match eco.IsSome && fco.IsSome with
         | false -> Error "Missing component"
         | true -> 
-            match foodsAtLocation fc.Location with
+            match foodsAtLocation with
             | [||] -> Error "No food at location"
             | fs -> eatIt fs.[0]
 

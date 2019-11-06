@@ -1,5 +1,6 @@
 ﻿module agent_LocationEntity
 open Component
+open ComponentTypes
 open CommonGenericFunctions
 open LocationTypes
 

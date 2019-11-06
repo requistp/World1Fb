@@ -41,17 +41,19 @@ let MakeGrasses (enm:EntityManager) n =
     match n with 
     | 0 -> Array.empty<Component[]>
     | _ -> [1..n] |> List.toArray |> Array.Parallel.map (fun i -> MakeGrass (random.Next(0,MapWidth)) (random.Next(0,MapHeight))) 
-    |> Array.rev
 
 
 let MakeRabbits (enm:EntityManager) n = 
-    let MakeRabbit x y n = 
+    let MakeRabbit x y n rnd = 
         let eid = enm.GetNewID
         let cont = [| Controller { EntityID = eid }  |]
+        let matingStatus = if rnd = 0 then Male else Female
+        let symbol = if matingStatus = Male then 'R' else 'r'
         let baseBunny = 
             [|
                 Eating { EntityID=eid; Calories=150; CaloriesPerDay=300; Foods=[|Food_Carrot;Food_Grass|]; Quantity=75; QuantityMax=150; QuantityPerAction=1 }
-                Form { EntityID=eid; IsPassable=true; Name="rabbit"; Symbol='r'; Location={X=x;Y=y;Z=0} }
+                Form { EntityID=eid; IsPassable=true; Name="rabbit"; Symbol=symbol; Location={X=x;Y=y;Z=0} }
+                Mating { EntityID=eid; ChanceOfReproduction=0.9; LastMatingAttempt=0u; MatingStatus=matingStatus; Species=Rabbit }
                 Movement { EntityID=eid; MovesPerTurn=1 }
                 //sight
                 //health        
@@ -61,8 +63,6 @@ let MakeRabbits (enm:EntityManager) n =
         | true -> baseBunny |> Array.append cont
     match n with 
     | 0 -> Array.empty<Component[]>
-    //| _ -> [1..n] |> List.toArray |> Array.Parallel.map (fun i -> MakeRabbit (random.Next(0,MapWidth)) (random.Next(0,MapHeight)) i) 
-    | _ -> [1..n] |> List.toArray |> Array.Parallel.map (fun i -> MakeRabbit (MapWidth/2) (MapHeight/2) 1) 
-    |> Array.rev
+    | _ -> [1..n] |> List.toArray |> Array.Parallel.map (fun i -> MakeRabbit (random.Next(0,MapWidth)) (random.Next(0,MapHeight)) i (random.Next(0,2))) 
 
 

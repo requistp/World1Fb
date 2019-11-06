@@ -4,6 +4,7 @@ open agent_EntityComponent
 open agent_EntityID
 open agent_LocationEntity
 open Component
+open ComponentTypes
 open CommonGenericFunctions
 
 

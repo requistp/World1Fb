@@ -1,5 +1,5 @@
 ﻿module WorldMapRenderer
-open Component
+open ComponentTypes
 open EntityManager
 open LocationTypes
 open System

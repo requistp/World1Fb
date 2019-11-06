@@ -11,6 +11,15 @@
     <Compile Include="common\LocationTypes.fs" />
     <Compile Include="common\Logging.fs" />
     <Compile Include="Components\ComponentEnums.fs" />
+    <Compile Include="Components\ComponentTypes.fs" />
+    <Compile Include="Components\ControllerComponent.fs" />
+    <Compile Include="Components\EatingComponent.fs" />
+    <Compile Include="Components\FoodComponent.fs" />
+    <Compile Include="Components\FormComponent.fs" />
+    <Compile Include="Components\MatingComponent.fs" />
+    <Compile Include="Components\MovementComponent.fs" />
+    <Compile Include="Components\PlantGrowthComponent.fs" />
+    <Compile Include="Components\TerrainComponent.fs" />
     <Compile Include="Components\Component.fs" />
     <Compile Include="Entities\agent_ComponentEntity.fs" />
     <Compile Include="Entities\agent_LocationEntity.fs" />
@@ -32,6 +41,7 @@
     <Compile Include="Systems\FoodSystem.fs" />
     <Compile Include="Systems\FormSystem.fs" />
     <Compile Include="Systems\KillSystem.fs" />
+    <Compile Include="Systems\MatingSystem.fs" />
     <Compile Include="Systems\MovementSystem.fs" />
     <Compile Include="Systems\PlantGrowthSystem.fs" />
     <Compile Include="Systems\TerrainSystem.fs" />
@@ -39,7 +49,10 @@
     <Compile Include="Console\ConsoleV1.fs" />
     <Compile Include="BuildNewWorld.fs" />
     <Compile Include="Program.fs" />
+    <Content Include="Notes.txt" />
   </ItemGroup>
+
+  <ItemGroup />
 
   <ItemGroup>
     <PackageReference Include="FsPickler" Version="5.2.2" />

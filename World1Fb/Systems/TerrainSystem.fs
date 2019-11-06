@@ -8,6 +8,8 @@ type TerrainSystem(game:Game, isActive:bool) =
     let enm = game.EntityManager
     let evm = game.EventManager    
 
+    //Disabled
+
     override _.ToString = "TerrainSystem"
 
     override me.Update = 

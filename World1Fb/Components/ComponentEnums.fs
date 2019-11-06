@@ -1,10 +1,20 @@
 ﻿module ComponentEnums
 open LocationTypes
 
+let ControllerComponent_ID = 1uy
+let EatingComponent_ID = 2uy
+let FoodComponent_ID = 3uy
+let FormComponent_ID = 4uy
+let MatingComponent_ID = 5uy
+let MovementComponent_ID = 6uy
+let PlantGrowthComponent_ID = 7uy
+let TerrainComponent_ID = 7uy
+
 
 type FoodClassifications =
     | Meat
     | Plant
+
 
 type FoodTypes =
     | Food_Carrot
@@ -27,6 +37,11 @@ type FoodTypes =
         match this.Classification with
         | Plant -> Some '!'
         | Meat -> None
+
+type MatingStatus =
+    | Female
+    | Female_Pregnant
+    | Male
 
 
 type MovementDirection =
@@ -51,6 +66,16 @@ type MovementDirection =
         { X = l.X + this.X_change; Y = l.Y + this.Y_change; Z = l.Z + this.Z_change}
 
 
+type Species = 
+    | Rabbit
+    | NotRabbit
+    member me.MaxMatingFrequency =
+        match me with
+        | Rabbit -> 10u
+        | NotRabbit -> 100u
+
+
+
 type TerrainType = 
     | Dirt 
     | Rock
@@ -64,5 +89,3 @@ type TerrainType =
         | Dirt -> '.'
         | Sand -> ','
         | Rock -> '#'
-
-
