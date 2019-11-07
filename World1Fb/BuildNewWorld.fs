@@ -15,7 +15,7 @@ let MakeMap (enm:EntityManager) =
                 | _ -> Dirt
         let mutable baseTerrain =
             [| 
-                Form { EntityID=eid; IsPassable=t.IsPassable; Name=t.ToString(); Symbol=t.Symbol; Location=l }
+                Form { EntityID = eid; Born = 0u; IsPassable = t.IsPassable; Name = t.ToString(); Symbol = t.Symbol; Location = l }
                 Terrain { EntityID=eid; Terrain=t }
             |] 
         // I left this mechanic in place because there will be some component that is appropriate to add to Terrain--like a burrow
@@ -34,8 +34,8 @@ let MakeGrasses (enm:EntityManager) n =
     let MakeGrass x y =
         let eid = enm.GetNewID
         [| 
-            Food { EntityID=eid; FoodType=Food_Carrot; Quantity=20; QuantityMax=20 }
-            Form { EntityID=eid; IsPassable=true; Name=Food_Carrot.ToString(); Symbol=Food_Carrot.Symbol.Value; Location={X=x;Y=y;Z=0} }
+            Food { EntityID = eid; FoodType = Food_Carrot; Quantity = 20; QuantityMax = 20 }
+            Form { EntityID = eid; Born = 0u; IsPassable=true; Name=Food_Carrot.ToString(); Symbol=Food_Carrot.Symbol.Value; Location={X=x;Y=y;Z=0} }
             PlantGrowth { EntityID=eid; GrowsInTerrain=[|Dirt|]; RegrowRate=0.1; ReproductionRate=0.25; ReproductionRange=5; ReproductionRequiredFoodQuantity=0.75 }
         |] 
     match n with 
@@ -52,7 +52,7 @@ let MakeRabbits (enm:EntityManager) n =
         let baseBunny = 
             [|
                 Eating { EntityID=eid; Calories=150; CaloriesPerDay=300; Foods=[|Food_Carrot;Food_Grass|]; Quantity=75; QuantityMax=150; QuantityPerAction=1 }
-                Form { EntityID=eid; IsPassable=true; Name="rabbit"; Symbol=symbol; Location={X=x;Y=y;Z=0} }
+                Form { EntityID=eid; Born = 0u; IsPassable=true; Name="rabbit"; Symbol=symbol; Location={X=x;Y=y;Z=0} }
                 Mating { EntityID=eid; ChanceOfReproduction=0.9; LastMatingAttempt=0u; MatingStatus=matingStatus; Species=Rabbit }
                 Movement { EntityID=eid; MovesPerTurn=1 }
                 //sight

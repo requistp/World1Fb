@@ -5,6 +5,7 @@ open LocationTypes
 type FormComponent = 
     { 
         EntityID:uint32
+        Born:uint32
         IsPassable:bool
         Location:LocationDataInt
         Name:string

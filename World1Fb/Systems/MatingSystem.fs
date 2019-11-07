@@ -14,12 +14,19 @@ type MatingSystem(game:Game, isActive:bool) =
     let evm = game.EventManager    
     
     let MakeBaby momID =
-        let babycts = enm.CopyEntity momID
-        // Must adjust where the baby is born
-        // Must randomize baby's sex
-        // Should track a birth date
-        evm.ExecuteEvent (CreateEntity { Components = babycts })
-        Ok (Some "Born:...")
+        let adjustComponents (c:Component) =
+            match c with
+            | Mating d -> 
+                Mating { d with MatingStatus = if random.Next(2) = 0 then Male else Female }
+            | Form d -> 
+                Form { d with Born = evm.GetRound(); Location = d.Location.Add { X=0; Y=0; Z=0 }} 
+            | _ -> c    
+        let newcts = 
+            momID
+            |> enm.CopyEntity
+            |> Array.Parallel.map (fun c -> adjustComponents c)
+        evm.ExecuteEvent (CreateEntity { Components = newcts })
+        Ok (Some (sprintf "Born:%i" newcts.[0].EntityID))
 
     member me.onActionMate (ge:GameEventTypes) =
         let e = ge.ToActionMate
@@ -48,7 +55,7 @@ type MatingSystem(game:Game, isActive:bool) =
             | mc2 -> Ok mc2.[0]
 
         let getEligiblesDecision (mc2:MatingComponent) =
-            // Add a better decision process here: can any mates with higher reproductive chance be seen?
+            // Add a better decision process here: can any mates with higher reproductive chance be seen? am I hungry?
             match random.Next(10) with
             | 0 -> Error "Female denied advances"
             | _ -> Ok mc2
@@ -60,7 +67,7 @@ type MatingSystem(game:Game, isActive:bool) =
             match chance >= rnd with
             | false -> 
                 enm.ReplaceComponent (Mating (mc2.Update None None (Some round) None)) None |> ignore
-                Error (sprintf "Reproduction failed (%f < %f)" chance rnd)
+                Error (sprintf "Reproduction failed (%f<%f)" chance rnd)
             | true ->
                 evm.ScheduleEvent (ScheduleEvent ({ Schedule = RunOnce; Frequency = mc2.Species.Gestation }, Birth { MomID = mc2.EntityID; DadID = mc.EntityID }))
                 enm.ReplaceComponent (Mating (mc2.Update None (Some Female_Pregnant) (Some round) None)) (Some (sprintf "Reproduction succeeded (%f >= %f)" chance rnd))
