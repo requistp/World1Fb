@@ -26,15 +26,18 @@
     <Compile Include="Entities\agent_EntityComponent.fs" />
     <Compile Include="Entities\EntityManager.fs" />
     <Compile Include="Events\EventTypes.fs" />
+    <Compile Include="Events\InterruptTypes.fs" />
     <Compile Include="Events\agent_Round.fs" />
     <Compile Include="Events\agent_EventLog.fs" />
     <Compile Include="Events\agent_EventListeners.fs" />
     <Compile Include="Events\agent_EventSchedule.fs" />
+    <Compile Include="Events\agent_InterruptChecker.fs" />
     <Compile Include="Events\EventManager.fs" />
     <Compile Include="Managers\SystemManager.fs" />
     <Compile Include="Managers\InputHandler.fs" />
     <Compile Include="Managers\LoadAndSave.fs" />
     <Compile Include="Managers\GameManager.fs" />
+    <Compile Include="Systems\AgeSystem.fs" />
     <Compile Include="Systems\EatingSystem.fs" />
     <Compile Include="Systems\EntitySystem.fs" />
     <Compile Include="Systems\FoodSystem.fs" />
@@ -50,8 +53,6 @@
     <Compile Include="Program.fs" />
     <Content Include="Notes.txt" />
   </ItemGroup>
-
-  <ItemGroup />
 
   <ItemGroup>
     <PackageReference Include="FsPickler" Version="5.2.2" />

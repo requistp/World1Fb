@@ -22,12 +22,12 @@ type agent_EventListeners(agentForLog:agent_GameEventLog) =
                         | Execute (round,ge) ->
                             match _listeners.ContainsKey ge.GameEventID with
                             | false -> 
-                                agentForLog.Log_NoListeners round ge
+                                agentForLog.Log_NoEventListeners round ge
                             | true ->
                                 _listeners.Item ge.GameEventID
                                 |> Array.Parallel.iter (fun (listener,callback) -> agentForLog.Log_CallbackResult round (listener,callback,ge,callback ge))
-                        | Register (round,listener,eventType,callback) -> 
-                            _listeners <- Map_AppendValueToArrayNonUnique _listeners eventType (listener,callback)
+                        | Register (round,listener,eventTypeID,callback) -> 
+                            _listeners <- Map_AppendValueToArrayNonUnique _listeners eventTypeID (listener,callback)
                             agentForLog.Log_ListenerRegistered round listener
                 }
             )

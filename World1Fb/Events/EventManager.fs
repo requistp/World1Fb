@@ -8,12 +8,15 @@ open EventTypes
 open LocationTypes
 open System
 
+open agent_InterruptChecker
+open InterruptTypes
 
 type EventManager(enm:EntityManager) =
     let agentForRound = new agent_Round()
     let agentForLog = new agent_GameEventLog()
     let agentForListeners = new agent_EventListeners(agentForLog)
     let agentForSchedule = new agent_EventSchedule(agentForLog, agentForListeners, enm)
+    let agentForInterrupts = new agent_InterruptChecker(agentForLog)
 
     member _.EndRound =
         let round = agentForRound.Get
@@ -89,4 +92,9 @@ type EventManager(enm:EntityManager) =
     member _.ScheduleEvent (se:GameEventTypes) = agentForSchedule.Schedule agentForRound.Get se
         
     member _.SetLogging (toggle:bool) = agentForLog.SetLogging toggle
+
+    
+    member _.RegisterInterrupt (listener:string) (interruptTypeID:byte) (callback:InterruptCall) = agentForInterrupts.Register agentForRound.Get listener interruptTypeID callback
+
+    member _.CheckInterrupt interrupt = agentForInterrupts.Check agentForRound.Get interrupt
 

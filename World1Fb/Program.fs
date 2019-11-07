@@ -1,4 +1,5 @@
-﻿open BuildNewWorld
+﻿open AgeSystem
+open BuildNewWorld
 open EatingSystem
 open EntitySystem
 open FoodSystem
@@ -34,6 +35,7 @@ let startingEntities =
     
 let systems =
     [|
+        AgeSystem(g,true).Abstract
         EatingSystem(g,true).Abstract
         EntitySystem(g,true).Abstract
         FoodSystem(g,true).Abstract

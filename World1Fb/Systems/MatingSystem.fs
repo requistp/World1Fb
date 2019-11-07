@@ -4,6 +4,7 @@ open Component
 open ComponentEnums
 open EventTypes
 open GameManager
+open InterruptTypes
 open MatingComponent
 open SystemManager
 
@@ -42,6 +43,7 @@ type MatingSystem(game:Game, isActive:bool) =
                 |> enm.TryGetComponentForEntities MatingComponentID // Can mate
                 |> Array.map (fun c -> c.ToMating)
                 |> Array.filter (fun m -> m.Species = mc.Species && m.MatingStatus = Female && m.CanMate round) // Same Species & Non-Pregnant Females & Can Retry
+                |> Array.filter (fun m -> evm.CheckInterrupt (CanMate m.EntityID))
                 |> Array.sortByDescending (fun m -> m.ChanceOfReproduction)
             match mates with 
             | [||] -> Error "No eligible females present"
