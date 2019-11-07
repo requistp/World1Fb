@@ -2,8 +2,12 @@
 Mating System
 
 Vision
+Hearing
 
 Mapping
 
+
 Scoring System
 Utility System
+
+Lifecycle Stages (Baby, child, adult, elder)

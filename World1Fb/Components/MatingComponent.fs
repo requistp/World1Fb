@@ -11,7 +11,7 @@ type MatingComponent =
         Species:Species 
     } with 
 
-    member me.CanTryMating round =
+    member me.CanMate round =
         me.MatingStatus <> MatingStatus.Female_Pregnant && (me.LastMatingAttempt = 0u || me.LastMatingAttempt + me.Species.MaxMatingFrequency <= round)
 
     member me.Update (chanceOfReproductionUpdate:float option) (matingStatusUpdate:MatingStatus option) (lastMatingAttemptUpdate:uint32 option) (speciesUpdate:Species option) =

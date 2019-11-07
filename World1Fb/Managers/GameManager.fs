@@ -26,7 +26,7 @@ type Game(renderer_SetDisplay:string->unit, wmr:EntityManager->unit, wmrKeys:Con
 
     member private me.setInitialForms (initialForms:Component[][]) = 
         initialForms 
-        |> Array.Parallel.iter (fun cts -> if (cts.Length > 0) then eventMan.ExecuteEvent (CreateEntity { EntityID=cts.[0].EntityID; Components=cts }))
+        |> Array.Parallel.iter (fun cts -> if (cts.Length > 0) then eventMan.ExecuteEvent (CreateEntity { Components = cts }))
 
     member private me.gameLoop =
         //System.Console.SetCursorPosition(0,MapHeight+2)

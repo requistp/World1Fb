@@ -61,7 +61,7 @@ type PlantGrowthSystem(game:Game, isActive:bool) =
             let newcts = 
                 enm.CopyEntity e.EntityID 
                 |> Array.Parallel.map (fun c -> makePlant_AdjustComponents c l)
-            evm.ExecuteEvent (CreateEntity { EntityID=newcts.[0].EntityID; Components=newcts })
+            evm.ExecuteEvent (CreateEntity { Components = newcts })
             Ok (Some (sprintf "Passed reproduction (%f>%f). EntityID:%i. Location:%s" pd.ReproductionRate r (newcts.[0].EntityID) (l.ToString())))
 
         match tryMakeNewPlant with

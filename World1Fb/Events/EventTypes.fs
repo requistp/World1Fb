@@ -13,7 +13,7 @@ type Event_ActionMovement = { EntityID:uint32; Direction:MovementDirection } wit
 type Event_Birth = { MomID:uint32; DadID:uint32 } with static member ID = Event_ActionMovement.ID + 1uy
 type Event_ComponentAdded_Eating = { EntityID:uint32; Component:Component } with static member ID = Event_Birth.ID + 1uy
 type Event_ComponentAdded_PlantGrowth = { EntityID:uint32; Component:Component } with static member ID = Event_ComponentAdded_Eating.ID + 1uy
-type Event_CreateEntity = { EntityID:uint32; Components:Component[] } with static member ID = Event_ComponentAdded_PlantGrowth.ID + 1uy
+type Event_CreateEntity = { Components:Component[] } with static member ID = Event_ComponentAdded_PlantGrowth.ID + 1uy
 type Event_Eaten = { EaterID:uint32; EateeID:uint32; Quantity:int } with static member ID = Event_CreateEntity.ID + 1uy
 type Event_FoodAllEaten = { EaterID:uint32; EateeID:uint32 } with static member ID = Event_Eaten.ID + 1uy
 type Event_KillAllEaten = { EaterID:uint32; EateeID:uint32 } with static member ID = Event_FoodAllEaten.ID + 1uy
@@ -49,7 +49,7 @@ type GameEventTypes =
         | Birth d -> d.MomID
         | ComponentAdded_Eating d -> d.EntityID
         | ComponentAdded_PlantGrowth d -> d.EntityID
-        | CreateEntity d -> d.EntityID
+        | CreateEntity d -> d.Components.[0].EntityID
         | Eaten d -> d.EaterID
         | Food_AllEaten d -> d.EateeID
         | Kill_AllEaten d -> d.EateeID

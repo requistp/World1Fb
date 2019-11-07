@@ -13,6 +13,14 @@ type MatingSystem(game:Game, isActive:bool) =
     let enm = game.EntityManager
     let evm = game.EventManager    
     
+    let MakeBaby momID =
+        let babycts = enm.CopyEntity momID
+        // Must adjust where the baby is born
+        // Must randomize baby's sex
+        // Should track a birth date
+        evm.ExecuteEvent (CreateEntity { Components = babycts })
+        Ok (Some "Born:...")
+
     member me.onActionMate (ge:GameEventTypes) =
         let e = ge.ToActionMate
         let mc = (e.EntityID|>enm.GetComponent MatingComponentID).ToMating
@@ -23,7 +31,7 @@ type MatingSystem(game:Game, isActive:bool) =
             match mc.MatingStatus with
             | Female_Pregnant -> Error "Pregnant" 
             | Female -> Error "Female"
-            | Male when not (mc.CanTryMating round) -> Error "Too early to retry"
+            | Male when not (mc.CanMate round) -> Error "Too early to retry"
             | _ -> Ok None
 
         let findEligibleFemale _ = 
@@ -33,7 +41,7 @@ type MatingSystem(game:Game, isActive:bool) =
                 |> Array.filter (fun eid -> eid <> e.EntityID) // Not me
                 |> enm.TryGetComponentForEntities MatingComponentID // Can mate
                 |> Array.map (fun c -> c.ToMating)
-                |> Array.filter (fun m -> m.Species = mc.Species && m.MatingStatus = Female && m.CanTryMating round) // Same Species & Non-Pregnant Females & Can Retry
+                |> Array.filter (fun m -> m.Species = mc.Species && m.MatingStatus = Female && m.CanMate round) // Same Species & Non-Pregnant Females & Can Retry
                 |> Array.sortByDescending (fun m -> m.ChanceOfReproduction)
             match mates with 
             | [||] -> Error "No eligible females present"
@@ -65,14 +73,8 @@ type MatingSystem(game:Game, isActive:bool) =
     member me.onBirth (ge:GameEventTypes) =
         let e = ge.ToBirth
         let m = (e.MomID|>enm.GetComponent MatingComponentID).ToMating
-        enm.ReplaceComponent (Mating (m.Update None (Some Female) (Some (evm.GetRound())) None)) None |> ignore // Change Mom to Non-Pregnant Female
-        
-        let babycts = enm.CopyEntity e.MomID
-        evm.ExecuteEvent (CreateEntity { EntityID = babycts.[0].EntityID; Components = babycts })
-            // Must adjust where the baby is born
-            // Must randomize baby's sex
-            // Should track a birth date
-        Ok (Some "Born:...")
+        enm.ReplaceComponent (Mating (m.Update None (Some Female) (Some (evm.GetRound() + m.Species.MaxMatingFrequency)) None)) None |> ignore // Change Mom to Non-Pregnant Female and add some extra time to before she can mate again
+        MakeBaby e.MomID
 
     override _.ToString = "MatingSystem"
 
