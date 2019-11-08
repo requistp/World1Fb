@@ -26,7 +26,7 @@ type PlantGrowthSystem(game:Game, isActive:bool) =
             momID
             |> enm.CopyEntity 
             |> Array.Parallel.map (fun c -> makePlant_AdjustComponents c)
-        evm.ExecuteEvent (CreateEntity { Components = newcts })
+        evm.RaiseEvent (CreateEntity { Components = newcts })
         Ok (Some (sprintf "New plant:%i. Location:%s" (newcts.[0].EntityID) (l.ToString())))
 
     member private me.onComponentAdded (ge:GameEventTypes) =
@@ -70,13 +70,13 @@ type PlantGrowthSystem(game:Game, isActive:bool) =
         | Ok l -> makePlant e.EntityID l
 
     override me.Initialize = 
-        evm.RegisterListener me.ToString Event_ComponentAdded_PlantGrowth.ID me.onComponentAdded
-        evm.RegisterListener me.ToString Event_PlantReproduce.ID             me.onReproduce
+        evm.RegisterListener me.ToString Event_ComponentAdded_PlantGrowth_ID me.onComponentAdded
+        evm.RegisterListener me.ToString Event_PlantReproduce_ID             me.onReproduce
         base.SetToInitialized
 
     override _.ToString = "PlantGrowthSystem"
 
-    override me.Update = 
+    override me.Update round = 
         ()
 
 

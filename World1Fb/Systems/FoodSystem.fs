@@ -18,7 +18,7 @@ type FoodSystem(game:Game, isActive:bool) =
         match (e.EateeID |> enm.GetComponent FoodComponentID).ToFood.FoodType.KillOnAllEaten with
         | false -> Ok None
         | true -> 
-            evm.ExecuteEvent (Kill_AllEaten { EaterID=e.EaterID; EateeID=e.EateeID })
+            evm.RaiseEvent (Kill_AllEaten { EaterID=e.EaterID; EateeID=e.EateeID })
             Ok None
 
     member private me.onEaten (ge:GameEventTypes) =
@@ -29,35 +29,35 @@ type FoodSystem(game:Game, isActive:bool) =
             let f = c.ToFood
             let newQ = Math.Clamp(f.Quantity - e.Quantity, 0, f.QuantityMax)
             let allEaten = newQ <= 0
-            let changes = Some (sprintf "Quantity:-%i=%i. All eaten:%b" e.Quantity newQ allEaten)
-            if allEaten then evm.ExecuteEvent (Food_AllEaten { EaterID=e.EaterID; EateeID=e.EateeID })
-            enm.ReplaceComponent (Food (f.Update None (Some newQ) None)) changes
-       
+            if allEaten then evm.RaiseEvent (Food_AllEaten { EaterID=e.EaterID; EateeID=e.EateeID })
+            enm.ReplaceComponent (Food (f.Update None (Some newQ) None))
+            Ok (Some (sprintf "Quantity:-%i=%i. All eaten:%b" e.Quantity newQ allEaten))
+
     member private me.onRegrowth (ge:GameEventTypes) =
         let e = ge.ToPlantRegrowth
         let tryRegrowFood (f:FoodComponent) = 
             let pg = (e.EntityID|>enm.GetComponent PlantGrowthComponentID).ToPlantGrowth
             let missing = f.QuantityMax - f.Quantity
             match (missing, pg.RegrowRate) with
-            | (0,_) -> Ok None
-            | (_,0.0) -> Ok None
+            | (0,_) -> Ok (Some "Already maxed")
+            | (_,0.0) -> Ok (Some "Zero regrow rate")
             | (_,_) -> 
                 let quantity = Math.Clamp((int (Math.Round(pg.RegrowRate * (float f.QuantityMax),0))), 1, missing)
-                let result = sprintf "EntityID:%i. Regrown quantity:%i" e.EntityID quantity
-                enm.ReplaceComponent (Food (f.Update None (Some (f.Quantity+quantity)) None)) (Some result)
+                enm.ReplaceComponent (Food (f.Update None (Some (f.Quantity+quantity)) None)) 
+                Ok (Some (sprintf "EntityID:%i. Regrown quantity:%i" e.EntityID quantity))
         match (e.EntityID|>enm.TryGetComponent FoodComponentID) with
         | None -> Ok None
         | Some c -> tryRegrowFood c.ToFood
         
     override me.Initialize = 
-        evm.RegisterListener me.ToString Event_Eaten.ID        me.onEaten
-        evm.RegisterListener me.ToString Event_FoodAllEaten.ID me.onAllEaten
-        evm.RegisterListener me.ToString Event_PlantGrowth.ID  me.onRegrowth
+        evm.RegisterListener me.ToString Event_Eaten_ID        me.onEaten
+        evm.RegisterListener me.ToString Event_FoodAllEaten_ID me.onAllEaten
+        evm.RegisterListener me.ToString Event_PlantGrowth_ID  me.onRegrowth
         base.SetToInitialized
 
     override _.ToString = "FoodSystem"
 
-    override me.Update = 
+    override me.Update round = 
         ()
 
 

@@ -15,19 +15,19 @@ type EntitySystem(game:Game, isActive:bool) =
         let e = ge.ToCreateEntity
         let checkComponent (c:Component) =
             match c.ComponentID with 
-            | x when x = EatingComponentID -> evm.ExecuteEvent (ComponentAdded_Eating { EntityID=c.EntityID; Component=c })
-            | x when x = PlantGrowthComponentID -> evm.ExecuteEvent (ComponentAdded_PlantGrowth { EntityID=c.EntityID; Component=c })
+            | x when x = EatingComponentID -> evm.RaiseEvent (ComponentAdded_Eating { EntityID=c.EntityID; Component=c })
+            | x when x = PlantGrowthComponentID -> evm.RaiseEvent (ComponentAdded_PlantGrowth { EntityID=c.EntityID; Component=c })
             | _ -> ()
         e.Components |> Array.Parallel.iter (fun c -> checkComponent c)
         enm.CreateEntity (e.Components)
 
     override me.Initialize =
-        evm.RegisterListener me.ToString Event_CreateEntity.ID me.onCreateEntity
+        evm.RegisterListener me.ToString Event_CreateEntity_ID me.onCreateEntity
         base.SetToInitialized
 
-    override _.ToString = "SystemManager"
+    override _.ToString = "EntityManager"
 
-    override me.Update = 
+    override me.Update round = 
         ()
 
 

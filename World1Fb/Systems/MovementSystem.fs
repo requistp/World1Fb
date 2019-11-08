@@ -38,17 +38,21 @@ type MovementSystem(game:Game, isActive:bool) =
                 |> Result.bind testForImpassableFormAtLocation
             match isMovementValid with
             | Error s -> Error s
-            | Ok _ -> enm.ReplaceComponent (Form (form.Update None None None (Some dest))) (Some (sprintf "Location %s" (dest.ToString())))
+            | Ok _ -> 
+                let f = Form (form.Update None None None (Some dest))
+                enm.ReplaceComponent f
+                evm.RaiseEvent (LocationChanged { EntityID = e.EntityID; Form = f })
+                Ok (Some (sprintf "Location %s" (dest.ToString())))
         match formo with
         | None -> Error "Entity not in next dictionary"
         | Some c -> checkIfMovementIsValid c
 
     override me.Initialize = 
-        evm.RegisterListener me.ToString Event_ActionMovement.ID me.onMovementKeyPressed
+        evm.RegisterListener me.ToString Event_ActionMovement_ID me.onMovementKeyPressed
         base.SetToInitialized
 
     override _.ToString = "MovementSystem"
 
-    override me.Update = 
+    override me.Update round = 
         ()
 

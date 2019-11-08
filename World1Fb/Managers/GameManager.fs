@@ -7,42 +7,35 @@ open EventTypes
 open InputHandler
 open LoadAndSave
 open LocationTypes
+open MemoryManager
 open System
 open SystemManager
 
-type Game(renderer_SetDisplay:string->unit, wmr:EntityManager->unit, wmrKeys:ConsoleKey->unit, format:SaveGameFormats) =
+type Game(renderer_SetDisplay:string->unit, wmr:EntityManager->uint32->unit, wmrKeys:ConsoleKey->unit, format:SaveGameFormats) =
     let entityMan = new EntityManager()
     let eventMan = new EventManager(entityMan)
+    let memMan = new MemoryManager()
     let systemMan = new SystemManager()
     let inputMan = new InputHandler(eventMan, entityMan, renderer_SetDisplay, wmrKeys)
  
+    let setInitialForms (initialForms:Component[][]) = 
+        initialForms 
+        |> Array.Parallel.iter (fun cts -> if (cts.Length > 0) then eventMan.RaiseEvent (CreateEntity { Components = cts }))
+
     member _.EventManager = eventMan
     member _.EntityManager = entityMan
+    member _.MemoryManager = memMan
 
     member private me.assignController =
-        match entityMan.GetEntitiesWithComponent ControllerComponentID with
+        match ControllerComponentID|>entityMan.GetEntitiesWithComponent with
         | [||] -> None
         | l -> Some l.[0]
 
-    member private me.setInitialForms (initialForms:Component[][]) = 
-        initialForms 
-        |> Array.Parallel.iter (fun cts -> if (cts.Length > 0) then eventMan.ExecuteEvent (CreateEntity { Components = cts }))
-
     member private me.gameLoop =
-        //System.Console.SetCursorPosition(0,MapHeight+2)
-        //Console.Write "                          "
-        //while entityMan.PendingUpdates do
-        //    System.Console.SetCursorPosition(0,MapHeight+2)
-        //    Console.Write "entity events: 1 "
-        //    System.Threading.Thread.Sleep 5
-        //while entityMan.PendingUpdates do
-        //    System.Console.SetCursorPosition(0,MapHeight+2)
-        //    Console.Write "entity events: 2 "
-        //    System.Threading.Thread.Sleep 5
         eventMan.ExecuteScheduledEvents
-        systemMan.UpdateSystems
+        systemMan.UpdateSystems (eventMan.GetRound())
         eventMan.EndRound
-        wmr entityMan
+        wmr entityMan (inputMan.GetEntityID.Value)
         printfn "Round#%i      " (eventMan.GetRound())
 
     member private me.loadGame filename =
@@ -67,14 +60,15 @@ type Game(renderer_SetDisplay:string->unit, wmr:EntityManager->unit, wmrKeys:Con
         match initialForms.Length with
         | 0 -> 
             me.loadGame filename
-            wmr entityMan
+            me.assignController |> inputMan.SetEntityID
+            wmr entityMan (inputMan.GetEntityID.Value)
             printfn "Round#%i      " (eventMan.GetRound())
         | _ -> 
-            me.setInitialForms initialForms
+            setInitialForms initialForms
+            System.Threading.Thread.Sleep 50
+            me.assignController |> inputMan.SetEntityID
             me.gameLoop
         
-        me.assignController |> inputMan.SetEntityID
-
         let mutable r = inputMan.AwaitKeyboardInput
         while r <> ExitGame do
             if r = GameAction then me.gameLoop
@@ -82,20 +76,6 @@ type Game(renderer_SetDisplay:string->unit, wmr:EntityManager->unit, wmrKeys:Con
 
         me.saveGame
     
-    //member me.RunGame = 
-    //    systemMan.Init ss
-    //    me.setInitialForms initialForms
-    //    me.assignController |> inputMan.SetEntityID
-        
-    //    me.gameLoop
-        
-    //    let mutable r = inputMan.AwaitKeyboardInput
-    //    while r <> ExitGame do
-    //        if r = GameAction then me.gameLoop
-    //        r <- inputMan.AwaitKeyboardInput
 
-    //    me.SaveGame
-        
-    
-    
-    
+
+

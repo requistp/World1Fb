@@ -25,7 +25,7 @@ type MatingSystem(game:Game, isActive:bool) =
             momID
             |> enm.CopyEntity
             |> Array.Parallel.map (fun c -> adjustComponents c)
-        evm.ExecuteEvent (CreateEntity { Components = newcts })
+        evm.RaiseEvent (CreateEntity { Components = newcts })
         Ok (Some (sprintf "Born:%i" newcts.[0].EntityID))
 
     member me.onActionMate (ge:GameEventTypes) =
@@ -63,14 +63,15 @@ type MatingSystem(game:Game, isActive:bool) =
         let tryMating (mc2:MatingComponent) =
             let chance = mc.ChanceOfReproduction * mc2.ChanceOfReproduction
             let rnd = random.NextDouble()
-            enm.ReplaceComponent (Mating (mc.Update None None (Some round) None)) None |> ignore
+            enm.ReplaceComponent (Mating (mc.Update None None (Some round) None)) 
             match chance >= rnd with
             | false -> 
-                enm.ReplaceComponent (Mating (mc2.Update None None (Some round) None)) None |> ignore
+                enm.ReplaceComponent (Mating (mc2.Update None None (Some round) None))
                 Error (sprintf "Reproduction failed (%f<%f)" chance rnd)
             | true ->
                 evm.ScheduleEvent (ScheduleEvent ({ Schedule = RunOnce; Frequency = mc2.Species.Gestation }, Birth { MomID = mc2.EntityID; DadID = mc.EntityID }))
-                enm.ReplaceComponent (Mating (mc2.Update None (Some Female_Pregnant) (Some round) None)) (Some (sprintf "Reproduction succeeded (%f >= %f)" chance rnd))
+                enm.ReplaceComponent (Mating (mc2.Update None (Some Female_Pregnant) (Some round) None)) 
+                Ok (Some (sprintf "Reproduction succeeded (%f >= %f)" chance rnd))
 
         checkMatingStatus
         |> Result.bind findEligibleFemale
@@ -80,17 +81,17 @@ type MatingSystem(game:Game, isActive:bool) =
     member me.onBirth (ge:GameEventTypes) =
         let e = ge.ToBirth
         let m = (e.MomID|>enm.GetComponent MatingComponentID).ToMating
-        enm.ReplaceComponent (Mating (m.Update None (Some Female) (Some (evm.GetRound() + m.Species.MaxMatingFrequency)) None)) None |> ignore // Change Mom to Non-Pregnant Female and add some extra time to before she can mate again
+        enm.ReplaceComponent (Mating (m.Update None (Some Female) (Some (evm.GetRound() + m.Species.MaxMatingFrequency)) None)) // Change Mom to Non-Pregnant Female and add some extra time to before she can mate again
         MakeBaby e.MomID
 
     override _.ToString = "MatingSystem"
 
     override me.Initialize = 
-        evm.RegisterListener me.ToString Event_ActionMate.ID me.onActionMate
-        evm.RegisterListener me.ToString Event_Birth.ID      me.onBirth
+        evm.RegisterListener me.ToString Event_ActionMate_ID me.onActionMate
+        evm.RegisterListener me.ToString Event_Birth_ID      me.onBirth
         base.SetToInitialized
 
-    override me.Update = 
+    override me.Update round = 
         ()
 
 

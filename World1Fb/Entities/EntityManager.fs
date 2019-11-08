@@ -34,7 +34,9 @@ type EntityManager() =
     member _.GetComponents (eid:uint32) = agentForEntities.GetComponents eid
 
     member me.GetComponent (cid:byte) (eid:uint32) =
-        me.GetComponents eid |> Array.find (fun x -> x.ComponentID = cid)
+        eid
+        |> me.GetComponents 
+        |> Array.find (fun x -> x.ComponentID = cid)
 
     member _.GetEntitiesWithComponent c = agentForComponents.Get c
 
@@ -69,17 +71,11 @@ type EntityManager() =
         agentForEntities.RemoveEntity eid
         Ok None
         
-    member me.ReplaceComponent (ac:Component) (changes:string option) =
-        let handleComponentSpecificIssues =
-            match ac with
-            | Form fd ->
-                let old = (me.GetComponent FormComponentID ac.EntityID).ToForm
-                agentForLocations.Move (old,fd)
-            | _ -> ()
-        handleComponentSpecificIssues
-
-        agentForEntities.ReplaceComponent ac
-        Ok changes
+    member me.ReplaceComponent (c:Component) =
+        match c with
+        | Form f -> f |> agentForLocations.Move (me.GetComponent FormComponentID c.EntityID).ToForm
+        | _ -> ()
+        agentForEntities.ReplaceComponent c
 
     member _.TryGet (eid:uint32) =
         agentForEntities.Exists eid |> TrueSomeFalseNone (agentForEntities.GetComponents eid)
@@ -96,4 +92,6 @@ type EntityManager() =
         |> Array.filter (fun e -> eids|>Array.contains e)
         |> Array.Parallel.map (fun e -> me.GetComponent cid e)
 
-
+    member me.History_GetComponents (round:uint32) (eid:uint32) =
+        //fix this
+        me.GetComponents eid

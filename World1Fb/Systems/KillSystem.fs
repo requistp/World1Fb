@@ -13,11 +13,11 @@ type KillSystem(game:Game, isActive:bool) =
         enm.RemoveEntity (ge.ToKillAllEaten.EateeID)
 
     override me.Initialize = 
-        evm.RegisterListener me.ToString Event_KillAllEaten.ID me.onKillAllEaten
+        evm.RegisterListener me.ToString Event_KillAllEaten_ID me.onKillAllEaten
         base.SetToInitialized
 
     override _.ToString = "KillSystem"
 
-    override me.Update = 
+    override me.Update round = 
         ()
 

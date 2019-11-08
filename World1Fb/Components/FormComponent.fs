@@ -10,7 +10,7 @@ type FormComponent =
         Location:LocationDataInt
         Name:string
         Symbol:char 
-    } with 
+    }  
 
     member me.Update (isPassableUpdate:bool option) (nameUpdate:string option) (symbolUpdate:char option) (locationUpdate:LocationDataInt option) =
         {

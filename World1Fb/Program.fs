@@ -6,9 +6,11 @@ open FormSystem
 open GameManager
 open KillSystem
 open MatingSystem
+open MemorySystem
 open MovementSystem
 open PlantGrowthSystem
 open TerrainSystem
+open VisionSystem
 open ConsoleV1
 open WorldMapRenderer
 
@@ -40,9 +42,11 @@ let systems =
         //FormSystem(g,true).Abstract
         KillSystem(g,true).Abstract
         MatingSystem(g,true).Abstract
+        MemorySystem(g,true).Abstract
         MovementSystem(g,true).Abstract
         PlantGrowthSystem(g,true).Abstract
         //TerrainSystem(g,true).Abstract
+        VisionSystem(g,true).Abstract
     |]
 
 g.Start systems startingEntities ""

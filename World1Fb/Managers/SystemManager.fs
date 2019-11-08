@@ -14,7 +14,7 @@ type AbstractSystem(isActive:bool) =
     abstract member Initialize : unit
     default me.Initialize = me.SetToInitialized
 
-    abstract member Update : unit
+    abstract member Update : uint32 -> unit
 
     member me.Abstract = me :> AbstractSystem
 
@@ -32,7 +32,7 @@ type SystemManager() =
     member me.Init (s:string[]) =
         ()
 
-    member me.UpdateSystems =
-        me.ActiveAndInitialized |> Array.Parallel.iter (fun s -> s.Update)
+    member me.UpdateSystems round =
+        me.ActiveAndInitialized |> Array.Parallel.iter (fun s -> s.Update round)
 
 

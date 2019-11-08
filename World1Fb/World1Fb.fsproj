@@ -16,9 +16,11 @@
     <Compile Include="Components\FoodComponent.fs" />
     <Compile Include="Components\FormComponent.fs" />
     <Compile Include="Components\MatingComponent.fs" />
+    <Compile Include="Components\MemoryComponent.fs" />
     <Compile Include="Components\MovementComponent.fs" />
     <Compile Include="Components\PlantGrowthComponent.fs" />
     <Compile Include="Components\TerrainComponent.fs" />
+    <Compile Include="Components\VisionComponent.fs" />
     <Compile Include="Components\Component.fs" />
     <Compile Include="Entities\agent_ComponentEntity.fs" />
     <Compile Include="Entities\agent_LocationEntity.fs" />
@@ -31,6 +33,8 @@
     <Compile Include="Events\agent_EventListeners.fs" />
     <Compile Include="Events\agent_EventSchedule.fs" />
     <Compile Include="Events\EventManager.fs" />
+    <Compile Include="Memories\agent_Memories.fs" />
+    <Compile Include="Memories\MemoryManager.fs" />
     <Compile Include="Managers\SystemManager.fs" />
     <Compile Include="Managers\InputHandler.fs" />
     <Compile Include="Managers\LoadAndSave.fs" />
@@ -41,17 +45,17 @@
     <Compile Include="Systems\FormSystem.fs" />
     <Compile Include="Systems\KillSystem.fs" />
     <Compile Include="Systems\MatingSystem.fs" />
+    <Compile Include="Systems\MemorySystem.fs" />
     <Compile Include="Systems\MovementSystem.fs" />
     <Compile Include="Systems\PlantGrowthSystem.fs" />
     <Compile Include="Systems\TerrainSystem.fs" />
+    <Compile Include="Systems\VisionSystem.fs" />
     <Compile Include="Console\WorldMapRenderer.fs" />
     <Compile Include="Console\ConsoleV1.fs" />
     <Compile Include="BuildNewWorld.fs" />
     <Compile Include="Program.fs" />
     <Content Include="Notes.txt" />
   </ItemGroup>
-
-  <ItemGroup />
 
   <ItemGroup>
     <PackageReference Include="FsPickler" Version="5.2.2" />

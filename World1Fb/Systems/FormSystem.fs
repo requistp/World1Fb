@@ -12,6 +12,6 @@ type FormSystem(game:Game, isActive:bool) =
 
     override _.ToString = "FormSystem"
 
-    override me.Update = 
+    override me.Update round = 
         ()
 

@@ -2,13 +2,15 @@
 open LocationTypes
 
 let ControllerComponentID = 1uy
-let EatingComponentID = 2uy
-let FoodComponentID = 3uy
-let FormComponentID = 4uy
-let MatingComponentID = 5uy
-let MovementComponentID = 6uy
-let PlantGrowthComponentID = 7uy
-let TerrainComponentID = 8uy
+let EatingComponentID = ControllerComponentID + 1uy
+let FoodComponentID = EatingComponentID + 1uy
+let FormComponentID = FoodComponentID + 1uy
+let MatingComponentID = FormComponentID + 1uy
+let MemoryComponentID = MatingComponentID + 1uy
+let MovementComponentID = MemoryComponentID + 1uy
+let PlantGrowthComponentID = MovementComponentID + 1uy
+let TerrainComponentID = PlantGrowthComponentID + 1uy
+let VisionComponentID = TerrainComponentID + 1uy
 
 
 type FoodClassifications =
@@ -20,7 +22,7 @@ type FoodTypes =
     | Food_Carrot
     | Food_Grass
     | Food_Meat_Rabbit
-    member this.Calories = // This is calories per Quantity
+    member this.Calories = // This is calories per quantity (eaten)
         match this with 
         | Food_Carrot -> 2
         | Food_Grass -> 1
