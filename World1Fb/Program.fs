@@ -27,7 +27,7 @@ let windowMan = new WindowManager(windows)
 
 let setDisplay = windowMan.SetDisplay
 
-let g = new Game(setDisplay, wmr.Update, wmr.MoveWindow, format)
+let g = new Game(setDisplay, wmr.UpdateEntity, wmr.MoveWindow, format)
 
 let startingEntities = 
     MakeMap g.EntityManager

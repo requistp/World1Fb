@@ -92,6 +92,6 @@ type EntityManager() =
         |> Array.filter (fun e -> eids|>Array.contains e)
         |> Array.Parallel.map (fun e -> me.GetComponent cid e)
 
-    member me.History_GetComponents (round:uint32) (eid:uint32) =
-        //fix this
-        me.GetComponents eid
+    //member me.History_GetComponents (round:uint32) (eid:uint32) =
+    //    //fix this
+    //    me.GetComponents eid

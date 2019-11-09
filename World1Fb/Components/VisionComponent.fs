@@ -7,8 +7,9 @@ type VisionComponent =
         EntityID : uint32
         Range : int
         RangeTemplate : LocationDataInt[]
-        ViewableMap : LocationDataInt[]   // The locations that are visible taking into account occlusion, etc. (i.e. a subset of VisionMap)
-        VisionMap : LocationDataInt[]     // The locations within range--regardless of being blocked/visible/etc.
+        //ViewedMap : LocationDataInt[]     // All locations that entity has ever seen
+        ViewableMap : LocationDataInt[]   // Locations that are visible taking into account occlusion, etc. (i.e. a subset of VisionMap)
+        VisionMap : LocationDataInt[]     // Locations within range--regardless of being blocked/visible/etc.
     } 
 
     member me.Update (rangeUpdate:int option) (viewableMapUpdate:LocationDataInt[] option) (visionMapUpdate:LocationDataInt[] option) =
