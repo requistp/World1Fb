@@ -22,7 +22,7 @@ type VisionSystem(game:Game, isActive:bool) =
         | Some v ->
             let visionMap = LocationsWithinRange2D lc.Form.ToForm.Location v.ToVision.RangeTemplate
             let viewableMap = visionMap // Should handle occlusion 
-            enm.ReplaceComponent (Vision (v.ToVision.Update None (Some viewableMap) (Some visionMap)))
+            enm.ReplaceComponent (Vision (v.ToVision.Update (evm.GetRound()) None (Some viewableMap) (Some visionMap)))
             Ok None
 
     override me.Initialize = 

@@ -57,8 +57,8 @@ type WorldMapRenderer() =
         Console.Title <- "Entity Viewer"
         Console.Clear()
 
-        let centerX = 20
-        let centerY = 15
+        let centerX = 30
+        let centerY = 10
 
         let v = (entityID |> enm.GetComponent VisionComponentID).ToVision
         let vf = (entityID |> enm.GetComponent FormComponentID).ToForm
@@ -66,14 +66,21 @@ type WorldMapRenderer() =
         let addX = centerX - vf.Location.X
         let addY = centerY - vf.Location.Y
 
-        v.ViewableMap
-        |> Array.iter (fun l -> 
-            System.Console.SetCursorPosition(l.X + addX, l.Y + addY)
-            let f = 
-                enm.GetEntitiesAtLocation l
-                |> Array.Parallel.map (fun e -> (e|>enm.GetComponent FormComponentID).ToForm)
-            //System.Console.Write(f.[0].Symbol)
-            ColoredConsole.Console.DrawWhite (f.[0].Symbol)
+        v.ViewedMap
+        |> Map.iter (fun location round -> 
+            let drawX = location.X + addX
+            let drawY = location.Y + addY
+            match IsOnMap2D drawX drawY with
+            | false -> ()
+            | true -> 
+                System.Console.SetCursorPosition(drawX,drawY)
+                let f = 
+                    enm.GetEntitiesAtLocation location
+                    |> Array.Parallel.map (fun e -> (e|>enm.GetComponent FormComponentID).ToForm)
+                //System.Console.Write(f.[0].Symbol)
+                match v.ViewableMap |> Array.contains location with
+                | false -> ColoredConsole.Console.DrawWhite (f.[0].Symbol)
+                | true -> ColoredConsole.Console.DrawGreen (f.[0].Symbol)
             )
 
         //let rangeY = 

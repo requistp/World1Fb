@@ -10,6 +10,9 @@ let MapWidth = 40
 let MapHeight = 20
 
 
+let IsOnMap2D x y = 
+    x >= 0 && x <= MapWidth-1 && y >=0 && y <= MapHeight-1
+
 type LocationDataInt = {
     X : int
     Y : int
@@ -18,7 +21,7 @@ type LocationDataInt = {
     member me.Add (l:LocationDataInt) = { X = me.X + l.X; Y = me.Y + l.Y; Z = me.Z + l.Z }
     member me.AddOffset (rangeX:int) (rangeY:int) (rangeZ:int) (allow000:bool) (doubleRandom:bool) =
         me.Add (LocationDataInt.Offset rangeX rangeY rangeZ allow000 doubleRandom)
-    member me.IsOnMap = if me.X >= 0 && me.X <= MapWidth-1 && me.Y >=0 && me.Y <= MapHeight-1 then true else false
+    member me.IsOnMap = IsOnMap2D me.X me.Y
 
     override me.ToString() = sprintf "{X=%i, Y=%i, Z=%i}" me.X me.Y me.Z
 

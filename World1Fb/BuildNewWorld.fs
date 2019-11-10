@@ -53,6 +53,7 @@ let MakeRabbits (enm:EntityManager) n =
         let visionRange = 5
         let rangeTemplate = RangeTemplate2D visionRange
         let visionMap = LocationsWithinRange2D location (RangeTemplate2D visionRange)
+        let viewedMap = visionMap |> Array.fold (fun (v:Map<LocationDataInt,uint32>) l -> v.Add(l,0u)) Map.empty
         let baseBunny = 
             [|
                 Eating { EntityID = eid; Calories = 150; CaloriesPerDay = 300; Foods = [|Food_Carrot;Food_Grass|]; Quantity = 75; QuantityMax = 150; QuantityPerAction = 1 }
@@ -60,7 +61,7 @@ let MakeRabbits (enm:EntityManager) n =
                 Mating { EntityID = eid; ChanceOfReproduction = 0.9; LastMatingAttempt = 0u; MatingStatus = matingStatus; Species = Rabbit }
                 Memory { EntityID = eid; Memories = Map.empty; Retention = 30u }
                 Movement { EntityID = eid; MovesPerTurn = 1 }
-                Vision { EntityID = eid; Range = visionRange; RangeTemplate = rangeTemplate; ViewableMap = visionMap; VisionMap = visionMap }
+                Vision { EntityID = eid; Range = visionRange; RangeTemplate = rangeTemplate; ViewedMap = viewedMap; ViewableMap = visionMap; VisionMap = visionMap }
             |]
         match n = 1 with
         | false -> baseBunny
