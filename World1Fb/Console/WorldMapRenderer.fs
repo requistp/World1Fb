@@ -6,6 +6,7 @@ open LocationTypes
 open System
 //open ColoredConsole
 
+
 type WorldMapRenderer() =
     let mutable _windowLocation = (0,0)
     let viewSizeX = Math.Clamp(40,10,MapWidth)
@@ -70,47 +71,21 @@ type WorldMapRenderer() =
         |> Map.iter (fun location round -> 
             let drawX = location.X + addX
             let drawY = location.Y + addY
-            match IsOnMap2D drawX drawY with
+            match drawX >= 0 && drawY >= 0 with
             | false -> ()
             | true -> 
+                let drawCall = 
+                    match v.ViewableMap |> Array.contains location with
+                    | false -> ColoredConsole.Console.DrawDarkGray
+                    | true -> ColoredConsole.Console.DrawWhite
+                let forms = 
+                    let (es,cs,ls) = enm.GetHistory round
+                    location
+                    |> EntityManager.EM.GetEntitiesAtLocation ls
+                    |> Array.Parallel.map (fun e -> (e|>EntityManager.EM.GetComponent FormComponentID es).ToForm)
                 System.Console.SetCursorPosition(drawX,drawY)
-                let f = 
-                    enm.GetEntitiesAtLocation location
-                    |> Array.Parallel.map (fun e -> (e|>enm.GetComponent FormComponentID).ToForm)
-                //System.Console.Write(f.[0].Symbol)
-                match v.ViewableMap |> Array.contains location with
-                | false -> ColoredConsole.Console.DrawWhite (f.[0].Symbol)
-                | true -> ColoredConsole.Console.DrawGreen (f.[0].Symbol)
+                drawCall forms.[0].Symbol
             )
-
-        //let rangeY = 
-        //    [|(snd _windowLocation)..(snd _windowLocation + viewSizeY - 1)|]
-
-        //let rangeX = 
-        //    [|(fst _windowLocation)..(fst _windowLocation + viewSizeX - 1)|]
-
-        //for y in rangeY do
-        //    for x in rangeX do
-        //        let selectForm (fds:FormComponent[]) = 
-        //            match fds.Length with
-        //            | 1 -> fds.[0]
-        //            | _ ->
-        //                match fds |> Array.tryFind (fun c -> (enm.TryGetComponent ControllerComponentID c.EntityID).IsSome) with
-        //                | Some f -> f
-        //                | None ->
-        //                    (fds |> Array.sortBy (fun c -> (enm.TryGetComponent TerrainComponentID c.EntityID).IsSome)).[0]
-        //        let fs = 
-        //            enm.GetEntitiesAtLocation { X = x; Y = y; Z = 0 } 
-        //            |> enm.TryGetComponentForEntities FormComponentID
-        //            |> Array.map (fun c -> c.ToForm)
-
-        //        match fs.Length with
-        //        | 0 -> ()
-        //        | _ ->
-        //            let fd = selectForm fs
-        //            System.Console.SetCursorPosition(x - fst _windowLocation, y - snd _windowLocation)
-        //            System.Console.Write(fd.Symbol)
-
 
 
 

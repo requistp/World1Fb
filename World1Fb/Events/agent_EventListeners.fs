@@ -25,7 +25,7 @@ type agent_EventListeners(agentForLog:agent_GameEventLog) =
                                 agentForLog.Log_NoListeners round ge
                             | true ->
                                 _listeners.Item ge.GameEventID
-                                |> Array.Parallel.iter (fun (listener,callback) -> agentForLog.Log_CallbackResult round (listener,callback,ge,callback ge))
+                                |> Array.Parallel.iter (fun (listener,callback) -> agentForLog.Log_CallbackResult round (listener,callback,ge,callback round ge))
                         | Register (round,listener,eventType,callback) -> 
                             _listeners <- Map_AppendValueToArrayNonUnique _listeners eventType (listener,callback)
                             agentForLog.Log_ListenerRegistered round listener

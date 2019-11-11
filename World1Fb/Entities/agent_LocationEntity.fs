@@ -9,7 +9,8 @@ open LocationTypes
 type private agent_LocationEntityMsg =
 | Add of FormComponent
 //| Get of LocationDataInt * AsyncReplyChannel<uint32[]>
-| Init of Map<LocationDataInt,uint32[]>    
+| GetAll of AsyncReplyChannel<Map<LocationDataInt,uint32[]> >
+| Init of Map<LocationDataInt,uint32[]>
 | Remove of FormComponent
 
 
@@ -26,6 +27,8 @@ type agent_LocationEntity() =
                             _map <- Map_AppendValueToArrayUnique _map fd.Location fd.EntityID 
                         //| Get (location,replyChannel) -> 
                         //    replyChannel.Reply(_map.Item(location))
+                        | GetAll replyChannel -> 
+                            replyChannel.Reply(_map)
                         | Init newMap -> 
                             _map <- newMap 
                         | Remove fd ->
@@ -42,6 +45,8 @@ type agent_LocationEntity() =
 
     //member _.Get (location:LocationDataInt) = agent.PostAndReply (fun replyChannel -> Get (location,replyChannel))
     member _.Get (location:LocationDataInt) = _map.Item(location)
+
+    member _.GetAll() = agent.PostAndReply GetAll
 
     member _.Init (newMap:Map<LocationDataInt,uint32[]>) = agent.Post (Init newMap)
 

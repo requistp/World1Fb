@@ -9,7 +9,7 @@ type KillSystem(game:Game, isActive:bool) =
     let enm = game.EntityManager
     let evm = game.EventManager    
 
-    member private me.onKillAllEaten (ge:GameEventTypes) =
+    member private me.onKillAllEaten round (ge:GameEventTypes) =
         enm.RemoveEntity (ge.ToKillAllEaten.EateeID)
 
     override me.Initialize = 

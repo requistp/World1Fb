@@ -14,7 +14,7 @@ type EatingSystem(game:Game, isActive:bool) =
     let enm = game.EntityManager
     let evm = game.EventManager    
     
-    member private me.onEat (ge:GameEventTypes) =
+    member private me.onEat round (ge:GameEventTypes) =
         let e = ge.ToActionEat
         let eco = enm.TryGetComponent EatingComponentID e.EntityID
         let fco = enm.TryGetComponent FormComponentID e.EntityID
@@ -47,12 +47,12 @@ type EatingSystem(game:Game, isActive:bool) =
             | [||] -> Error "No food at location"
             | fs -> eatIt fs.[0]
 
-    member private me.onComponentAdded (ge:GameEventTypes) =
+    member private me.onComponentAdded round (ge:GameEventTypes) =
         let e = ge.ToComponentAddedEating
         evm.ScheduleEvent (ScheduleEvent ({ Schedule=RepeatIndefinitely; Frequency=uint32 MetabolismFrequency }, Metabolize { EntityID=e.EntityID }))
         Ok (Some (sprintf "Queued Metabolize to schedule. EntityID:%i" e.EntityID))
         
-    member private me.onMetabolize (ge:GameEventTypes) =
+    member private me.onMetabolize round (ge:GameEventTypes) =
         let e = ge.ToMetabolize
         let ed = (enm.GetComponent EatingComponentID e.EntityID).ToEating
         let newC = ed.Calories - ed.CaloriesPerMetabolize

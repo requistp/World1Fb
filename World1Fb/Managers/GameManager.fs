@@ -32,11 +32,12 @@ type Game(renderer_SetDisplay:string->unit, wmr:EntityManager->uint32->unit, wmr
         | l -> Some l.[0]
 
     member private me.gameLoop =
-        eventMan.ExecuteScheduledEvents
-        systemMan.UpdateSystems (eventMan.GetRound())
-        eventMan.EndRound
+        let round = eventMan.GetRound()
+        eventMan.ExecuteScheduledEvents round
+        systemMan.UpdateSystems round
+        eventMan.EndRound round
         wmr entityMan (inputMan.GetEntityID.Value)
-        printfn "Round#%i      " (eventMan.GetRound())
+        printfn "Round#%i      " round
 
     member private me.loadGame filename =
         let sgd = LoadAndSave.LoadGame format filename 
@@ -48,8 +49,8 @@ type Game(renderer_SetDisplay:string->unit, wmr:EntityManager->uint32->unit, wmr
         LoadAndSave.SaveGame 
             format
             { 
-                Round = eventMan.GetRound() 
-                ECMap = entityMan.GetMap
+                Round = eventMan.GetRound() // Maybe this should be -1u
+                ECMap = entityMan.GetEntities()
                 MaxEntityID = entityMan.GetMaxID
                 ScheduledEvents = eventMan.GetSchedule
             }
@@ -62,7 +63,7 @@ type Game(renderer_SetDisplay:string->unit, wmr:EntityManager->uint32->unit, wmr
             me.loadGame filename
             me.assignController |> inputMan.SetEntityID
             wmr entityMan (inputMan.GetEntityID.Value)
-            printfn "Round#%i      " (eventMan.GetRound())
+            //printfn "Round#%i      " (eventMan.GetRound())
         | _ -> 
             setInitialForms initialForms
             System.Threading.Thread.Sleep 50
@@ -73,6 +74,8 @@ type Game(renderer_SetDisplay:string->unit, wmr:EntityManager->uint32->unit, wmr
         while r <> ExitGame do
             if r = GameAction then me.gameLoop
             r <- inputMan.AwaitKeyboardInput
+
+        System.Threading.Thread.Sleep 50
 
         me.saveGame
     

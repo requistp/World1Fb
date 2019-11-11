@@ -26,7 +26,7 @@ type agent_Round() =
                 }
             )
 
-    member _.Get = agent.PostAndReply Get
+    member _.Get() = agent.PostAndReply Get
 
     member _.Increment = agent.Post Increment
 

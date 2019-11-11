@@ -2,10 +2,12 @@
 open agent_ComponentEntity
 open agent_EntityComponent
 open agent_EntityID
+open agent_EntityHistory
 open agent_LocationEntity
 open Component
 open ComponentEnums
 open CommonGenericFunctions
+open LocationTypes
 
 
 type EntityManager() =
@@ -13,6 +15,7 @@ type EntityManager() =
     let agentForComponents = new agent_ComponentEntity()
     let agentForLocations = new agent_LocationEntity()
     let agentForEntities = new agent_EntityComponent() 
+    let agentForHistory = new agent_EntityHistory()
 
     member _.CopyEntity (oldeid:uint32) =
         let neweid = agentForEntityID.GetNewID
@@ -38,11 +41,11 @@ type EntityManager() =
         |> me.GetComponents 
         |> Array.find (fun x -> x.ComponentID = cid)
 
+    member _.GetEntities = agentForEntities.GetAll
+
     member _.GetEntitiesWithComponent c = agentForComponents.Get c
 
     member _.GetEntitiesAtLocation location = agentForLocations.Get location
-
-    member _.GetMap = agentForEntities.Get
 
     member _.GetMaxID = agentForEntityID.GetMaxID 
 
@@ -62,7 +65,10 @@ type EntityManager() =
         agentForEntityID.Init maxEntityID
 
     member _.PendingUpdates = 
-        agentForEntities.PendingUpdates || agentForEntityID.PendingUpdates || agentForComponents.PendingUpdates || agentForLocations.PendingUpdates
+        agentForEntities.PendingUpdates || agentForEntityID.PendingUpdates || agentForComponents.PendingUpdates || agentForLocations.PendingUpdates || agentForHistory.PendingUpdates
+
+    member _.RecordHistory round =
+        agentForHistory.Add round (agentForEntities.GetAll(), agentForComponents.GetAll(), agentForLocations.GetAll())
 
     member _.RemoveEntity (eid:uint32) =
         let cts = agentForEntities.GetComponents eid
@@ -92,6 +98,17 @@ type EntityManager() =
         |> Array.filter (fun e -> eids|>Array.contains e)
         |> Array.Parallel.map (fun e -> me.GetComponent cid e)
 
-    //member me.History_GetComponents (round:uint32) (eid:uint32) =
-    //    //fix this
-    //    me.GetComponents eid
+    member me.GetHistory (round:uint32) =
+        agentForHistory.Get round
+
+
+    module EM =
+        let GetEntitiesAtLocation (locationMap:Map<LocationDataInt,uint32[]>) (location:LocationDataInt) =
+            match locationMap.ContainsKey location with
+            | false -> [||]
+            | true -> locationMap.Item location
+
+        let GetComponent (componentID:byte) (entities:Map<uint32,Component[]>) (entityID:uint32) =
+            entities.Item(entityID)
+            |> Array.find (fun x -> x.ComponentID = componentID)
+

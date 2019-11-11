@@ -15,10 +15,10 @@ type EventManager(enm:EntityManager) =
     let agentForListeners = new agent_EventListeners(agentForLog)
     let agentForSchedule = new agent_EventSchedule(agentForLog, agentForListeners, enm)
 
-    member _.EndRound =
-        let round = agentForRound.Get
+    member _.EndRound round =
         System.Console.SetCursorPosition(0,MapHeight+1)
         Console.Write "   "
+        System.Threading.Thread.Sleep 50
         while (agentForListeners.PendingUpdates || agentForSchedule.PendingUpdates ) do 
             agentForLog.Log_EndOfRoundCancelled round 1 "Events"
             System.Console.SetCursorPosition(0,MapHeight+1)
@@ -72,21 +72,22 @@ type EventManager(enm:EntityManager) =
             System.Console.SetCursorPosition(0,MapHeight+2)
             Console.Write "entity events: 5 "
             System.Threading.Thread.Sleep 3
+        enm.RecordHistory round
         agentForRound.Increment
 
-    member _.RaiseEvent (ge:GameEventTypes) = agentForListeners.Execute agentForRound.Get ge
+    member _.RaiseEvent (ge:GameEventTypes) = agentForListeners.Execute (agentForRound.Get()) ge
 
-    member _.ExecuteScheduledEvents = agentForSchedule.ExecuteScheduled agentForRound.Get
+    member _.ExecuteScheduledEvents round = agentForSchedule.ExecuteScheduled round
 
-    member _.GetRound() = agentForRound.Get
+    member _.GetRound() = agentForRound.Get()
 
     member _.GetSchedule = agentForSchedule.Get
 
     member _.InitRound round = agentForRound.Init round 
 
-    member _.RegisterListener (listener:string) (eventTypeID:byte) (callback:GameEventCallback) = agentForListeners.Register agentForRound.Get listener eventTypeID callback
+    member _.RegisterListener (listener:string) (eventTypeID:byte) (callback:GameEventCallback) = agentForListeners.Register (agentForRound.Get()) listener eventTypeID callback
     
-    member _.ScheduleEvent (se:GameEventTypes) = agentForSchedule.Schedule agentForRound.Get se
+    member _.ScheduleEvent (se:GameEventTypes) = agentForSchedule.Schedule (agentForRound.Get()) se
         
     member _.SetLogging (toggle:bool) = agentForLog.SetLogging toggle
 

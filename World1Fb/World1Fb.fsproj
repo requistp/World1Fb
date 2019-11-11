@@ -23,9 +23,10 @@
     <Compile Include="Components\VisionComponent.fs" />
     <Compile Include="Components\Component.fs" />
     <Compile Include="Entities\agent_ComponentEntity.fs" />
-    <Compile Include="Entities\agent_LocationEntity.fs" />
-    <Compile Include="Entities\agent_EntityID.fs" />
     <Compile Include="Entities\agent_EntityComponent.fs" />
+    <Compile Include="Entities\agent_EntityHistory.fs" />
+    <Compile Include="Entities\agent_EntityID.fs" />
+    <Compile Include="Entities\agent_LocationEntity.fs" />
     <Compile Include="Entities\EntityManager.fs" />
     <Compile Include="Events\EventTypes.fs" />
     <Compile Include="Events\agent_Round.fs" />

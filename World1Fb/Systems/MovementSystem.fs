@@ -11,7 +11,7 @@ type MovementSystem(game:Game, isActive:bool) =
     let enm = game.EntityManager
     let evm = game.EventManager    
 
-    member private me.onMovementKeyPressed (ge:GameEventTypes) =
+    member private me.onMovementKeyPressed round (ge:GameEventTypes) =
         let e = ge.ToAction_Movement
 
         let formo = enm.TryGetComponent FormComponentID e.EntityID

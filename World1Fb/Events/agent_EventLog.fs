@@ -2,7 +2,7 @@
 open EventTypes
 open Logging
 
-type GameEventCallback = GameEventTypes -> Result<string option,string>
+type GameEventCallback = uint32 -> GameEventTypes -> Result<string option,string>
 
 type private agentLogTypes =
     | CallbackResult of listener:string * callback:GameEventCallback * gameEvent:GameEventTypes * result:Result<string option,string>
@@ -45,7 +45,7 @@ type agent_GameEventLog() =
                         match msg with
                         | Log (round,logdata) -> 
                             if (_logging) then 
-                                _log <- [| round,logdata |] |> Array.append _log
+                                _log <- Array.append _log [|round,logdata|]
                         | SetLogging b ->
                             _logging <- b
                         | WriteLog ->

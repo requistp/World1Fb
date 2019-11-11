@@ -6,6 +6,7 @@ open CommonGenericFunctions
 type private agent_ComponentEntityMsg = 
 | Add of Component
 //| Get of byte * AsyncReplyChannel<uint32[]>
+| GetAll of AsyncReplyChannel<Map<byte,uint32[]> >
 | Init of Map<byte,uint32[]>    
 | Remove of Component
 
@@ -29,6 +30,8 @@ type agent_ComponentEntity() =
                         //        match _map.ContainsKey(cid) with
                         //        | false -> Array.empty
                         //        | true -> _map.Item(cid))
+                        | GetAll replyChannel -> 
+                            replyChannel.Reply(_map)
                         | Init newMap -> 
                             _map <- newMap
                         | Remove ct ->
@@ -46,6 +49,8 @@ type agent_ComponentEntity() =
         match _map.ContainsKey(cid) with
         | false -> Array.empty
         | true -> _map.Item(cid)
+
+    member _.GetAll() = agent.PostAndReply GetAll
 
     member _.Init (newMap:Map<byte,uint32[]>) = agent.Post (Init newMap)
     

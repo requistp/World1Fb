@@ -6,7 +6,7 @@ type private agent_EntityComponentMsg =
 | Add of uint32 * Component[]
 | Exists of uint32 * AsyncReplyChannel<bool>
 //| GetComponents of uint32 * AsyncReplyChannel<Component[]>
-| GetMap of AsyncReplyChannel<Map<uint32,Component[]> >
+| GetAll of AsyncReplyChannel<Map<uint32,Component[]> >
 | Init of Map<uint32,Component[]>
 | Remove of uint32
 | ReplaceComponent of Component
@@ -32,7 +32,7 @@ type agent_EntityComponent() =
                         //        | false -> [||]
                         //        | true -> _ecmap.Item(eid)
                         //    )
-                        | GetMap replyChannel ->
+                        | GetAll replyChannel ->
                             replyChannel.Reply(_ecmap)
                         | Init map -> 
                             _ecmap <- map
@@ -53,7 +53,7 @@ type agent_EntityComponent() =
 
     member _.Exists (eid:uint32) = agent.PostAndReply (fun replyChannel -> Exists(eid,replyChannel))
 
-    member _.Get = agent.PostAndReply GetMap
+    member _.GetAll() = agent.PostAndReply GetAll
 
     //member _.GetComponents (eid:uint32) = agent.PostAndReply (fun replyChannel -> GetComponents(eid,replyChannel))
     member _.GetComponents (eid:uint32) = 

@@ -15,14 +15,14 @@ type VisionSystem(game:Game, isActive:bool) =
     let evm = game.EventManager
     //let mem = game.MemoryManager
 
-    member private me.onLocationChanged (ge:GameEventTypes) = 
+    member private me.onLocationChanged round (ge:GameEventTypes) =
         let lc = ge.ToLocationChanged
         match lc.EntityID |> enm.TryGetComponent VisionComponentID with
         | None -> Ok (Some "No vision Component")
         | Some v ->
             let visionMap = LocationsWithinRange2D lc.Form.ToForm.Location v.ToVision.RangeTemplate
             let viewableMap = visionMap // Should handle occlusion 
-            enm.ReplaceComponent (Vision (v.ToVision.Update (evm.GetRound()) None (Some viewableMap) (Some visionMap)))
+            enm.ReplaceComponent (Vision (v.ToVision.Update round None (Some viewableMap) (Some visionMap)))
             Ok None
 
     override me.Initialize = 

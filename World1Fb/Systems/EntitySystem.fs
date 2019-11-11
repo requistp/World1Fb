@@ -11,7 +11,7 @@ type EntitySystem(game:Game, isActive:bool) =
     let enm = game.EntityManager
     let evm = game.EventManager    
 
-    member private me.onCreateEntity (ge:GameEventTypes) =
+    member private me.onCreateEntity round (ge:GameEventTypes) =
         let e = ge.ToCreateEntity
         let checkComponent (c:Component) =
             match c.ComponentID with 

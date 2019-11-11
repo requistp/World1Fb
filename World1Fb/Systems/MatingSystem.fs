@@ -13,13 +13,13 @@ type MatingSystem(game:Game, isActive:bool) =
     let enm = game.EntityManager
     let evm = game.EventManager    
     
-    let MakeBaby momID =
+    let MakeBaby momID round =
         let adjustComponents (c:Component) =
             match c with
             | Mating d -> 
                 Mating { d with MatingStatus = if random.Next(2) = 0 then Male else Female }
             | Form d -> 
-                Form { d with Born = evm.GetRound(); Location = d.Location.Add { X=0; Y=0; Z=0 }} 
+                Form { d with Born = round; Location = d.Location.Add { X=0; Y=0; Z=0 }} 
             | _ -> c    
         let newcts = 
             momID
@@ -28,11 +28,10 @@ type MatingSystem(game:Game, isActive:bool) =
         evm.RaiseEvent (CreateEntity { Components = newcts })
         Ok (Some (sprintf "Born:%i" newcts.[0].EntityID))
 
-    member me.onActionMate (ge:GameEventTypes) =
+    member me.onActionMate round (ge:GameEventTypes) =
         let e = ge.ToActionMate
         let mc = (e.EntityID|>enm.GetComponent MatingComponentID).ToMating
         let fc = (e.EntityID|>enm.GetComponent FormComponentID).ToForm
-        let round = evm.GetRound()
 
         let checkMatingStatus =
             match mc.MatingStatus with
@@ -78,11 +77,11 @@ type MatingSystem(game:Game, isActive:bool) =
         |> Result.bind getEligiblesDecision
         |> Result.bind tryMating
 
-    member me.onBirth (ge:GameEventTypes) =
+    member me.onBirth round (ge:GameEventTypes) =
         let e = ge.ToBirth
         let m = (e.MomID|>enm.GetComponent MatingComponentID).ToMating
-        enm.ReplaceComponent (Mating (m.Update None (Some Female) (Some (evm.GetRound() + m.Species.MaxMatingFrequency)) None)) // Change Mom to Non-Pregnant Female and add some extra time to before she can mate again
-        MakeBaby e.MomID
+        enm.ReplaceComponent (Mating (m.Update None (Some Female) (Some (round + m.Species.MaxMatingFrequency)) None)) // Change Mom to Non-Pregnant Female and add some extra time to before she can mate again
+        MakeBaby e.MomID round
 
     override _.ToString = "MatingSystem"
 
