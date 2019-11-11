@@ -8,6 +8,7 @@ open Component
 open ComponentEnums
 open CommonGenericFunctions
 open LocationTypes
+open System
 
 
 type EntityManager() =
@@ -67,7 +68,7 @@ type EntityManager() =
     member _.PendingUpdates = 
         agentForEntities.PendingUpdates || agentForEntityID.PendingUpdates || agentForComponents.PendingUpdates || agentForLocations.PendingUpdates || agentForHistory.PendingUpdates
 
-    member _.RecordHistory round =
+    member me.RecordHistory round =
         agentForHistory.Add round (agentForEntities.GetAll(), agentForComponents.GetAll(), agentForLocations.GetAll())
 
     member _.RemoveEntity (eid:uint32) =

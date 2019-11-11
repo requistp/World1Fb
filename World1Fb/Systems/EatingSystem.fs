@@ -64,9 +64,9 @@ type EatingSystem(game:Game, isActive:bool) =
         Ok (Some result)
 
     override me.Initialize = 
-        evm.RegisterListener me.ToString Event_ActionEat_ID             me.onEat
-        evm.RegisterListener me.ToString Event_ComponentAdded_Eating_ID me.onComponentAdded
-        evm.RegisterListener me.ToString Event_Metabolize_ID            me.onMetabolize
+        evm.RegisterListener me.ToString Event_ActionEat_ID             (me.TrackTask me.onEat)
+        evm.RegisterListener me.ToString Event_ComponentAdded_Eating_ID (me.TrackTask me.onComponentAdded)
+        evm.RegisterListener me.ToString Event_Metabolize_ID            (me.TrackTask me.onMetabolize)
         base.SetToInitialized
 
     override _.ToString = "EatingSystem"

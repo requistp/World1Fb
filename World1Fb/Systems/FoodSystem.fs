@@ -50,9 +50,9 @@ type FoodSystem(game:Game, isActive:bool) =
         | Some c -> tryRegrowFood c.ToFood
         
     override me.Initialize = 
-        evm.RegisterListener me.ToString Event_Eaten_ID        me.onEaten
-        evm.RegisterListener me.ToString Event_FoodAllEaten_ID me.onAllEaten
-        evm.RegisterListener me.ToString Event_PlantGrowth_ID  me.onRegrowth
+        evm.RegisterListener me.ToString Event_Eaten_ID        (me.TrackTask me.onEaten)
+        evm.RegisterListener me.ToString Event_FoodAllEaten_ID (me.TrackTask me.onAllEaten)
+        evm.RegisterListener me.ToString Event_PlantGrowth_ID  (me.TrackTask me.onRegrowth)
         base.SetToInitialized
 
     override _.ToString = "FoodSystem"

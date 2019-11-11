@@ -36,6 +36,7 @@
     <Compile Include="Events\EventManager.fs" />
     <Compile Include="Memories\agent_Memories.fs" />
     <Compile Include="Memories\MemoryManager.fs" />
+    <Compile Include="Managers\agent_SystemWorkTracker.fs" />
     <Compile Include="Managers\SystemManager.fs" />
     <Compile Include="Managers\InputHandler.fs" />
     <Compile Include="Managers\LoadAndSave.fs" />

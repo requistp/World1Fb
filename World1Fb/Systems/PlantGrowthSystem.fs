@@ -70,8 +70,8 @@ type PlantGrowthSystem(game:Game, isActive:bool) =
         | Ok l -> makePlant e.EntityID l
 
     override me.Initialize = 
-        evm.RegisterListener me.ToString Event_ComponentAdded_PlantGrowth_ID me.onComponentAdded
-        evm.RegisterListener me.ToString Event_PlantReproduce_ID             me.onReproduce
+        evm.RegisterListener me.ToString Event_ComponentAdded_PlantGrowth_ID (me.TrackTask me.onComponentAdded)
+        evm.RegisterListener me.ToString Event_PlantReproduce_ID             (me.TrackTask me.onReproduce)
         base.SetToInitialized
 
     override _.ToString = "PlantGrowthSystem"

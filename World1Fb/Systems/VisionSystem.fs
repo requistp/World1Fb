@@ -26,7 +26,7 @@ type VisionSystem(game:Game, isActive:bool) =
             Ok None
 
     override me.Initialize = 
-        evm.RegisterListener me.ToString Event_LocationChanged_ID me.onLocationChanged
+        evm.RegisterListener me.ToString Event_LocationChanged_ID (me.TrackTask me.onLocationChanged)
         base.SetToInitialized
 
     override _.ToString = "VisionSystem"

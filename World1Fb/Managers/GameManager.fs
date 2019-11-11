@@ -31,11 +31,26 @@ type Game(renderer_SetDisplay:string->unit, wmr:EntityManager->uint32->unit, wmr
         | [||] -> None
         | l -> Some l.[0]
 
+    member private me.WaitForEndOfRound round loops =
+        let checkIdle x = 
+            while (not systemMan.AllSystemsIdle || eventMan.PendingUpdates) do 
+                //agentForLog.Log_EndOfRoundCancelled round 1 "Events"
+                if (x > 1) then
+                    System.Console.SetCursorPosition(0,MapHeight+1)
+                    Console.Write (sprintf "%i  " x)
+                System.Threading.Thread.Sleep 1
+
+        [|0..loops-1|] |> Array.iter (fun x -> checkIdle x)
+
     member private me.gameLoop =
         let round = eventMan.GetRound()
         eventMan.ExecuteScheduledEvents round
         systemMan.UpdateSystems round
+
+        me.WaitForEndOfRound round 100 // This is overkill, adjust depending on if the breakpoint is ever hit
+
         eventMan.EndRound round
+        
         wmr entityMan (inputMan.GetEntityID.Value)
         printfn "Round#%i      " round
 

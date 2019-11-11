@@ -86,8 +86,8 @@ type MatingSystem(game:Game, isActive:bool) =
     override _.ToString = "MatingSystem"
 
     override me.Initialize = 
-        evm.RegisterListener me.ToString Event_ActionMate_ID me.onActionMate
-        evm.RegisterListener me.ToString Event_Birth_ID      me.onBirth
+        evm.RegisterListener me.ToString Event_ActionMate_ID (me.TrackTask me.onActionMate)
+        evm.RegisterListener me.ToString Event_Birth_ID      (me.TrackTask me.onBirth)
         base.SetToInitialized
 
     override me.Update round = 

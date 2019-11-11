@@ -22,7 +22,7 @@ type EntitySystem(game:Game, isActive:bool) =
         enm.CreateEntity (e.Components)
 
     override me.Initialize =
-        evm.RegisterListener me.ToString Event_CreateEntity_ID me.onCreateEntity
+        evm.RegisterListener me.ToString Event_CreateEntity_ID (me.TrackTask me.onCreateEntity)
         base.SetToInitialized
 
     override _.ToString = "EntityManager"

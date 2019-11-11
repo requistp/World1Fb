@@ -48,7 +48,7 @@ type MovementSystem(game:Game, isActive:bool) =
         | Some c -> checkIfMovementIsValid c
 
     override me.Initialize = 
-        evm.RegisterListener me.ToString Event_ActionMovement_ID me.onMovementKeyPressed
+        evm.RegisterListener me.ToString Event_ActionMovement_ID (me.TrackTask me.onMovementKeyPressed)
         base.SetToInitialized
 
     override _.ToString = "MovementSystem"
