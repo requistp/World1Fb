@@ -1,4 +1,6 @@
 ﻿module GameManager
+open agent_GameLog
+open agent_Round
 open Component
 open ComponentEnums
 open EntityManager
@@ -6,14 +8,15 @@ open EventManager
 open EventTypes
 open InputHandler
 open LoadAndSave
-open LocationTypes
 open MemoryManager
 open System
 open SystemManager
 
 type Game(renderer_SetDisplay:string->unit, wmr:EntityManager->uint32->unit, wmrKeys:ConsoleKey->unit, format:SaveGameFormats) =
+    let agentForRound = new agent_Round()
+    let gameLog = new agent_GameLog()
     let entityMan = new EntityManager()
-    let eventMan = new EventManager(entityMan)
+    let eventMan = new EventManager(entityMan, gameLog, agentForRound.Get)
     let memMan = new MemoryManager()
     let systemMan = new SystemManager()
     let inputMan = new InputHandler(eventMan, entityMan, renderer_SetDisplay, wmrKeys)
@@ -25,38 +28,36 @@ type Game(renderer_SetDisplay:string->unit, wmr:EntityManager->uint32->unit, wmr
     member _.EventManager = eventMan
     member _.EntityManager = entityMan
     member _.MemoryManager = memMan
+    member _.GetRound() = agentForRound.Get()
 
     member private me.assignController =
         match ControllerComponentID|>entityMan.GetEntitiesWithComponent with
         | [||] -> None
         | l -> Some l.[0]
 
-    member private me.WaitForEndOfRound round loops =
-        let checkIdle x = 
-            while (not systemMan.AllSystemsIdle || eventMan.PendingUpdates) do 
-                //agentForLog.Log_EndOfRoundCancelled round 1 "Events"
-                if (x > 1) then
-                    System.Console.SetCursorPosition(0,MapHeight+1)
-                    Console.Write (sprintf "%i  " x)
-                System.Threading.Thread.Sleep 1
-
-        [|0..loops-1|] |> Array.iter (fun x -> checkIdle x)
-
     member private me.gameLoop =
-        let round = eventMan.GetRound()
+        let endOfRoundTasks round = 
+            let waitForEndOfRound round loops =
+                let checkIdle x = 
+                    while (not systemMan.AllSystemsIdle || eventMan.PendingUpdates) do 
+                        if (round > 0u && x > 1) then gameLog.Log round (sprintf "%-3s | %-20s -> %-30s #%7i : %s" "xld" "End of round" "Cancelled pending more events" x "Events") 
+                        System.Threading.Thread.Sleep 3
+                [|1..loops|] |> Array.iter (fun x -> checkIdle x)
+            waitForEndOfRound round 10
+            gameLog.WriteLog
+            entityMan.RecordHistory round
+
+        let round = agentForRound.Get()
+
         eventMan.ExecuteScheduledEvents round
         systemMan.UpdateSystems round
-
-        me.WaitForEndOfRound round 100 // This is overkill, adjust depending on if the breakpoint is ever hit
-
-        eventMan.EndRound round
-        
-        wmr entityMan (inputMan.GetEntityID.Value)
-        printfn "Round#%i      " round
+        endOfRoundTasks round
+        wmr entityMan (inputMan.GetEntityID.Value); printfn "Round#%i" round       
+        agentForRound.Increment
 
     member private me.loadGame filename =
         let sgd = LoadAndSave.LoadGame format filename 
-        eventMan.InitRound sgd.Round
+        agentForRound.Init sgd.Round
         entityMan.Init sgd.ECMap
         entityMan.Init sgd.MaxEntityID
 
@@ -64,7 +65,7 @@ type Game(renderer_SetDisplay:string->unit, wmr:EntityManager->uint32->unit, wmr
         LoadAndSave.SaveGame 
             format
             { 
-                Round = eventMan.GetRound() // Maybe this should be -1u
+                Round = agentForRound.Get() // Maybe this should be -1u
                 ECMap = entityMan.GetEntities()
                 MaxEntityID = entityMan.GetMaxID
                 ScheduledEvents = eventMan.GetSchedule

@@ -10,6 +10,7 @@
     <Compile Include="common\CalendarTimings.fs" />
     <Compile Include="common\LocationTypes.fs" />
     <Compile Include="common\Logging.fs" />
+    <Compile Include="common\agent_GameLog.fs" />
     <Compile Include="Components\ComponentEnums.fs" />
     <Compile Include="Components\ControllerComponent.fs" />
     <Compile Include="Components\EatingComponent.fs" />
@@ -29,13 +30,12 @@
     <Compile Include="Entities\agent_LocationEntity.fs" />
     <Compile Include="Entities\EntityManager.fs" />
     <Compile Include="Events\EventTypes.fs" />
-    <Compile Include="Events\agent_Round.fs" />
-    <Compile Include="Events\agent_EventLog.fs" />
     <Compile Include="Events\agent_EventListeners.fs" />
     <Compile Include="Events\agent_EventSchedule.fs" />
     <Compile Include="Events\EventManager.fs" />
     <Compile Include="Memories\agent_Memories.fs" />
     <Compile Include="Memories\MemoryManager.fs" />
+    <Compile Include="Managers\agent_Round.fs" />
     <Compile Include="Managers\agent_SystemWorkTracker.fs" />
     <Compile Include="Managers\SystemManager.fs" />
     <Compile Include="Managers\InputHandler.fs" />

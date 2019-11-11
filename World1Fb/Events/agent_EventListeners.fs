@@ -1,15 +1,18 @@
 ﻿module agent_EventListeners
-open agent_GameEventLog
+open agent_GameLog
 open CommonGenericFunctions
 open EventTypes
 
 
+type GameEventCallback = uint32 -> GameEventTypes -> Result<string option,string>
+
+
 type private agentListenersMsg =
 | Execute of uint32 * GameEventTypes 
-| Register of uint32 * string * byte * GameEventCallback
+| Register of string * byte * GameEventCallback
 
 
-type agent_EventListeners(agentForLog:agent_GameEventLog) =
+type agent_EventListeners(log:agent_GameLog) =
 
     let agent =
         let mutable _listeners = Map.empty:Map<byte,(string*GameEventCallback)[]>
@@ -22,13 +25,19 @@ type agent_EventListeners(agentForLog:agent_GameEventLog) =
                         | Execute (round,ge) ->
                             match _listeners.ContainsKey ge.GameEventID with
                             | false -> 
-                                agentForLog.Log_NoListeners round ge
+                                log.Log round (sprintf "%-3s | %-20s -> %-30s #%7i" " * " "<none>" (ge.GameEventType()) ge.EntityID)
                             | true ->
                                 _listeners.Item ge.GameEventID
-                                |> Array.Parallel.iter (fun (listener,callback) -> agentForLog.Log_CallbackResult round (listener,callback,ge,callback round ge))
-                        | Register (round,listener,eventType,callback) -> 
+                                |> Array.Parallel.iter (fun (listener,callback) -> 
+                                    let result = callback round ge
+                                    let res_ToStrings =
+                                        match result with
+                                        | Error x -> ("Err", " : " + x)
+                                        | Ok s -> ("Ok", if s.IsSome then " : " + s.Value else "")
+                                    log.Log round (sprintf "%-3s | %-20s -> %-30s #%7i%s" (fst res_ToStrings) listener (ge.GameEventType()) ge.EntityID (snd res_ToStrings)))
+                        | Register (listener,eventType,callback) -> 
                             _listeners <- Map_AppendValueToArrayNonUnique _listeners eventType (listener,callback)
-                            agentForLog.Log_ListenerRegistered round listener
+                            log.Log 0u (sprintf "%-3s | %-20s -> %-30s" "Ok " "Registered System" listener)
                 }
             )
 
@@ -36,5 +45,5 @@ type agent_EventListeners(agentForLog:agent_GameEventLog) =
     
     member _.PendingUpdates = agent.CurrentQueueLength > 0
 
-    member _.Register round listener eventTypeID callback = agent.Post (Register (round,listener,eventTypeID,callback))
+    member _.Register listener eventTypeID callback = agent.Post (Register (listener,eventTypeID,callback))
 

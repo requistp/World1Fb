@@ -1,5 +1,5 @@
 ﻿module agent_EventSchedule
-open agent_GameEventLog
+open agent_GameLog
 open agent_EventListeners
 open CalendarTimings
 open CommonGenericFunctions
@@ -14,7 +14,7 @@ type private agent_ScheduleMsg =
 | Schedule of round:uint32 * GameEventTypes
 
 
-type agent_EventSchedule(agentForLog:agent_GameEventLog, agentForListeners:agent_EventListeners, enm:EntityManager) =
+type agent_EventSchedule(log:agent_GameLog, agentForListeners:agent_EventListeners, enm:EntityManager) =
 
     let agent =
         let mutable _schedule = Map.empty<uint32,GameEventTypes[]>
@@ -24,13 +24,13 @@ type agent_EventSchedule(agentForLog:agent_GameEventLog, agentForListeners:agent
                     while true do
                         let! msg = inbox.Receive()
                         let addToSchedule round (se:GameEventTypes) isNew =
-                            let sed,_ = se.ToScheduleEvent
+                            let sed,ge = se.ToScheduleEvent
                             let interval = 
                                 match isNew && sed.Schedule = RepeatIndefinitely with
                                 | true -> uint32 (TimingOffset (int sed.Frequency))
                                 | false -> sed.Frequency                                
                             _schedule <- Map_AppendValueToArrayNonUnique _schedule (round+interval) se
-                            agentForLog.Log_ScheduledEvent round se
+                            log.Log round (sprintf "%-3s | %-20s -> %-30s #%7i : Frequency:%i" "-->" "Scheduled Event" (ge.GameEventType()) ge.EntityID sed.Frequency)
                         match msg with
                         | ExecuteScheduled round ->
                             let reschedule (se:GameEventTypes) =
