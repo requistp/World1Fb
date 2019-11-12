@@ -27,6 +27,7 @@ type Game(renderer_SetDisplay:string->unit, wmr:EntityManager->uint32->unit, wmr
 
     member _.EventManager = eventMan
     member _.EntityManager = entityMan
+    member _.Logger = gameLog
     member _.MemoryManager = memMan
     member _.GetRound() = agentForRound.Get()
 

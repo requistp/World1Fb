@@ -4,12 +4,13 @@ open LocationTypes
 
 type FormComponent = 
     { 
-        EntityID:uint32
-        Born:uint32
-        IsPassable:bool
-        Location:LocationDataInt
-        Name:string
-        Symbol:char 
+        EntityID : uint32
+        Born : uint32
+        CanSeePast : bool
+        IsPassable : bool
+        Location : LocationDataInt
+        Name : string
+        Symbol : char 
     }  
 
     member me.Update (isPassableUpdate:bool option) (nameUpdate:string option) (symbolUpdate:char option) (locationUpdate:LocationDataInt option) =

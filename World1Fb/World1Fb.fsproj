@@ -51,6 +51,7 @@
     <Compile Include="Systems\MovementSystem.fs" />
     <Compile Include="Systems\PlantGrowthSystem.fs" />
     <Compile Include="Systems\TerrainSystem.fs" />
+    <Compile Include="Systems\vision_Shadowcast.fs" />
     <Compile Include="Systems\VisionSystem.fs" />
     <Compile Include="Console\ColoredConsole.fs" />
     <Compile Include="Console\WorldMapRenderer.fs" />

@@ -22,6 +22,7 @@ type LocationDataInt = {
     member me.AddOffset (rangeX:int) (rangeY:int) (rangeZ:int) (allow000:bool) (doubleRandom:bool) =
         me.Add (LocationDataInt.Offset rangeX rangeY rangeZ allow000 doubleRandom)
     member me.IsOnMap = IsOnMap2D me.X me.Y
+    member me.Subtract (l:LocationDataInt) = { X = me.X - l.X; Y = me.Y - l.Y; Z = me.Z - l.Z }
 
     override me.ToString() = sprintf "{X=%i, Y=%i, Z=%i}" me.X me.Y me.Z
 

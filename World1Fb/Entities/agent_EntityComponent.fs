@@ -3,9 +3,9 @@ open Component
 
 
 type private agent_EntityComponentMsg = 
-| Add of uint32 * Component[]
+| Add of Component[]
 | Exists of uint32 * AsyncReplyChannel<bool>
-//| GetComponents of uint32 * AsyncReplyChannel<Component[]>
+| GetComponents of uint32 * AsyncReplyChannel<Component[]>
 | GetAll of AsyncReplyChannel<Map<uint32,Component[]> >
 | Init of Map<uint32,Component[]>
 | Remove of uint32
@@ -13,25 +13,24 @@ type private agent_EntityComponentMsg =
 
 
 type agent_EntityComponent() = 
-    let mutable _ecmap = Map.empty<uint32,Component[]>
     let agent =
+        let mutable _ecmap = Map.empty<uint32,Component[]>
         MailboxProcessor<agent_EntityComponentMsg>.Start(
             fun inbox ->
                 async { 
                     while true do
                         let! msg = inbox.Receive()
                         match msg with
-                        | Add (e,cts) ->
-                            if not (_ecmap.ContainsKey(e)) then 
-                                _ecmap <- _ecmap.Add(e,cts)
+                        | Add cts ->
+                            if not (_ecmap.ContainsKey(cts.[0].EntityID)) then 
+                                _ecmap <- _ecmap.Add(cts.[0].EntityID,cts)
                         | Exists (eid,replyChannel) ->
                             replyChannel.Reply(_ecmap.ContainsKey eid)
-                        //| GetComponents (eid,replyChannel) ->
-                        //    replyChannel.Reply(
-                        //        match _ecmap.ContainsKey eid with
-                        //        | false -> [||]
-                        //        | true -> _ecmap.Item(eid)
-                        //    )
+                        | GetComponents (eid,replyChannel) ->
+                            replyChannel.Reply(
+                                match _ecmap.ContainsKey eid with
+                                | false -> [||]
+                                | true -> _ecmap.Item(eid))
                         | GetAll replyChannel ->
                             replyChannel.Reply(_ecmap)
                         | Init map -> 
@@ -49,17 +48,13 @@ type agent_EntityComponent() =
                 }
             )
 
-    member _.CreateEntity (e,cts:Component[]) = agent.Post (Add (e,cts))
+    member _.CreateEntity (cts:Component[]) = agent.Post (Add cts)
 
     member _.Exists (eid:uint32) = agent.PostAndReply (fun replyChannel -> Exists(eid,replyChannel))
 
     member _.GetAll() = agent.PostAndReply GetAll
 
-    //member _.GetComponents (eid:uint32) = agent.PostAndReply (fun replyChannel -> GetComponents(eid,replyChannel))
-    member _.GetComponents (eid:uint32) = 
-        match _ecmap.ContainsKey eid with
-        | false -> [||]
-        | true -> _ecmap.Item(eid)
+    member _.GetComponents (eid:uint32) = agent.PostAndReply (fun replyChannel -> GetComponents(eid,replyChannel))
 
     member _.Init (map:Map<uint32,Component[]>) = agent.Post (Init map)
 
@@ -68,7 +63,5 @@ type agent_EntityComponent() =
     member _.RemoveEntity (eid:uint32) = agent.Post (Remove eid)
 
     member _.ReplaceComponent (c:Component) = agent.Post (ReplaceComponent c)
-
-
 
 

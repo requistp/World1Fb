@@ -66,12 +66,17 @@ let ResolveCombiningTwoOptions (o1:'T option) (o2:'T option) =
                  | Some s2 -> if s1=s2 then o1 else None
 
 module Timer =
-    let Start rnd = System.DateTime.Now
-    let End name (st:System.DateTime) =
+    let Start (logger:string->unit) = 
+        let st = System.DateTime.Now
+        logger (sprintf "%s" (st.ToLongTimeString()))
+        st
+    let End (logger:string->unit) (name:string) (st:System.DateTime) =
         let et = System.DateTime.Now
-        printfn "\n%s start:%O, %i      " name st st.Millisecond
-        printfn "%s   end:%O, %i      " name et et.Millisecond
-        printfn "%s  cost:%i         " name (et.Subtract(st).Minutes*60000 + et.Subtract(st).Seconds*1000 + et.Subtract(st).Milliseconds)
+        let cost = et.Subtract(st).Minutes*60000 + et.Subtract(st).Seconds*1000 + et.Subtract(st).Milliseconds
+        logger (sprintf "%s %s-%s = %i" name (st.ToLongTimeString()) (et.ToLongTimeString()) cost)
+        //printfn "\n%s start:%O, %i      " name st st.Millisecond
+        //printfn "%s   end:%O, %i      " name et et.Millisecond
+        //printfn "%s  cost:%i         " name (et.Subtract(st).Minutes*60000 + et.Subtract(st).Seconds*1000 + et.Subtract(st).Milliseconds)
 
 
 

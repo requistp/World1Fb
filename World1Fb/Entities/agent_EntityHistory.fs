@@ -8,7 +8,6 @@ type historyTuple = (Map<uint32,Component[]> * Map<byte,uint32[]> * Map<Location
 
 type private agent_EntityHistoryMsg = 
 | Add of round:uint32 * historyTuple
-//| Get of uint32 * AsyncReplyChannel<historyTuple>
 | Init of Map<uint32,historyTuple>
 
 
@@ -25,8 +24,6 @@ type agent_EntityHistory() =
                         match msg with
                         | Add (round,h) -> 
                             _history <- _history.Add(round,h)
-                        //| Get (round,replyChannel) ->
-                        //    replyChannel.Reply(_history.Item round)
                         | Init hs ->
                             _history <- hs
                 }
@@ -36,7 +33,7 @@ type agent_EntityHistory() =
 
     member _.Get (round:uint32) = _history.Item round
 
-    //member _.Get (round:uint32) = agent.PostAndReply (fun replyChannel -> Get(round,replyChannel))
+    member _.GetCurrent = _history.Item (uint32 (_history.Count-1))
 
     member _.Init hs = agent.Post (Init hs)
 

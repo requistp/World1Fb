@@ -81,8 +81,8 @@ type WorldMapRenderer() =
                 let forms = 
                     let (es,cs,ls) = enm.GetHistory round
                     location
-                    |> EntityManager.EM.GetEntitiesAtLocation ls
-                    |> Array.Parallel.map (fun e -> (e|>EntityManager.EM.GetComponent FormComponentID es).ToForm)
+                    |> EntityManager.History.GetEntitiesAtLocation ls
+                    |> Array.Parallel.map (fun e -> (e|>EntityManager.History.GetComponent FormComponentID es).ToForm)
                 System.Console.SetCursorPosition(drawX,drawY)
                 drawCall forms.[0].Symbol
             )

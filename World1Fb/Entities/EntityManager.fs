@@ -27,7 +27,7 @@ type EntityManager() =
     member _.CreateEntity (cts:Component[]) = 
         Async.Parallel 
         (
-            agentForEntities.CreateEntity (cts.[0].EntityID,cts)
+            agentForEntities.CreateEntity cts
             agentForComponents.Add cts
             agentForLocations.Add cts
         ) |> ignore
@@ -48,6 +48,10 @@ type EntityManager() =
 
     member _.GetEntitiesAtLocation location = agentForLocations.Get location
 
+    member _.GetHistory (round:uint32) = agentForHistory.Get round
+    
+    member _.GetHistory_Current = agentForHistory.GetCurrent
+
     member _.GetMaxID = agentForEntityID.GetMaxID 
 
     member _.GetNewID = agentForEntityID.GetNewID
@@ -62,8 +66,7 @@ type EntityManager() =
         ctss |> Array.Parallel.iter (fun cts -> agentForComponents.Add cts)
         ctss |> Array.Parallel.iter (fun cts -> cts |> Array.filter (fun c -> c.ComponentID=FormComponentID) |> Array.Parallel.iter (fun c -> agentForLocations.Add c.ToForm))
     
-    member _.Init (maxEntityID:uint32) =
-        agentForEntityID.Init maxEntityID
+    member _.Init (maxEntityID:uint32) = agentForEntityID.Init maxEntityID
 
     member _.PendingUpdates = 
         agentForEntities.PendingUpdates || agentForEntityID.PendingUpdates || agentForComponents.PendingUpdates || agentForLocations.PendingUpdates || agentForHistory.PendingUpdates
@@ -73,9 +76,12 @@ type EntityManager() =
 
     member _.RemoveEntity (eid:uint32) =
         let cts = agentForEntities.GetComponents eid
-        agentForComponents.Remove cts
-        agentForLocations.Remove cts
-        agentForEntities.RemoveEntity eid
+        Async.Parallel 
+        (
+            agentForComponents.Remove cts
+            agentForLocations.Remove cts
+            agentForEntities.RemoveEntity eid
+        ) |> ignore
         Ok None
         
     member me.ReplaceComponent (c:Component) =
@@ -88,28 +94,32 @@ type EntityManager() =
         agentForEntities.Exists eid |> TrueSomeFalseNone (agentForEntities.GetComponents eid)
 
     member me.TryGetComponent (cid:byte) (eid:uint32) : Option<Component> = 
-        match me.TryGet eid with
-        | None -> None
-        | Some cts -> match cts |> Array.filter (fun c -> c.ComponentID = cid) with
-                      | [||] -> None
-                      | l -> Some (l.[0])
+        me.TryGet eid
+        |> Option.bind (fun cts -> 
+            match cts |> Array.filter (fun c -> c.ComponentID = cid) with
+            | [||] -> None
+            | l -> Some (l.[0]))
+        //match me.TryGet eid with
+        //| None -> None
+        //| Some cts -> match cts |> Array.filter (fun c -> c.ComponentID = cid) with
+        //              | [||] -> None
+        //              | l -> Some (l.[0])
 
     member me.TryGetComponentForEntities (cid:byte) (eids:uint32[]) = 
         me.GetEntitiesWithComponent cid
         |> Array.filter (fun e -> eids|>Array.contains e)
         |> Array.Parallel.map (fun e -> me.GetComponent cid e)
 
-    member me.GetHistory (round:uint32) =
-        agentForHistory.Get round
 
+module History =
 
-    module EM =
-        let GetEntitiesAtLocation (locationMap:Map<LocationDataInt,uint32[]>) (location:LocationDataInt) =
-            match locationMap.ContainsKey location with
-            | false -> [||]
-            | true -> locationMap.Item location
+    let GetComponent (componentID:byte) (entities:Map<uint32,Component[]>) (entityID:uint32) =
+        entities.Item(entityID)
+        |> Array.find (fun x -> x.ComponentID = componentID)
 
-        let GetComponent (componentID:byte) (entities:Map<uint32,Component[]>) (entityID:uint32) =
-            entities.Item(entityID)
-            |> Array.find (fun x -> x.ComponentID = componentID)
+    let GetEntitiesAtLocation (locationMap:Map<LocationDataInt,uint32[]>) (location:LocationDataInt) =
+        match locationMap.ContainsKey location with
+        | false -> [||]
+        | true -> locationMap.Item location
+
 
