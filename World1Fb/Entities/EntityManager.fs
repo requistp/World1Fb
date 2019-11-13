@@ -3,6 +3,7 @@ open agent_ComponentEntity
 open agent_EntityComponent
 open agent_EntityID
 open agent_EntityHistory
+open agent_GameLog
 open agent_LocationEntity
 open Component
 open ComponentEnums
@@ -11,7 +12,7 @@ open LocationTypes
 open System
 
 
-type EntityManager() =
+type EntityManager(log:agent_GameLog) =
     let agentForEntityID = new agent_EntityID()
     let agentForComponents = new agent_ComponentEntity()
     let agentForLocations = new agent_LocationEntity()
@@ -50,6 +51,8 @@ type EntityManager() =
 
     member _.GetHistory (round:uint32 option) = agentForHistory.Get round
     
+    member me.GetLocation (entityID:uint32) = (entityID|>me.GetComponent FormComponentID).ToForm.Location
+
     member _.GetMaxID = agentForEntityID.GetMaxID 
 
     member _.GetNewID = agentForEntityID.GetNewID

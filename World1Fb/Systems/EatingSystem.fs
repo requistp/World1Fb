@@ -2,6 +2,8 @@
 open Component
 open ComponentEnums
 open CalendarTimings
+open EatingComponent
+open EntityManager
 open EventTypes
 open FoodComponent
 open GameManager
@@ -14,38 +16,43 @@ type EatingSystem(game:Game, isActive:bool) =
     let enm = game.EntityManager
     let evm = game.EventManager    
     
-    member private me.onEat round (ge:GameEventTypes) =
-        let e = ge.ToActionEat
-        let eco = enm.TryGetComponent EatingComponentID e.EntityID
-        let fco = enm.TryGetComponent FormComponentID e.EntityID
-        let ed = eco.Value.ToEating
-        let fc = fco.Value.ToForm
+    static let foodsAtLocation (enm:EntityManager) (eat:EatingComponent) =
+        eat.EntityID 
+        |> enm.GetLocation
+        |> enm.GetEntitiesAtLocation // Entities here
+        |> Array.filter (fun eid -> eid <> eat.EntityID) // Not me
+        |> enm.TryGetComponentForEntities FoodComponentID // Are food
+        |> Array.Parallel.map (fun c -> c.ToFood)
+        |> Array.filter (fun f -> eat.CanEat f.FoodType && f.Quantity > 0) // Types I can eat & Food remaining
 
-        let foodsAtLocation = 
-            fc.Location
-            |> enm.GetEntitiesAtLocation // Food here
-            |> Array.filter (fun eid -> eid <> e.EntityID) // Not me
-            |> enm.TryGetComponentForEntities FoodComponentID
-            |> Array.map (fun c -> c.ToFood)
-            |> Array.filter (fun f -> ed.CanEat f.FoodType && f.Quantity > 0) // Types I can eat & Food remaining
-            |> Array.sortByDescending (fun f -> f.FoodType.Calories) // Highest caloric food first
+    static member EatActionEnabled (enm:EntityManager) (entityID:uint32) =
+        let eat = (entityID|>enm.GetComponent EatingComponentID).ToEating
+        (eat.QuantityRemaining > 0) && ((foodsAtLocation enm eat).Length > 0)
+        
+    member private me.onEat round (ge:GameEventTypes) =
+        let eat = (ge.EntityID |> enm.GetComponent EatingComponentID).ToEating
+
+        let selectFood =
+            let foods =
+                foodsAtLocation enm eat
+                |> Array.sortByDescending (fun f -> f.FoodType.Calories) // Highest caloric food first
+            match foods with 
+            | [||] -> None
+            | fs -> Some fs.[0]
             
-        let eatIt (f:FoodComponent) =
-            let quantity = Math.Clamp(ed.QuantityPerAction, 0, Math.Min(f.Quantity,ed.QuantityRemaining)) // Clamp by how much food is left and how much stomach space is left
+        let eatFood (f:FoodComponent) =
+            let quantity = Math.Clamp(eat.QuantityPerAction, 0, Math.Min(f.Quantity,eat.QuantityRemaining)) // Clamp by how much food is left and how much stomach space is left
             let calories = quantity * f.FoodType.Calories
             match quantity with
             | 0 -> Error "Stomach is full"
             | _ -> 
-                evm.RaiseEvent (Eaten { EaterID=ed.EntityID; EateeID=f.EntityID; Quantity=quantity })
-                enm.ReplaceComponent (Eating (ed.Update (Some (ed.Quantity+quantity)) (Some (ed.Calories+calories)))) 
-                Ok (Some (sprintf "EateeID: %i. Quantity: +%i=%i. Calories: +%i=%i" (f.EntityID) quantity (ed.Quantity+quantity) calories (ed.Calories+calories)))
-                                
-        match eco.IsSome && fco.IsSome with
-        | false -> Error "Missing component"
-        | true -> 
-            match foodsAtLocation with
-            | [||] -> Error "No food at location"
-            | fs -> eatIt fs.[0]
+                evm.RaiseEvent (Eaten { EaterID=eat.EntityID; EateeID=f.EntityID; Quantity=quantity })
+                enm.ReplaceComponent (Eating (eat.Update (Some (eat.Quantity+quantity)) (Some (eat.Calories+calories)))) 
+                Ok (Some (sprintf "EateeID: %i. Quantity: +%i=%i. Calories: +%i=%i" (f.EntityID) quantity (eat.Quantity+quantity) calories (eat.Calories+calories)))
+        
+        match selectFood with
+        | None -> Error "No food at location"
+        | Some foodEaten -> eatFood foodEaten
 
     member private me.onComponentAdded round (ge:GameEventTypes) =
         let e = ge.ToComponentAddedEating

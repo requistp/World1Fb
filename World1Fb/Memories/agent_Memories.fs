@@ -1,45 +1,45 @@
 ﻿module agent_Memories
-open Component
-open LocationTypes
+//open Component
+//open LocationTypes
 
-// ExperienceMemory -- maybe put Gave Events here
-type Memory = { EntityID:uint32; Time:uint32; Location:LocationDataInt; OtherEntityID:uint32 }
-
-
-type MemoryTypes =
-    | Sight of Memory
-    | Sound of Memory
+//// ExperienceMemory -- maybe put Gave Events here
+//type Memory = { EntityID:uint32; Time:uint32; Location:LocationDataInt; OtherEntityID:uint32 }
 
 
-type agentMemoryMsg =
-//| Get of AsyncReplyChannel<uint32>
-| Record of MemoryTypes
-| Init of MemoryTypes[]
+//type MemoryTypes =
+//    | Sight of Memory
+//    | Sound of Memory
 
 
-type agent_Memories() =
+//type agentMemoryMsg =
+////| Get of AsyncReplyChannel<uint32>
+//| Record of MemoryTypes
+//| Init of MemoryTypes[]
 
-    let agent =
-        let mutable _memories = Array.empty<MemoryTypes>
-        MailboxProcessor<agentMemoryMsg>.Start(
-            fun inbox ->
-                async { 
-                    while true do
-                        let! msg = inbox.Receive()
-                        match msg with
-                        //| Get replyChannel ->
-                        //    replyChannel.Reply(_round)
-                        | Record memory ->
-                            _memories <- [|memory|] |> Array.append _memories
-                        | Init memories ->
-                            _memories <- memories
-                }
-            )
 
-    //member _.Get = agent.PostAndReply Get
+//type agent_Memories() =
 
-    member _.Record memory = agent.Post (Record memory)
+//    let agent =
+//        let mutable _memories = Array.empty<MemoryTypes>
+//        MailboxProcessor<agentMemoryMsg>.Start(
+//            fun inbox ->
+//                async { 
+//                    while true do
+//                        let! msg = inbox.Receive()
+//                        match msg with
+//                        //| Get replyChannel ->
+//                        //    replyChannel.Reply(_round)
+//                        | Record memory ->
+//                            _memories <- [|memory|] |> Array.append _memories
+//                        | Init memories ->
+//                            _memories <- memories
+//                }
+//            )
 
-    member _.Init memories = agent.Post (Init memories)
+//    //member _.Get = agent.PostAndReply Get
 
-    member _.PendingUpdates = agent.CurrentQueueLength > 0
+//    member _.Record memory = agent.Post (Record memory)
+
+//    member _.Init memories = agent.Post (Init memories)
+
+//    member _.PendingUpdates = agent.CurrentQueueLength > 0

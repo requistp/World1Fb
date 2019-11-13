@@ -29,9 +29,9 @@ type InputHandler(evm:EventManager, enm:EntityManager, renderer_SetDisplay:strin
 
     member private me.onKeyPressed (k:ConsoleKeyInfo) = 
         let handleAction (ge:GameEventTypes) =
-            match ge.ActionType with
-            | None -> ()
-            | Some _ -> evm.RaiseEvent ge
+            match (_entityID.Value |> enm.GetComponent ControllerComponentID).ToController.CurrentActions |> Array.contains ge.ActionType.Value with
+            | false -> ()
+            | true -> evm.RaiseEvent ge
 
         match k.Key with 
         | ConsoleKey.UpArrow -> 

@@ -9,16 +9,15 @@ open EventTypes
 open InputHandler
 open LoadAndSave
 open LocationTypes
-open MemoryManager
 open System
 open SystemManager
+
 
 type Game(renderer_SetDisplay:string->unit, wmr:EntityManager->uint32->unit, wmrKeys:ConsoleKey->unit, format:SaveGameFormats) =
     let agentForRound = new agent_Round()
     let gameLog = new agent_GameLog()
-    let entityMan = new EntityManager()
+    let entityMan = new EntityManager(gameLog)
     let eventMan = new EventManager(entityMan, gameLog, agentForRound.Get)
-    let memMan = new MemoryManager()
     let systemMan = new SystemManager()
     let inputMan = new InputHandler(eventMan, entityMan, renderer_SetDisplay, wmrKeys)
  
@@ -29,7 +28,6 @@ type Game(renderer_SetDisplay:string->unit, wmr:EntityManager->uint32->unit, wmr
     member _.EventManager = eventMan
     member _.EntityManager = entityMan
     member _.Logger = gameLog
-    member _.MemoryManager = memMan
     member _.GetRound() = agentForRound.Get()
 
     member private me.assignController =
@@ -45,10 +43,9 @@ type Game(renderer_SetDisplay:string->unit, wmr:EntityManager->uint32->unit, wmr
                         if (round > 0u && x > 1) then gameLog.Log round (sprintf "%-3s | %-20s -> %-30s #%7i : %s" "xld" "End of round" "Cancelled pending more events" x "Events") 
                         System.Threading.Thread.Sleep 3
                 [|1..loops|] |> Array.iter (fun x -> checkIdle x)
-            waitForEndOfRound round 10
+            waitForEndOfRound round 20
             gameLog.WriteLog
             entityMan.RecordHistory round
-
         let round = agentForRound.Get()
 
         eventMan.ExecuteScheduledEvents round

@@ -2,6 +2,7 @@
 open CommonGenericFunctions
 open Component
 open ComponentEnums
+open EntityManager
 open EventTypes
 open GameManager
 open MatingComponent
@@ -28,26 +29,28 @@ type MatingSystem(game:Game, isActive:bool) =
         evm.RaiseEvent (CreateEntity { Components = newcts })
         Ok (Some (sprintf "Born:%i" newcts.[0].EntityID))
 
+    static let eligibleFemales (enm:EntityManager) (mating:MatingComponent) round = 
+        mating.EntityID 
+        |> enm.GetLocation
+        |> enm.GetEntitiesAtLocation  // Here
+        |> Array.filter (fun eid -> eid <> mating.EntityID) // Not me
+        |> enm.TryGetComponentForEntities MatingComponentID // Can mate
+        |> Array.Parallel.map (fun c -> c.ToMating)
+        |> Array.filter (fun m -> m.Species = mating.Species && m.MatingStatus = Female && m.CanMate round) // Same Species & Non-Pregnant Females & Can Retry
+
+    static member MateActionEnabled (enm:EntityManager) (entityID:uint32) (round:uint32) =
+        let m = (entityID|>enm.GetComponent MatingComponentID).ToMating
+        match m.MatingStatus with
+        | Male when m.CanMate round -> 
+            (eligibleFemales enm m round).Length > 0
+        | _ -> false
+
     member me.onActionMate round (ge:GameEventTypes) =
-        let e = ge.ToActionMate
-        let mc = (e.EntityID|>enm.GetComponent MatingComponentID).ToMating
-        let fc = (e.EntityID|>enm.GetComponent FormComponentID).ToForm
-
-        let checkMatingStatus =
-            match mc.MatingStatus with
-            | Female_Pregnant -> Error "Pregnant" 
-            | Female -> Error "Female"
-            | Male when not (mc.CanMate round) -> Error "Too early to retry"
-            | _ -> Ok None
-
-        let findEligibleFemale _ = 
+        let mc = (ge.EntityID|>enm.GetComponent MatingComponentID).ToMating
+        
+        let selectFemale = 
             let mates = 
-                fc.Location
-                |> enm.GetEntitiesAtLocation  // Here
-                |> Array.filter (fun eid -> eid <> e.EntityID) // Not me
-                |> enm.TryGetComponentForEntities MatingComponentID // Can mate
-                |> Array.map (fun c -> c.ToMating)
-                |> Array.filter (fun m -> m.Species = mc.Species && m.MatingStatus = Female && m.CanMate round) // Same Species & Non-Pregnant Females & Can Retry
+                eligibleFemales enm mc round
                 |> Array.sortByDescending (fun m -> m.ChanceOfReproduction)
             match mates with 
             | [||] -> Error "No eligible females present"
@@ -72,8 +75,7 @@ type MatingSystem(game:Game, isActive:bool) =
                 enm.ReplaceComponent (Mating (mc2.Update None (Some Female_Pregnant) (Some round) None)) 
                 Ok (Some (sprintf "Reproduction succeeded (%f >= %f)" chance rnd))
 
-        checkMatingStatus
-        |> Result.bind findEligibleFemale
+        selectFemale
         |> Result.bind getEligiblesDecision
         |> Result.bind tryMating
 
@@ -93,4 +95,12 @@ type MatingSystem(game:Game, isActive:bool) =
     override me.Update round = 
         ()
 
+
+// No longer necessary as I moved to the controller step
+//let checkMatingStatus =
+//    match mc.MatingStatus with
+//    | Female_Pregnant -> Error "Pregnant" 
+//    | Female -> Error "Female"
+//    | Male when not (mc.CanMate round) -> Error "Too early to retry"
+//    | _ -> Ok None
 

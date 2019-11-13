@@ -1,6 +1,7 @@
 ﻿module MovementSystem
 open Component
 open ComponentEnums
+open EntityManager
 open EventTypes
 open GameManager
 open SystemManager
@@ -10,7 +11,11 @@ type MovementSystem(game:Game, isActive:bool) =
     inherit AbstractSystem(isActive) 
     let enm = game.EntityManager
     let evm = game.EventManager    
-
+  
+    static member MoveActionEnabled (enm:EntityManager) (entityID:uint32) =
+        //let move = (entityID|>enm.GetComponent MovementComponentID).ToMovement
+        true
+  
     member private me.onMovementKeyPressed round (ge:GameEventTypes) =
         let e = ge.ToAction_Movement
 
