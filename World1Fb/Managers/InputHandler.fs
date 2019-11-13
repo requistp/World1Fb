@@ -1,6 +1,7 @@
 ﻿module InputHandler
 open Component
 open ComponentEnums
+open ControllerComponent
 open EntityManager
 open EventManager
 open EventTypes
@@ -27,6 +28,14 @@ type InputHandler(evm:EventManager, enm:EntityManager, renderer_SetDisplay:strin
         | false -> ()
         | true -> event()
 
+    member private me.HandleAction2 (action:ActionTypes) event =
+        match _entityID with
+        | None -> ()
+        | Some eid -> 
+            match ((eid|>enm.GetComponent ControllerComponentID).ToController.Actions |> Array.contains action) with
+            | false -> ()
+            | true -> event()
+
     member me.SetDisplay k =
         match k with
         | ConsoleKey.F1 -> renderer_SetDisplay "World Map"
@@ -35,6 +44,32 @@ type InputHandler(evm:EventManager, enm:EntityManager, renderer_SetDisplay:strin
             () //evm.PrintEventLog // renderer_SetDisplay "Game Events List"
         | _ -> ()
         InfoOnly
+
+    member private me.onKeyPressed2 (k:ConsoleKeyInfo) = 
+        match k.Key with 
+        | ConsoleKey.UpArrow -> 
+            let event() = evm.RaiseEvent (Action_Movement { EntityID=_entityID.Value; Direction=North })
+            me.HandleAction2 Move event
+        | ConsoleKey.DownArrow -> 
+            let event() = evm.RaiseEvent (Action_Movement { EntityID=_entityID.Value; Direction=South })
+            me.HandleAction2 Move event
+        | ConsoleKey.LeftArrow -> 
+            let event() = evm.RaiseEvent (Action_Movement { EntityID=_entityID.Value; Direction=West })
+            me.HandleAction2 Move event
+        | ConsoleKey.RightArrow -> 
+            let event() = evm.RaiseEvent (Action_Movement { EntityID=_entityID.Value; Direction=East })
+            me.HandleAction2 Move event
+        | ConsoleKey.E -> 
+            let event() = evm.RaiseEvent (Action_Eat { EntityID=_entityID.Value })
+            me.HandleAction2 Eat event
+        | ConsoleKey.M -> 
+            let event() = evm.RaiseEvent (Action_Mate { EntityID=_entityID.Value })
+            me.HandleAction2 Mate event
+        | _ -> ()  
+
+        while Console.KeyAvailable do //Might help clear double movement keys entered in one turn
+            Console.ReadKey(true).Key |> ignore
+        GameAction
 
     member private me.onKeyPressed (k:ConsoleKeyInfo) = 
         match k.Key with 
@@ -75,5 +110,5 @@ type InputHandler(evm:EventManager, enm:EntityManager, renderer_SetDisplay:strin
         | ConsoleKey.NumPad4 -> wmrKeys ConsoleKey.LeftArrow; InfoOnly
         | ConsoleKey.NumPad6 -> wmrKeys ConsoleKey.RightArrow; InfoOnly
         | ConsoleKey.NumPad8 -> wmrKeys ConsoleKey.UpArrow; InfoOnly
-        | _ -> me.onKeyPressed k
+        | _ -> me.onKeyPressed2 k
                

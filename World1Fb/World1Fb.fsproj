@@ -41,6 +41,7 @@
     <Compile Include="Managers\InputHandler.fs" />
     <Compile Include="Managers\LoadAndSave.fs" />
     <Compile Include="Managers\GameManager.fs" />
+    <Compile Include="Systems\ControllerSystem.fs" />
     <Compile Include="Systems\EatingSystem.fs" />
     <Compile Include="Systems\EntitySystem.fs" />
     <Compile Include="Systems\FoodSystem.fs" />

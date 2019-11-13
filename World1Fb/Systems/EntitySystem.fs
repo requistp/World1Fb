@@ -15,6 +15,7 @@ type EntitySystem(game:Game, isActive:bool) =
         let e = ge.ToCreateEntity
         let checkComponent (c:Component) =
             match c.ComponentID with 
+            | x when x = ControllerComponentID -> evm.RaiseEvent (ComponentAdded_Controller { EntityID=c.EntityID; Component=c })
             | x when x = EatingComponentID -> evm.RaiseEvent (ComponentAdded_Eating { EntityID=c.EntityID; Component=c })
             | x when x = PlantGrowthComponentID -> evm.RaiseEvent (ComponentAdded_PlantGrowth { EntityID=c.EntityID; Component=c })
             | _ -> ()

@@ -48,7 +48,7 @@ let MakeGrasses (enm:EntityManager) n =
 let MakeRabbits (enm:EntityManager) n = 
     let MakeRabbit x y n rnd = 
         let eid = enm.GetNewID
-        let cont = [| Controller { EntityID = eid } |]
+        let cont = [| Controller { EntityID = eid; Actions = [||] } |]
         let matingStatus = if n = 1 || rnd = 0 then Male else Female
         let symbol = if matingStatus = Male then 'R' else 'r'
         let location = { X = x; Y = y; Z = 0 }

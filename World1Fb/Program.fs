@@ -1,4 +1,5 @@
 ﻿open BuildNewWorld
+open ControllerSystem
 open EatingSystem
 open EntitySystem
 open FoodSystem
@@ -36,6 +37,7 @@ let startingEntities =
     
 let systems =
     [|
+        ControllerSystem(g,true).Abstract
         EatingSystem(g,true).Abstract
         EntitySystem(g,true).Abstract
         FoodSystem(g,true).Abstract

@@ -6,7 +6,8 @@ let Event_ActionEat_ID = 1uy
 let Event_ActionMate_ID = Event_ActionEat_ID + 1uy
 let Event_ActionMovement_ID = Event_ActionMate_ID + 1uy
 let Event_Birth_ID = Event_ActionMovement_ID + 1uy
-let Event_ComponentAdded_Eating_ID = Event_Birth_ID + 1uy
+let Event_ComponentAdded_Controller_ID = Event_Birth_ID + 1uy
+let Event_ComponentAdded_Eating_ID = Event_ComponentAdded_Controller_ID + 1uy
 let Event_ComponentAdded_PlantGrowth_ID = Event_ComponentAdded_Eating_ID + 1uy
 let Event_CreateEntity_ID = Event_ComponentAdded_PlantGrowth_ID + 1uy
 let Event_Eaten_ID = Event_CreateEntity_ID + 1uy
@@ -29,6 +30,7 @@ type Event_ActionEat = { EntityID:uint32 }
 type Event_ActionMate = { EntityID:uint32 }
 type Event_ActionMovement = { EntityID:uint32; Direction:MovementDirection }
 type Event_Birth = { MomID:uint32; DadID:uint32 }
+type Event_ComponentAdded_Controller = { EntityID:uint32; Component:Component }
 type Event_ComponentAdded_Eating = { EntityID:uint32; Component:Component }
 type Event_ComponentAdded_PlantGrowth = { EntityID:uint32; Component:Component }
 type Event_CreateEntity = { Components:Component[] }
@@ -48,6 +50,7 @@ type GameEventTypes =
     | Action_Mate of Event_ActionMate
     | Action_Movement of Event_ActionMovement
     | Birth of Event_Birth
+    | ComponentAdded_Controller of Event_ComponentAdded_Controller
     | ComponentAdded_Eating of Event_ComponentAdded_Eating
     | ComponentAdded_PlantGrowth of Event_ComponentAdded_PlantGrowth
     | CreateEntity of Event_CreateEntity
@@ -67,6 +70,7 @@ type GameEventTypes =
         | Action_Mate d -> d.EntityID
         | Action_Movement d -> d.EntityID
         | Birth d -> d.MomID
+        | ComponentAdded_Controller d -> d.EntityID
         | ComponentAdded_Eating d -> d.EntityID
         | ComponentAdded_PlantGrowth d -> d.EntityID
         | CreateEntity d -> d.Components.[0].EntityID
@@ -86,6 +90,7 @@ type GameEventTypes =
         | Action_Mate _ -> Event_ActionMate_ID
         | Action_Movement _ -> Event_ActionMovement_ID
         | Birth _ -> Event_Birth_ID
+        | ComponentAdded_Controller _ -> Event_ComponentAdded_Controller_ID
         | ComponentAdded_Eating _ -> Event_ComponentAdded_Eating_ID
         | ComponentAdded_PlantGrowth _ -> Event_ComponentAdded_PlantGrowth_ID
         | CreateEntity _ -> Event_CreateEntity_ID
@@ -105,6 +110,7 @@ type GameEventTypes =
         | Action_Mate _ -> "Action_Mate"
         | Action_Movement _ -> "Action_Movement"
         | Birth _ -> "Birth"
+        | ComponentAdded_Controller _ -> "ComponentAdded_Controller"
         | ComponentAdded_Eating _ -> "ComponentAdded_Eating"
         | ComponentAdded_PlantGrowth _ -> "ComponentAdded_PlantGrowth"
         | CreateEntity _ -> "CreateEntity"
@@ -129,6 +135,9 @@ type GameEventTypes =
         d
     member me.ToBirth = 
         let (Birth d) = me
+        d
+    member me.ToComponentAddedController =
+        let (ComponentAdded_Controller d) = me
         d
     member me.ToComponentAddedEating =
         let (ComponentAdded_Eating d) = me

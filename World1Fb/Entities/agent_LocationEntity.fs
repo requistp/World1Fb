@@ -8,15 +8,15 @@ open LocationTypes
 
 type private agent_LocationEntityMsg =
 | Add of FormComponent
-//| Get of LocationDataInt * AsyncReplyChannel<uint32[]>
+| Get of LocationDataInt * AsyncReplyChannel<uint32[]>
 | GetAll of AsyncReplyChannel<Map<LocationDataInt,uint32[]> >
 | Init of Map<LocationDataInt,uint32[]>
 | Remove of FormComponent
 
 
 type agent_LocationEntity() = 
-    let mutable _map = MapLocations |> Array.fold (fun (m:Map<LocationDataInt,uint32[]>) l -> m.Add(l,Array.empty)) Map.empty
     let agent =
+        let mutable _map = MapLocations |> Array.fold (fun (m:Map<LocationDataInt,uint32[]>) l -> m.Add(l,Array.empty)) Map.empty
         MailboxProcessor<agent_LocationEntityMsg>.Start(
             fun inbox ->
                 async { 
@@ -25,8 +25,8 @@ type agent_LocationEntity() =
                         match msg with
                         | Add fd ->
                             _map <- Map_AppendValueToArrayUnique _map fd.Location fd.EntityID 
-                        //| Get (location,replyChannel) -> 
-                        //    replyChannel.Reply(_map.Item(location))
+                        | Get (location,replyChannel) -> 
+                            replyChannel.Reply(_map.Item(location))
                         | GetAll replyChannel -> 
                             replyChannel.Reply(_map)
                         | Init newMap -> 
@@ -43,8 +43,7 @@ type agent_LocationEntity() =
         |> Array.filter (fun ct -> ct.ComponentID = FormComponentID)
         |> Array.Parallel.iter (fun ct -> me.Add ct.ToForm)
 
-    //member _.Get (location:LocationDataInt) = agent.PostAndReply (fun replyChannel -> Get (location,replyChannel))
-    member _.Get (location:LocationDataInt) = _map.Item(location)
+    member _.Get (location:LocationDataInt) = agent.PostAndReply (fun replyChannel -> Get (location,replyChannel))
 
     member _.GetAll() = agent.PostAndReply GetAll
 

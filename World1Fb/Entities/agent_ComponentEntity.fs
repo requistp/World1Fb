@@ -5,15 +5,15 @@ open CommonGenericFunctions
 
 type private agent_ComponentEntityMsg = 
 | Add of Component
-//| Get of byte * AsyncReplyChannel<uint32[]>
+| Get of byte * AsyncReplyChannel<uint32[]>
 | GetAll of AsyncReplyChannel<Map<byte,uint32[]> >
 | Init of Map<byte,uint32[]>    
 | Remove of Component
 
 
 type agent_ComponentEntity() = 
-    let mutable _map = Map.empty<byte,uint32[]>
     let agent =
+        let mutable _map = Map.empty<byte,uint32[]>
         MailboxProcessor<agent_ComponentEntityMsg>.Start(
             fun inbox ->
                 async { 
@@ -25,11 +25,11 @@ type agent_ComponentEntity() =
                             | false -> _map <- _map.Add(c.ComponentID,[|c.EntityID|])
                             | true -> 
                                 _map <- Map_AppendValueToArrayUnique _map c.ComponentID c.EntityID 
-                        //| Get (cid,replyChannel) -> 
-                        //    replyChannel.Reply(
-                        //        match _map.ContainsKey(cid) with
-                        //        | false -> Array.empty
-                        //        | true -> _map.Item(cid))
+                        | Get (cid,replyChannel) -> 
+                            replyChannel.Reply(
+                                match _map.ContainsKey(cid) with
+                                | false -> Array.empty
+                                | true -> _map.Item(cid))
                         | GetAll replyChannel -> 
                             replyChannel.Reply(_map)
                         | Init newMap -> 
@@ -44,11 +44,11 @@ type agent_ComponentEntity() =
     member me.Add (cts:Component[]) = 
         cts |> Array.Parallel.iter (fun ct -> me.Add ct)
     
-    //member _.Get (cid:byte) = agent.PostAndReply (fun replyChannel -> Get (cid,replyChannel))
-    member _.Get (cid:byte) = 
-        match _map.ContainsKey(cid) with
-        | false -> Array.empty
-        | true -> _map.Item(cid)
+    member _.Get (cid:byte) = agent.PostAndReply (fun replyChannel -> Get (cid,replyChannel))
+    //member _.Get (cid:byte) = 
+    //    match _map.ContainsKey(cid) with
+    //    | false -> Array.empty
+    //    | true -> _map.Item(cid)
 
     member _.GetAll() = agent.PostAndReply GetAll
 
