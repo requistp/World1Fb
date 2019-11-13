@@ -45,10 +45,6 @@ type agent_ComponentEntity() =
         cts |> Array.Parallel.iter (fun ct -> me.Add ct)
     
     member _.Get (cid:byte) = agent.PostAndReply (fun replyChannel -> Get (cid,replyChannel))
-    //member _.Get (cid:byte) = 
-    //    match _map.ContainsKey(cid) with
-    //    | false -> Array.empty
-    //    | true -> _map.Item(cid)
 
     member _.GetAll() = agent.PostAndReply GetAll
 

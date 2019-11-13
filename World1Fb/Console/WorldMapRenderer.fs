@@ -79,7 +79,7 @@ type WorldMapRenderer() =
                     | false -> ColoredConsole.Console.DrawDarkGray
                     | true -> ColoredConsole.Console.DrawWhite
                 let forms = 
-                    let (es,cs,ls) = enm.GetHistory round
+                    let (es,_,ls) = enm.GetHistory (Some round)
                     location
                     |> EntityManager.History.GetEntitiesAtLocation ls
                     |> Array.Parallel.map (fun e -> (e|>EntityManager.History.GetComponent FormComponentID es).ToForm)

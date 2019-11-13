@@ -48,10 +48,8 @@ type EntityManager() =
 
     member _.GetEntitiesAtLocation location = agentForLocations.Get location
 
-    member _.GetHistory (round:uint32) = agentForHistory.Get round
+    member _.GetHistory (round:uint32 option) = agentForHistory.Get round
     
-    member _.GetHistory_Current = agentForHistory.GetCurrent
-
     member _.GetMaxID = agentForEntityID.GetMaxID 
 
     member _.GetNewID = agentForEntityID.GetNewID
