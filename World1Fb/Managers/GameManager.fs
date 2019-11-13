@@ -8,6 +8,7 @@ open EventManager
 open EventTypes
 open InputHandler
 open LoadAndSave
+open LocationTypes
 open MemoryManager
 open System
 open SystemManager

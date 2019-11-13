@@ -45,7 +45,6 @@ type SystemManager() =
         me.Active |> Array.Parallel.iter (fun s -> s.Initialize)
 
     member me.UpdateSystems round =
-        me.ActiveAndInitialized 
-        |> Array.Parallel.iter (fun s -> s.Update round)
+        me.ActiveAndInitialized |> Array.Parallel.iter (fun s -> s.Update round)
 
 
