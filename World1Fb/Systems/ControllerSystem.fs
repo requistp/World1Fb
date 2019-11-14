@@ -23,7 +23,13 @@ type ControllerSystem(game:Game, isActive:bool) =
             match action with
             | Eat -> if EatingSystem.EatActionEnabled enm entityID then Some Eat else None
             | Mate -> if MatingSystem.MateActionEnabled enm entityID round then Some Mate else None
-            | Move -> if MovementSystem.MoveActionEnabled enm entityID then Some Move else None
+            | Move_North | Move_East | Move_South | Move_West ->
+                let movesAllowed = MovementSystem.MovementActionsAllowed enm entityID
+                match action with 
+                | Move_North -> if movesAllowed |> Array.contains Move_North then Some Move_North else None
+                | Move_East -> if movesAllowed |> Array.contains Move_East then Some Move_East else None
+                | Move_South -> if movesAllowed |> Array.contains Move_South then Some Move_South else None
+                | Move_West -> if movesAllowed |> Array.contains Move_West then Some Move_West else None
         actions 
         |> Array.Parallel.choose (fun action -> actionEnabledTest action)
 

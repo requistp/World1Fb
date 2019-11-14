@@ -8,6 +8,7 @@ Scoring System
 
 
 
+Vision should be expanded: Base range, inside vs outside range, and have a current setting that would account for lighting
 
 Hearing
 Memories

@@ -65,12 +65,12 @@ type GameEventTypes =
     | PlantReproduce of Event_PlantReproduce
     | ScheduleEvent of Event_ScheduleEvent * GameEventTypes
     | Starving of Event_Starving
-    member me.ActionType = 
-        match me with
-        | Action_Eat _ -> Some Eat
-        | Action_Mate _ -> Some Mate
-        | Action_Movement _ -> Some Move
-        | _ -> None
+    //member me.ActionType = 
+    //    match me with
+    //    | Action_Eat _ -> Some Eat
+    //    | Action_Mate _ -> Some Mate
+    //    | Action_Movement _ -> Some Move
+    //    | _ -> None
     member me.EntityID =
         match me with
         | Action_Eat d -> d.EntityID

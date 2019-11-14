@@ -1,6 +1,7 @@
 ﻿module MovementSystem
 open Component
 open ComponentEnums
+open ControllerComponent
 open EntityManager
 open EventTypes
 open GameManager
@@ -12,9 +13,26 @@ type MovementSystem(game:Game, isActive:bool) =
     let enm = game.EntityManager
     let evm = game.EventManager    
   
-    static member MoveActionEnabled (enm:EntityManager) (entityID:uint32) =
-        //let move = (entityID|>enm.GetComponent MovementComponentID).ToMovement
-        true
+    static member MovementActionsAllowed (enm:EntityManager) (entityID:uint32) =
+        let mutable _allowed = Array.empty<ActionTypes>
+        let move = (entityID|>enm.GetComponent MovementComponentID).ToMovement
+        let location = enm.GetLocation entityID
+        let testOnMap (direction:MovementDirection) = (direction.AddToLocation location).IsOnMap
+        let formImpassableAtLocation (direction:MovementDirection) =
+            location
+            |> direction.AddToLocation 
+            |> enm.GetEntitiesAtLocation
+            |> Array.filter (fun eid -> eid <> entityID) // Not me
+            |> Array.Parallel.map (fun eid -> eid|>enm.GetComponent FormComponentID)
+            |> Array.exists (fun f -> not f.ToForm.IsPassable)
+        match move.MovesPerTurn with 
+        | 0 -> _allowed
+        | _ ->
+            if (testOnMap North) && not (formImpassableAtLocation North) then _allowed <- Array.append _allowed [|Move_North|]
+            if (testOnMap East)  && not (formImpassableAtLocation East)  then _allowed <- Array.append _allowed [|Move_East|]
+            if (testOnMap South) && not (formImpassableAtLocation South) then _allowed <- Array.append _allowed [|Move_South|]
+            if (testOnMap West)  && not (formImpassableAtLocation West)  then _allowed <- Array.append _allowed [|Move_West|]
+            _allowed
   
     member private me.onMovementKeyPressed round (ge:GameEventTypes) =
         let e = ge.ToAction_Movement
