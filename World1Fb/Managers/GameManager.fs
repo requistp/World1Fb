@@ -46,6 +46,7 @@ type Game(renderer_SetDisplay:string->unit, wmr:EntityManager->uint32->unit, wmr
             waitForEndOfRound round 20
             gameLog.WriteLog
             entityMan.RecordHistory round
+
         let round = agentForRound.Get()
 
         eventMan.ExecuteScheduledEvents round
@@ -81,7 +82,7 @@ type Game(renderer_SetDisplay:string->unit, wmr:EntityManager->uint32->unit, wmr
             //printfn "Round#%i      " (eventMan.GetRound())
         | _ -> 
             setInitialForms initialForms
-            System.Threading.Thread.Sleep 50
+            System.Threading.Thread.Sleep 250
             me.assignController |> inputMan.SetEntityID
             me.gameLoop
         
@@ -90,7 +91,7 @@ type Game(renderer_SetDisplay:string->unit, wmr:EntityManager->uint32->unit, wmr
             if r = GameAction then me.gameLoop
             r <- inputMan.AwaitKeyboardInput
 
-        System.Threading.Thread.Sleep 50
+        System.Threading.Thread.Sleep 250
 
         me.saveGame
     

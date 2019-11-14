@@ -8,26 +8,25 @@ open GameManager
 open SystemManager
 
 
-type MovementSystem(game:Game, isActive:bool) =
-    inherit AbstractSystem(isActive) 
+type MovementSystem(description:string, game:Game, isActive:bool) =
+    inherit AbstractSystem(description,isActive) 
     let enm = game.EntityManager
     let evm = game.EventManager    
   
     static member MovementActionsAllowed (enm:EntityManager) (entityID:uint32) =
         let mutable _allowed = Array.empty<ActionTypes>
-        let move = (entityID|>enm.GetComponent MovementComponentID).ToMovement
+        let moveo = entityID|>enm.TryGetComponent MovementComponentID
         let location = enm.GetLocation entityID
         let testOnMap (direction:MovementDirection) = (direction.AddToLocation location).IsOnMap
         let formImpassableAtLocation (direction:MovementDirection) =
             location
             |> direction.AddToLocation 
-            |> enm.GetEntitiesAtLocation
-            |> Array.filter (fun eid -> eid <> entityID) // Not me
-            |> Array.Parallel.map (fun eid -> eid|>enm.GetComponent FormComponentID)
+            |> enm.GetEntitiesAtLocationWithComponent (Some entityID) FormComponentID
             |> Array.exists (fun f -> not f.ToForm.IsPassable)
-        match move.MovesPerTurn with 
-        | 0 -> _allowed
-        | _ ->
+
+        match moveo.IsNone || moveo.Value.ToMovement.MovesPerTurn = 0 with 
+        | true -> _allowed
+        | false ->
             if (testOnMap North) && not (formImpassableAtLocation North) then _allowed <- Array.append _allowed [|Move_North|]
             if (testOnMap East)  && not (formImpassableAtLocation East)  then _allowed <- Array.append _allowed [|Move_East|]
             if (testOnMap South) && not (formImpassableAtLocation South) then _allowed <- Array.append _allowed [|Move_South|]
@@ -50,9 +49,7 @@ type MovementSystem(game:Game, isActive:bool) =
                 let testForImpassableFormAtLocation junk =
                     let formImpassableAtLocation =
                         dest
-                        |> enm.GetEntitiesAtLocation
-                        |> Array.filter (fun eid -> eid <> e.EntityID) // Not me
-                        |> Array.Parallel.map (fun eid -> eid|>enm.GetComponent FormComponentID)
+                        |> enm.GetEntitiesAtLocationWithComponent (Some e.EntityID) FormComponentID
                         |> Array.exists (fun f -> not f.ToForm.IsPassable)
                     match formImpassableAtLocation with
                     | true -> Error (sprintf "Form at location %s" (dest.ToString()))
@@ -71,11 +68,13 @@ type MovementSystem(game:Game, isActive:bool) =
         | Some c -> checkIfMovementIsValid c
 
     override me.Initialize = 
-        evm.RegisterListener me.ToString Event_ActionMovement_ID (me.TrackTask me.onMovementKeyPressed)
+        evm.RegisterListener me.Description Event_ActionMovement_ID (me.TrackTask me.onMovementKeyPressed)
         base.SetToInitialized
-
-    override _.ToString = "MovementSystem"
 
     override me.Update round = 
         ()
 
+//game.Logger.Log round (sprintf "%5s | %5b | %s" "North" (testOnMap North) (location.ToString()))
+//game.Logger.Log round (sprintf "%5s | %5b | %s" "East" (testOnMap East ) (location.ToString()))
+//game.Logger.Log round (sprintf "%5s | %5b | %s" "South" (testOnMap South) (location.ToString()))
+//game.Logger.Log round (sprintf "%5s | %5b | %s" "West" (testOnMap West ) (location.ToString()))

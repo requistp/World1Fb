@@ -4,26 +4,29 @@ open ComponentEnums
 
 type ActionTypes = 
     | Eat
+    | Idle
     | Mate
-    | Move_North
     | Move_East
+    | Move_North
     | Move_South
     | Move_West
     static member AsArray = 
         [|
             Eat
+            Idle
             Mate
-            Move_North
             Move_East
+            Move_North
             Move_South
             Move_West
         |]
     member me.RequiredComponents =
         match me with
         | Eat -> [| EatingComponentID |]
+        | Idle -> [||]
         | Mate -> [| MatingComponentID |]
-        | Move_North -> [| FormComponentID; MovementComponentID |]
         | Move_East -> [| FormComponentID; MovementComponentID |]
+        | Move_North -> [| FormComponentID; MovementComponentID |]
         | Move_South -> [| FormComponentID; MovementComponentID |]
         | Move_West -> [| FormComponentID; MovementComponentID |]
 

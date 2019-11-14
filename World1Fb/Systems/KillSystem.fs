@@ -4,8 +4,8 @@ open GameManager
 open SystemManager
 
 
-type KillSystem(game:Game, isActive:bool) =
-    inherit AbstractSystem(isActive) 
+type KillSystem(description:string, game:Game, isActive:bool) =
+    inherit AbstractSystem(description,isActive) 
     let enm = game.EntityManager
     let evm = game.EventManager    
 
@@ -13,10 +13,8 @@ type KillSystem(game:Game, isActive:bool) =
         enm.RemoveEntity (ge.ToKillAllEaten.EateeID)
 
     override me.Initialize = 
-        evm.RegisterListener me.ToString Event_KillAllEaten_ID (me.TrackTask me.onKillAllEaten)
+        evm.RegisterListener me.Description Event_KillAllEaten_ID (me.TrackTask me.onKillAllEaten)
         base.SetToInitialized
-
-    override _.ToString = "KillSystem"
 
     override me.Update round = 
         ()

@@ -52,7 +52,7 @@ let MakeRabbits (enm:EntityManager) n =
         let matingStatus = if n = 1 || rnd = 0 then Male else Female
         let symbol = if matingStatus = Male then 'R' else 'r'
         let location = { X = x; Y = y; Z = 0 }
-        let visionRange = 5
+        let visionRange = 10
         let rangeTemplate = RangeTemplate2D visionRange
         let visionMap = LocationsWithinRange2D location (RangeTemplate2D visionRange)
         let viewedMap = visionMap |> Array.fold (fun (v:Map<LocationDataInt,uint32>) l -> v.Add(l,0u)) Map.empty

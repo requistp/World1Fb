@@ -10,8 +10,8 @@ open SystemManager
 open VisionComponent
 
 
-type VisionSystem(game:Game, isActive:bool) =
-    inherit AbstractSystem(isActive) 
+type VisionSystem(description:string, game:Game, isActive:bool) =
+    inherit AbstractSystem(description,isActive) 
     let enm = game.EntityManager
     let evm = game.EventManager
     
@@ -21,8 +21,8 @@ type VisionSystem(game:Game, isActive:bool) =
             |> Array.fold (fun (m:Map<LocationDataInt,FormComponent[]>) location -> 
                 let cts = 
                     location
-                    |> enm.GetEntitiesAtLocation  
-                    |> Array.Parallel.map (fun e -> (e|>enm.GetComponent FormComponentID).ToForm)
+                    |> enm.GetEntitiesAtLocationWithComponent None FormComponentID
+                    |> Array.Parallel.map (fun e -> e.ToForm)
                 m.Add(location,cts)
                 ) Map.empty
         ComputeVisibility form.Location visionMap forms vision.Range
@@ -40,10 +40,8 @@ type VisionSystem(game:Game, isActive:bool) =
             Ok None
 
     override me.Initialize = 
-        evm.RegisterListener me.ToString Event_LocationChanged_ID (me.TrackTask me.onLocationChanged)
+        evm.RegisterListener me.Description Event_LocationChanged_ID (me.TrackTask me.onLocationChanged)
         base.SetToInitialized
-
-    override _.ToString = "VisionSystem"
 
     override me.Update round = 
         ()

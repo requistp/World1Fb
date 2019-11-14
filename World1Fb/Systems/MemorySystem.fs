@@ -3,8 +3,8 @@ open GameManager
 open SystemManager
 
 
-type MemorySystem(game:Game, isActive:bool) =
-    inherit AbstractSystem(isActive) 
+type MemorySystem(description:string, game:Game, isActive:bool) =
+    inherit AbstractSystem(description,isActive) 
     let enm = game.EntityManager
     let evm = game.EventManager    
 
@@ -12,8 +12,6 @@ type MemorySystem(game:Game, isActive:bool) =
     override me.Initialize = 
         //evm.RegisterListener me.ToString Event_ActionEat.ID             me.onEat
         base.SetToInitialized
-
-    override _.ToString = "MemorySystem"
 
     override me.Update round = 
         ()

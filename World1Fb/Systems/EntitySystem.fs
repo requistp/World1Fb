@@ -6,8 +6,8 @@ open GameManager
 open SystemManager
 
 
-type EntitySystem(game:Game, isActive:bool) =
-    inherit AbstractSystem(isActive) 
+type EntitySystem(description:string, game:Game, isActive:bool) =
+    inherit AbstractSystem(description,isActive) 
     let enm = game.EntityManager
     let evm = game.EventManager    
 
@@ -23,10 +23,8 @@ type EntitySystem(game:Game, isActive:bool) =
         enm.CreateEntity (e.Components)
 
     override me.Initialize =
-        evm.RegisterListener me.ToString Event_CreateEntity_ID (me.TrackTask me.onCreateEntity)
+        evm.RegisterListener me.Description Event_CreateEntity_ID (me.TrackTask me.onCreateEntity)
         base.SetToInitialized
-
-    override _.ToString = "EntityManager"
 
     override me.Update round = 
         ()

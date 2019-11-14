@@ -9,8 +9,8 @@ open MatingComponent
 open SystemManager
 
 
-type MatingSystem(game:Game, isActive:bool) =
-    inherit AbstractSystem(isActive) 
+type MatingSystem(description:string, game:Game, isActive:bool) =
+    inherit AbstractSystem(description,isActive) 
     let enm = game.EntityManager
     let evm = game.EventManager    
     
@@ -32,9 +32,7 @@ type MatingSystem(game:Game, isActive:bool) =
     static let eligibleFemales (enm:EntityManager) (mating:MatingComponent) round = 
         mating.EntityID 
         |> enm.GetLocation
-        |> enm.GetEntitiesAtLocation  // Here
-        |> Array.filter (fun eid -> eid <> mating.EntityID) // Not me
-        |> enm.TryGetComponentForEntities MatingComponentID // Can mate
+        |> enm.GetEntitiesAtLocationWithComponent (Some mating.EntityID) MatingComponentID
         |> Array.Parallel.map (fun c -> c.ToMating)
         |> Array.filter (fun m -> m.Species = mating.Species && m.MatingStatus = Female && m.CanMate round) // Same Species & Non-Pregnant Females & Can Retry
 
@@ -85,11 +83,9 @@ type MatingSystem(game:Game, isActive:bool) =
         enm.ReplaceComponent (Mating (m.Update None (Some Female) (Some (round + m.Species.MaxMatingFrequency)) None)) // Change Mom to Non-Pregnant Female and add some extra time to before she can mate again
         MakeBaby e.MomID round
 
-    override _.ToString = "MatingSystem"
-
     override me.Initialize = 
-        evm.RegisterListener me.ToString Event_ActionMate_ID (me.TrackTask me.onActionMate)
-        evm.RegisterListener me.ToString Event_Birth_ID      (me.TrackTask me.onBirth)
+        evm.RegisterListener me.Description Event_ActionMate_ID (me.TrackTask me.onActionMate)
+        evm.RegisterListener me.Description Event_Birth_ID      (me.TrackTask me.onBirth)
         base.SetToInitialized
 
     override me.Update round = 

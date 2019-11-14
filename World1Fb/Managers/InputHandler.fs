@@ -16,16 +16,14 @@ type KeyboardResult =
 type InputHandler(evm:EventManager, enm:EntityManager, renderer_SetDisplay:string->unit, wmrKeys:ConsoleKey->unit) =
     let mutable _entityID = None
 
-    member _.GetEntityID = _entityID
-    member _.SetEntityID eid = _entityID <- eid
-
-    member private me.handleKeyPressed (k:ConsoleKeyInfo) = 
+    let handleKeyPressed (k:ConsoleKeyInfo) = 
         while Console.KeyAvailable do //Might help clear double movement keys entered in one turn
             Console.ReadKey(true).Key |> ignore
 
         let handleAction (action:ActionTypes) = 
             match (_entityID.Value |> enm.GetComponent ControllerComponentID).ToController.CurrentActions |> Array.contains action with
             | false -> InfoOnly
+            | true when action = Idle -> GameAction
             | true -> 
                 evm.RaiseEvent (
                     match action with 
@@ -40,26 +38,21 @@ type InputHandler(evm:EventManager, enm:EntityManager, renderer_SetDisplay:strin
 
         match k.Key with 
         | ConsoleKey.Escape -> ExitGame
-        | ConsoleKey.UpArrow -> handleAction Move_North
+        | ConsoleKey.E -> handleAction Eat
+        | ConsoleKey.Spacebar -> handleAction Idle
+        | ConsoleKey.M -> handleAction Mate
         | ConsoleKey.RightArrow -> handleAction Move_East
+        | ConsoleKey.UpArrow -> handleAction Move_North
         | ConsoleKey.DownArrow -> handleAction Move_South
         | ConsoleKey.LeftArrow -> handleAction Move_West
-        | ConsoleKey.E -> handleAction Eat
-        | ConsoleKey.M -> handleAction Mate
-        | ConsoleKey.Spacebar -> GameAction
         | _ -> InfoOnly
         
+    member _.GetEntityID = _entityID
+    member _.SetEntityID eid = _entityID <- eid
+
     member me.AwaitKeyboardInput =
         while not Console.KeyAvailable do
             System.Threading.Thread.Sleep 2
-        me.handleKeyPressed (Console.ReadKey(true))
+        handleKeyPressed (Console.ReadKey(true))
 
 
-    //member me.SetDisplay k =
-    //    match k with
-    //    | ConsoleKey.F1 -> renderer_SetDisplay "World Map"
-    //    | ConsoleKey.F2 -> 
-    //        System.Console.SetCursorPosition(0,27)
-    //        () //evm.PrintEventLog // renderer_SetDisplay "Game Events List"
-    //    | _ -> ()
-    //    InfoOnly

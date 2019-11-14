@@ -4,18 +4,17 @@ open EventTypes
 
 
 [<AbstractClass>]
-type AbstractSystem(isActive:bool) =
+type AbstractSystem(description:string, isActive:bool) =
     let mutable _isInitialized = false
 
     let agentForWorkTracking = new agent_SystemWorkTracker()
 
+    member _.Description = description
     member _.IsActive = isActive
     member _.IsIdle = agentForWorkTracking.IsIdle
     member _.IsInitialized = _isInitialized
     member _.SetToInitialized = _isInitialized <- true
     
-    abstract member ToString : string
-
     member _.TrackTask (task:uint32->GameEventTypes->Result<string option,string>) (round:uint32) (ge:GameEventTypes) = 
         agentForWorkTracking.Start
         let result = task round ge
@@ -46,5 +45,5 @@ type SystemManager() =
 
     member me.UpdateSystems round =
         me.ActiveAndInitialized |> Array.Parallel.iter (fun s -> s.Update round)
-
+        
 

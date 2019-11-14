@@ -11,17 +11,15 @@ open System
 open SystemManager
 
 
-type EatingSystem(game:Game, isActive:bool) =
-    inherit AbstractSystem(isActive) 
+type EatingSystem(description:string, game:Game, isActive:bool) =
+    inherit AbstractSystem(description,isActive) 
     let enm = game.EntityManager
     let evm = game.EventManager    
     
     static let foodsAtLocation (enm:EntityManager) (eat:EatingComponent) =
-        eat.EntityID 
-        |> enm.GetLocation
-        |> enm.GetEntitiesAtLocation // Entities here
-        |> Array.filter (fun eid -> eid <> eat.EntityID) // Not me
-        |> enm.TryGetComponentForEntities FoodComponentID // Are food
+        eat.EntityID
+        |> enm.GetLocation 
+        |> enm.GetEntitiesAtLocationWithComponent (Some eat.EntityID) FoodComponentID 
         |> Array.Parallel.map (fun c -> c.ToFood)
         |> Array.filter (fun f -> eat.CanEat f.FoodType && f.Quantity > 0) // Types I can eat & Food remaining
 
@@ -71,13 +69,11 @@ type EatingSystem(game:Game, isActive:bool) =
         Ok (Some result)
 
     override me.Initialize = 
-        evm.RegisterListener me.ToString Event_ActionEat_ID             (me.TrackTask me.onEat)
-        evm.RegisterListener me.ToString Event_ComponentAdded_Eating_ID (me.TrackTask me.onComponentAdded)
-        evm.RegisterListener me.ToString Event_Metabolize_ID            (me.TrackTask me.onMetabolize)
+        evm.RegisterListener me.Description Event_ActionEat_ID             (me.TrackTask me.onEat)
+        evm.RegisterListener me.Description Event_ComponentAdded_Eating_ID (me.TrackTask me.onComponentAdded)
+        evm.RegisterListener me.Description Event_Metabolize_ID            (me.TrackTask me.onMetabolize)
         base.SetToInitialized
 
-    override _.ToString = "EatingSystem"
-       
     override me.Update round = 
         ()
 

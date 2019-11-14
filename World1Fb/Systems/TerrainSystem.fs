@@ -3,14 +3,12 @@ open GameManager
 open SystemManager
 
 
-type TerrainSystem(game:Game, isActive:bool) =
-    inherit AbstractSystem(isActive) 
+type TerrainSystem(description:string, game:Game, isActive:bool) =
+    inherit AbstractSystem(description,isActive) 
     let enm = game.EntityManager
     let evm = game.EventManager    
 
     //Disabled
-
-    override _.ToString = "TerrainSystem"
 
     override me.Update round = 
         ()

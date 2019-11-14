@@ -3,11 +3,11 @@ open CommonGenericFunctions
 open System
 
 [<Literal>]
-let MapWidth = 30
+let MapWidth = 40
 
 
 [<Literal>]
-let MapHeight = 30
+let MapHeight = 20
 
 
 let IsOnMap2D x y = 

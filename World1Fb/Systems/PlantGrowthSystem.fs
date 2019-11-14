@@ -9,8 +9,8 @@ open LocationTypes
 open SystemManager
 
 
-type PlantGrowthSystem(game:Game, isActive:bool) =
-    inherit AbstractSystem(isActive) 
+type PlantGrowthSystem(description:string, game:Game, isActive:bool) =
+    inherit AbstractSystem(description,isActive) 
     let enm = game.EntityManager
     let evm = game.EventManager    
   
@@ -70,11 +70,9 @@ type PlantGrowthSystem(game:Game, isActive:bool) =
         | Ok l -> makePlant e.EntityID l
 
     override me.Initialize = 
-        evm.RegisterListener me.ToString Event_ComponentAdded_PlantGrowth_ID (me.TrackTask me.onComponentAdded)
-        evm.RegisterListener me.ToString Event_PlantReproduce_ID             (me.TrackTask me.onReproduce)
+        evm.RegisterListener me.Description Event_ComponentAdded_PlantGrowth_ID (me.TrackTask me.onComponentAdded)
+        evm.RegisterListener me.Description Event_PlantReproduce_ID             (me.TrackTask me.onReproduce)
         base.SetToInitialized
-
-    override _.ToString = "PlantGrowthSystem"
 
     override me.Update round = 
         ()

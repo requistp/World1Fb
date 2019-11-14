@@ -41,8 +41,8 @@ type WorldMapRenderer() =
                         | None ->
                             (fds |> Array.sortBy (fun c -> (enm.TryGetComponent TerrainComponentID c.EntityID).IsSome)).[0]
                 let fs = 
-                    enm.GetEntitiesAtLocation { X = x; Y = y; Z = 0 } 
-                    |> enm.TryGetComponentForEntities FormComponentID
+                    { X = x; Y = y; Z = 0 }
+                    |> enm.GetEntitiesAtLocationWithComponent None FormComponentID
                     |> Array.map (fun c -> c.ToForm)
 
                 match fs.Length with

@@ -8,8 +8,8 @@ open System
 open SystemManager
 
 
-type FoodSystem(game:Game, isActive:bool) =
-    inherit AbstractSystem(isActive) 
+type FoodSystem(description:string, game:Game, isActive:bool) =
+    inherit AbstractSystem(description,isActive) 
     let enm = game.EntityManager
     let evm = game.EventManager    
     
@@ -50,12 +50,10 @@ type FoodSystem(game:Game, isActive:bool) =
         | Some c -> tryRegrowFood c.ToFood
         
     override me.Initialize = 
-        evm.RegisterListener me.ToString Event_Eaten_ID        (me.TrackTask me.onEaten)
-        evm.RegisterListener me.ToString Event_FoodAllEaten_ID (me.TrackTask me.onAllEaten)
-        evm.RegisterListener me.ToString Event_PlantGrowth_ID  (me.TrackTask me.onRegrowth)
+        evm.RegisterListener me.Description Event_Eaten_ID        (me.TrackTask me.onEaten)
+        evm.RegisterListener me.Description Event_FoodAllEaten_ID (me.TrackTask me.onAllEaten)
+        evm.RegisterListener me.Description Event_PlantGrowth_ID  (me.TrackTask me.onRegrowth)
         base.SetToInitialized
-
-    override _.ToString = "FoodSystem"
 
     override me.Update round = 
         ()

@@ -10,6 +10,7 @@ open MatingSystem
 open MemorySystem
 open MovementSystem
 open PlantGrowthSystem
+open SystemManager
 open TerrainSystem
 open VisionSystem
 open ConsoleV1
@@ -32,23 +33,23 @@ let g = new Game(setDisplay, wmr.UpdateEntity, wmr.MoveWindow, format)
 
 let startingEntities = 
     MakeMap g.EntityManager
-    |> Array.append (MakeGrasses g.EntityManager 1)
-    |> Array.append (MakeRabbits g.EntityManager 10)
+    |> Array.append (MakeGrasses g.EntityManager 5)
+    |> Array.append (MakeRabbits g.EntityManager 5)
     
 let systems =
     [|
-        ControllerSystem(g,true).Abstract
-        EatingSystem(g,true).Abstract
-        EntitySystem(g,true).Abstract
-        FoodSystem(g,true).Abstract
-        //FormSystem(g,true).Abstract
-        KillSystem(g,true).Abstract
-        MatingSystem(g,true).Abstract
-        MemorySystem(g,true).Abstract
-        MovementSystem(g,true).Abstract
-        PlantGrowthSystem(g,true).Abstract
-        //TerrainSystem(g,true).Abstract
-        VisionSystem(g,true).Abstract
+        ControllerSystem("ControllerSystem",g,true).Abstract
+        EatingSystem("EatingSystem",g,true).Abstract
+        EntitySystem("EntitySystem",g,true).Abstract
+        FoodSystem("FoodSystem",g,true).Abstract
+        //FormSystem(g,true,Middle).Abstract
+        KillSystem("KillSystem",g,true).Abstract
+        MatingSystem("MatingSystem",g,true).Abstract
+        MemorySystem("MemorySystem",g,true).Abstract
+        MovementSystem("MovementSystem",g,true).Abstract
+        PlantGrowthSystem("PlantGrowthSystem",g,true).Abstract
+        //TerrainSystem(g,true,Middle).Abstract
+        VisionSystem("VisionSystem",g,true).Abstract
     |]
 
 g.Start systems startingEntities ""

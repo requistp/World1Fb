@@ -49,6 +49,12 @@ type EntityManager(log:agent_GameLog) =
 
     member _.GetEntitiesAtLocation location = agentForLocations.Get location
 
+    member me.GetEntitiesAtLocationWithComponent (excludeEntityID:uint32 option) (componentID:byte) (location:LocationDataInt) = 
+        location
+        |> me.GetEntitiesAtLocation
+        |> Array.filter (fun eid -> excludeEntityID.IsNone || eid <> excludeEntityID.Value) // Not excluded or not me
+        |> Array.Parallel.choose (fun eid -> eid |> me.TryGetComponent componentID)
+
     member _.GetHistory (round:uint32 option) = agentForHistory.Get round
     
     member me.GetLocation (entityID:uint32) = (entityID|>me.GetComponent FormComponentID).ToForm.Location
