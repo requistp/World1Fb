@@ -5,11 +5,18 @@ open ComponentEnums
 open FormComponent
 open LocationTypes
 
+type historyTuple = Map<uint32,Component[]> * Map<byte,uint32[]> * Map<LocationDataInt,uint32[]>
+
+type private agent_HistoryMsg = 
+    | GetHistory of round:uint32 option * history:AsyncReplyChannel<historyTuple>
+    | GetAllHistory of allHistory:AsyncReplyChannel<Map<uint32,historyTuple> >
+    | InitHistory of allHistory:Map<uint32,historyTuple>
+    | RecordHistory of round:uint32 * history:historyTuple
+
 type private agent_ComponentsMsg = 
     | AddComponent of Component
     | GetEntitiesWithComponent of componentID:byte * entityID:AsyncReplyChannel<uint32[]>
     | GetComponentMap of AsyncReplyChannel<Map<byte,uint32[]> >
-    | InitComponents of Map<byte,uint32[]>    
     | RemoveComponent of Component
 
 type private agent_EntitiesMsg = 
@@ -30,11 +37,10 @@ type private agent_LocationsMsg =
     | AddForm of FormComponent
     | GetEntitiesAtLocation of LocationDataInt * AsyncReplyChannel<uint32[]>
     | GetLocationMap of AsyncReplyChannel<Map<LocationDataInt,uint32[]> >
-    | InitLocations of Map<LocationDataInt,uint32[]>
     | MoveForm of oldForm:FormComponent * newForm:FormComponent
     | RemoveForm of FormComponent
 
-type agent_EntityComponent() = 
+type agent_Entities() = 
     let agentComponents =
         let mutable _map = Map.empty<byte,uint32[]>
         MailboxProcessor<agent_ComponentsMsg>.Start(
@@ -55,8 +61,6 @@ type agent_EntityComponent() =
                                 | true -> _map.Item(cid))
                         | GetComponentMap replyChannel -> 
                             replyChannel.Reply(_map)
-                        | InitComponents newMap -> 
-                            _map <- newMap
                         | RemoveComponent ct ->
                             _map <- Map_RemoveValueFromArray _map ct.ComponentID ct.EntityID
                 }
@@ -112,6 +116,28 @@ type agent_EntityComponent() =
                             replyChannel.Reply(_maxEntityID)
                 }
             )
+    let agentHistory =
+        let mutable _history = Map.empty<uint32,historyTuple>
+        MailboxProcessor<agent_HistoryMsg>.Start(
+            fun inbox ->
+                async { 
+                    while true do
+                        let! msg = inbox.Receive()
+                        match msg with
+                        | GetHistory (round,replyChannel) ->
+                            replyChannel.Reply(
+                                match round with
+                                | Some r -> _history.Item r
+                                | None -> _history.Item (uint32 (_history.Count - 1))
+                                )
+                        | GetAllHistory replyChannel ->
+                            replyChannel.Reply(_history)
+                        | InitHistory hs ->
+                            _history <- hs
+                        | RecordHistory (round,h) -> 
+                            _history <- _history.Add(round,h)
+                }
+            )
     let agentLocations =
         let mutable _map = MapLocations |> Array.fold (fun (m:Map<LocationDataInt,uint32[]>) l -> m.Add(l,Array.empty)) Map.empty
         MailboxProcessor<agent_LocationsMsg>.Start(
@@ -126,8 +152,6 @@ type agent_EntityComponent() =
                             replyChannel.Reply(_map.Item(location))
                         | GetLocationMap replyChannel -> 
                             replyChannel.Reply(_map)
-                        | InitLocations newMap -> 
-                            _map <- newMap
                         | MoveForm (oldForm,newForm) -> 
                             _map <- Map_RemoveValueFromArray _map oldForm.Location oldForm.EntityID
                             _map <- Map_AppendValueToArrayUnique _map newForm.Location newForm.EntityID 
@@ -135,62 +159,74 @@ type agent_EntityComponent() =
                             _map <- Map_RemoveValueFromArray _map fd.Location fd.EntityID
                 }
             )
-    member me.CreateEntity (cts:Component[]) = 
+
+    let addEntityToComponents (cts:Component[]) = 
+        cts 
+        |> Array.Parallel.iter (fun ct -> agentComponents.Post (AddComponent ct))
+    let addFormToLocations (fd:FormComponent) = agentLocations.Post (AddForm fd)
+    let addEntityToLocations (cts:Component[]) =
+        cts
+        |> Array.filter (fun ct -> ct.ComponentID = FormComponentID)
+        |> Array.Parallel.iter (fun ct -> addFormToLocations ct.ToForm)
+    let removeEntityFromComponents (cts:Component[]) = 
+        cts 
+        |> Array.Parallel.iter (fun ct -> agentComponents.Post (RemoveComponent ct))
+    let removeEntityFromLocations (cts:Component[]) =
+        cts
+        |> Array.filter (fun ct -> ct.ComponentID = FormComponentID)
+        |> Array.Parallel.iter (fun f -> agentLocations.Post (RemoveForm f.ToForm))
+
+    member _.CreateEntity (cts:Component[]) = 
         Async.Parallel 
         (
             agentEntities.Post (AddEntity cts)
-            me.AddComponentsToMap cts
-            me.AddForm cts
+            addEntityToComponents cts
+            addEntityToLocations cts
         ) |> ignore
         Ok None
     member _.EntityExists (entityID:uint32) = agentEntities.PostAndReply (fun replyChannel -> EntityExists(entityID,replyChannel))
+    member _.GetAllHistory() = agentHistory.PostAndReply GetAllHistory
+    member _.GetComponent (componentID:byte) (entityID:uint32) = 
+        agentEntities.PostAndReply (fun replyChannel -> GetComponents(entityID,replyChannel))
+        |> Array.find (fun c -> c.ComponentID = componentID)
+    member _.GetComponentMap() = agentComponents.PostAndReply GetComponentMap
     member _.GetComponents (entityID:uint32) = agentEntities.PostAndReply (fun replyChannel -> GetComponents(entityID,replyChannel))
-    member me.GetComponent (componentID:byte) (entityID:uint32) = me.GetComponents entityID |> Array.find (fun c -> c.ComponentID = componentID)
-    member _.GetEntities() = agentEntities.PostAndReply GetEntityMap
+    member _.GetEntitiesAtLocation (location:LocationDataInt) = agentLocations.PostAndReply (fun replyChannel -> GetEntitiesAtLocation (location,replyChannel))
+    member _.GetEntitiesWithComponent (componentID:byte) = agentComponents.PostAndReply (fun replyChannel -> GetEntitiesWithComponent (componentID,replyChannel))
+    member _.GetEntityMap() = agentEntities.PostAndReply GetEntityMap
+    member _.GetHistory (round:uint32 option) = agentHistory.PostAndReply (fun replyChannel -> GetHistory (round,replyChannel))
+    member _.GetLocationMap() = agentLocations.PostAndReply GetLocationMap
     member _.GetMaxID = agentID.PostAndReply GetID
     member _.GetNewID = agentID.PostAndReply NewID
-    member me.Init (map:Map<uint32,Component[]>) (startMax:uint32) = 
+    member _.Init (map:Map<uint32,Component[]>) (startMax:uint32) = 
         let ctss = map |> MapValuesToArray
         Async.Parallel 
         (
             agentEntities.Post (agent_EntitiesMsg.InitEntities map)
             agentID.Post (agent_IDMsg.InitID startMax)
-            ctss |> Array.Parallel.iter (fun cts -> me.AddComponentsToMap cts)
-            ctss |> Array.Parallel.iter (fun cts -> cts |> Array.filter (fun c -> c.ComponentID=FormComponentID) |> Array.Parallel.iter (fun c -> me.AddForm c.ToForm))
+            ctss |> Array.Parallel.iter (fun cts -> addEntityToComponents cts)
+            ctss |> Array.Parallel.iter (fun cts -> addEntityToLocations cts)
         ) |> ignore
-    member _.PendingUpdates = agentEntities.CurrentQueueLength > 0 || agentID.CurrentQueueLength > 0 || agentComponents.CurrentQueueLength > 0 || agentLocations.CurrentQueueLength > 0
+    //member _.InitHistory allHistory = agentHistory.Post (InitHistory allHistory)
+    member _.PendingUpdates = 
+        agentEntities.CurrentQueueLength > 0 || 
+        agentID.CurrentQueueLength > 0 || 
+        agentComponents.CurrentQueueLength > 0 || 
+        agentLocations.CurrentQueueLength > 0
+    member _.RecordHistory round history = agentHistory.Post (RecordHistory (round,history))
     member me.RemoveEntity (entityID:uint32) = 
         let cts = me.GetComponents entityID
         Async.Parallel 
         (
             agentEntities.Post (RemoveEntity entityID)
-            me.RemoveComponentsFromMap cts
-            me.RemoveForm cts
+            removeEntityFromComponents cts
+            removeEntityFromLocations cts
         ) |> ignore
         Ok None
     member me.ReplaceComponent (c:Component) = 
         match c with
-        | Form f -> f |> me.MoveForm (me.GetComponent FormComponentID c.EntityID).ToForm
+        | Form f -> agentLocations.Post (MoveForm ((me.GetComponent FormComponentID c.EntityID).ToForm,f))
         | _ -> ()
         agentEntities.Post (ReplaceComponent c)
-
-    member private me.AddComponentsToMap (cts:Component[]) = cts |> Array.Parallel.iter (fun ct -> agentComponents.Post (AddComponent ct))
-    member me.GetEntitiesWithComponent (componentID:byte) = agentComponents.PostAndReply (fun replyChannel -> GetEntitiesWithComponent (componentID,replyChannel))
-    member me.GetComponentMap() = agentComponents.PostAndReply GetComponentMap
-    member private me.RemoveComponentsFromMap (cts:Component[]) = cts |> Array.Parallel.iter (fun ct -> agentComponents.Post (RemoveComponent ct))
-
-    member _.AddForm (fd:FormComponent) = agentLocations.Post (AddForm fd)
-    member me.AddForm (cts:Component[]) =
-        cts
-        |> Array.filter (fun ct -> ct.ComponentID = FormComponentID)
-        |> Array.Parallel.iter (fun ct -> me.AddForm ct.ToForm)
-    member _.GetEntitiesAtLocation (location:LocationDataInt) = agentLocations.PostAndReply (fun replyChannel -> GetEntitiesAtLocation (location,replyChannel))
-    member _.GetLocationMap() = agentLocations.PostAndReply GetLocationMap
-    member _.MoveForm (oldForm:FormComponent) (newForm:FormComponent) = agentLocations.Post (MoveForm (oldForm,newForm))
-    member _.RemoveForm (fd:FormComponent) = agentLocations.Post (RemoveForm fd)
-    member me.RemoveForm (cts:Component[]) =
-        cts
-        |> Array.filter (fun ct -> ct.ComponentID = FormComponentID)
-        |> Array.Parallel.iter (fun ct -> me.RemoveForm ct.ToForm)
 
 

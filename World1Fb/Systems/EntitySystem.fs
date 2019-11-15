@@ -5,9 +5,9 @@ open EntityManager
 open EventManager
 open EventTypes
 open SystemManager
+open agent_Entities
 
-
-type EntitySystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
+type EntitySystem(description:string, isActive:bool, enm:agent_Entities, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
 
     member private me.onCreateEntity round (ge:GameEventTypes) =
@@ -19,7 +19,7 @@ type EntitySystem(description:string, isActive:bool, enm:EntityManager, evm:Even
             | x when x = PlantGrowthComponentID -> evm.RaiseEvent (ComponentAdded_PlantGrowth { EntityID=c.EntityID; Component=c })
             | _ -> ()
         e.Components |> Array.Parallel.iter (fun c -> checkComponentForEvents c)
-        enm.AgentEntities.CreateEntity e.Components
+        enm.CreateEntity e.Components
 
     override me.Initialize =
         evm.RegisterListener me.Description Event_CreateEntity_ID (me.TrackTask me.onCreateEntity)

@@ -6,20 +6,20 @@ open EntityManager
 open EventManager
 open EventTypes
 open SystemManager
+open agent_Entities
 
-
-type MovementSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
+type MovementSystem(description:string, isActive:bool, enm:agent_Entities, evm:EventManager) =
     inherit AbstractSystem(description,isActive)
   
-    static member MovementActionsAllowed (enm:EntityManager) (entityID:uint32) =
+    static member MovementActionsAllowed (enm:agent_Entities) (entityID:uint32) =
         let mutable _allowed = Array.empty<ActionTypes>
-        let moveo = entityID|>enm.TryGetComponent MovementComponentID
-        let location = entityID |> History.GetLocation enm.AgentEntities
+        let moveo = entityID|>Entities.TryGetComponent enm MovementComponentID
+        let location = entityID |> Entities.GetLocation enm
         let testOnMap (direction:MovementDirection) = (direction.AddToLocation location).IsOnMap
         let formImpassableAtLocation (direction:MovementDirection) =
             location
             |> direction.AddToLocation 
-            |> History.GetEntitiesAtLocationWithComponent enm.AgentEntities FormComponentID (Some entityID)
+            |> Entities.GetEntitiesAtLocationWithComponent enm FormComponentID (Some entityID)
             |> Array.exists (fun f -> not f.ToForm.IsPassable)
 
         match moveo.IsNone || moveo.Value.ToMovement.MovesPerTurn = 0 with 
@@ -34,7 +34,7 @@ type MovementSystem(description:string, isActive:bool, enm:EntityManager, evm:Ev
     member private me.onMovementKeyPressed round (ge:GameEventTypes) =
         let e = ge.ToAction_Movement
 
-        let formo = enm.TryGetComponent FormComponentID e.EntityID
+        let formo = Entities.TryGetComponent enm FormComponentID e.EntityID
 
         let checkIfMovementIsValid (c:Component) = 
             let form = c.ToForm
@@ -47,7 +47,7 @@ type MovementSystem(description:string, isActive:bool, enm:EntityManager, evm:Ev
                 let testForImpassableFormAtLocation junk =
                     let formImpassableAtLocation =
                         dest
-                        |> History.GetEntitiesAtLocationWithComponent enm.AgentEntities FormComponentID (Some e.EntityID)
+                        |> Entities.GetEntitiesAtLocationWithComponent enm FormComponentID (Some e.EntityID)
                         |> Array.exists (fun f -> not f.ToForm.IsPassable)
                     match formImpassableAtLocation with
                     | true -> Error (sprintf "Form at location %s" (dest.ToString()))

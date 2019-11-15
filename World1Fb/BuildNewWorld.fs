@@ -5,11 +5,11 @@ open CalendarTimings
 open CommonGenericFunctions
 open EntityManager
 open LocationTypes
+open agent_Entities
 
-
-let MakeMap (enm:EntityManager) = 
+let MakeMap (enm:agent_Entities) = 
     let AddTerrain l = 
-        let eid = enm.AgentEntities.GetNewID
+        let eid = enm.GetNewID
         let t = 
             match random.Next(1,50) with
             | 1 -> Rock
@@ -32,9 +32,9 @@ let MakeMap (enm:EntityManager) =
     MapLocations |> Array.Parallel.map (fun l -> AddTerrain l)
 
 
-let MakeGrasses (enm:EntityManager) n =
+let MakeGrasses (enm:agent_Entities) n =
     let MakeGrass x y =
-        let eid = enm.AgentEntities.GetNewID
+        let eid = enm.GetNewID
         [| 
             Food { EntityID = eid; FoodType = Food_Carrot; Quantity = 20; QuantityMax = 20 }
             Form { EntityID = eid; Born = 0u; CanSeePast = true; IsPassable = true; Name = Food_Carrot.ToString(); Symbol = Food_Carrot.Symbol.Value; Location = {X=x;Y=y;Z=0} }
@@ -45,9 +45,9 @@ let MakeGrasses (enm:EntityManager) n =
     | _ -> [|1..n|] |> Array.Parallel.map (fun i -> MakeGrass (random.Next(0,MapWidth)) (random.Next(0,MapHeight))) 
 
 
-let MakeRabbits (enm:EntityManager) n = 
+let MakeRabbits (enm:agent_Entities) n = 
     let MakeRabbit x y n rnd = 
-        let eid = enm.AgentEntities.GetNewID
+        let eid = enm.GetNewID
         let cont = [| Controller { EntityID = eid; Actions = [||]; CurrentActions = [||] } |]
         let matingStatus = if n = 1 || rnd = 0 then Male else Female
         let symbol = if matingStatus = Male then 'R' else 'r'

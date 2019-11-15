@@ -9,19 +9,19 @@ open EventTypes
 open FoodComponent
 open System
 open SystemManager
+open agent_Entities
 
-
-type EatingSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
+type EatingSystem(description:string, isActive:bool, enm:agent_Entities, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
     
-    static let foodsAtLocation (enm:EntityManager) (eat:EatingComponent) =
+    static let foodsAtLocation (enm:agent_Entities) (eat:EatingComponent) =
         eat.EntityID
-        |> History.GetLocation enm.AgentEntities
-        |> History.GetEntitiesAtLocationWithComponent enm.AgentEntities FoodComponentID (Some eat.EntityID)
+        |> Entities.GetLocation enm
+        |> Entities.GetEntitiesAtLocationWithComponent enm FoodComponentID (Some eat.EntityID)
         |> Array.Parallel.map (fun c -> c.ToFood)
         |> Array.filter (fun f -> eat.CanEat f.FoodType && f.Quantity > 0) // Types I can eat & Food remaining
 
-    static member EatActionEnabled (enm:EntityManager) (entityID:uint32) =
+    static member EatActionEnabled (enm:agent_Entities) (entityID:uint32) =
         let eat = (entityID|>enm.GetComponent EatingComponentID).ToEating
         (eat.QuantityRemaining > 0) && ((foodsAtLocation enm eat).Length > 0)
         

@@ -2,9 +2,9 @@
 
 
 type private agentRoundMsg =
-| Get of AsyncReplyChannel<uint32>
-| Increment
-| Init of round:uint32
+    | Get of AsyncReplyChannel<uint32>
+    | Increment
+    | Init of round:uint32
 
 
 type agent_Round() =

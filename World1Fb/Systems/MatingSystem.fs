@@ -7,9 +7,9 @@ open EventManager
 open EventTypes
 open MatingComponent
 open SystemManager
+open agent_Entities
 
-
-type MatingSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
+type MatingSystem(description:string, isActive:bool, enm:agent_Entities, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
     
     let MakeBaby momID round =
@@ -22,19 +22,19 @@ type MatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
             | _ -> c    
         let newcts = 
             momID
-            |> History.CopyEntity enm.AgentEntities
+            |> Entities.CopyEntity enm
             |> Array.Parallel.map (fun c -> adjustComponents c)
         evm.RaiseEvent (CreateEntity { Components = newcts })
         Ok (Some (sprintf "Born:%i" newcts.[0].EntityID))
 
-    static let eligibleFemales (enm:EntityManager) (mating:MatingComponent) round = 
+    static let eligibleFemales (enm:agent_Entities) (mating:MatingComponent) round = 
         mating.EntityID 
-        |> History.GetLocation enm.AgentEntities
-        |> History.GetEntitiesAtLocationWithComponent enm.AgentEntities MatingComponentID (Some mating.EntityID)
+        |> Entities.GetLocation enm
+        |> Entities.GetEntitiesAtLocationWithComponent enm MatingComponentID (Some mating.EntityID)
         |> Array.Parallel.map (fun c -> c.ToMating)
         |> Array.filter (fun m -> m.Species = mating.Species && m.MatingStatus = Female && m.CanMate round) // Same Species & Non-Pregnant Females & Can Retry
 
-    static member MateActionEnabled (enm:EntityManager) (entityID:uint32) (round:uint32) =
+    static member MateActionEnabled (enm:agent_Entities) (entityID:uint32) (round:uint32) =
         let m = (entityID|>enm.GetComponent MatingComponentID).ToMating
         match m.MatingStatus with
         | Male when m.CanMate round -> 

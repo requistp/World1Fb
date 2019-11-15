@@ -8,9 +8,9 @@ open EventManager
 open EventTypes
 open LocationTypes
 open SystemManager
+open agent_Entities
 
-
-type PlantGrowthSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
+type PlantGrowthSystem(description:string, isActive:bool, enm:agent_Entities, evm:EventManager) =
     inherit AbstractSystem(description,isActive)
   
     let makePlant momID (l:LocationDataInt) = 
@@ -23,7 +23,7 @@ type PlantGrowthSystem(description:string, isActive:bool, enm:EntityManager, evm
             | _ -> c          
         let newcts = 
             momID
-            |> History.CopyEntity enm.AgentEntities 
+            |> Entities.CopyEntity enm 
             |> Array.Parallel.map (fun c -> makePlant_AdjustComponents c)
         evm.RaiseEvent (CreateEntity { Components = newcts })
         Ok (Some (sprintf "New plant:%i. Location:%s" (newcts.[0].EntityID) (l.ToString())))
@@ -48,14 +48,14 @@ type PlantGrowthSystem(description:string, isActive:bool, enm:EntityManager, evm
                 match newLocation.IsOnMap with
                 | false -> Error (sprintf "Failed: location not on map:%s" (newLocation.ToString()))
                 | true ->
-                    let eids = enm.AgentEntities.GetEntitiesAtLocation newLocation
-                    match (eids |> History.GetComponentForEntities enm.AgentEntities PlantGrowthComponentID).Length with 
+                    let eids = enm.GetEntitiesAtLocation newLocation
+                    match (eids |> Entities.GetComponentForEntities enm PlantGrowthComponentID).Length with 
                     | x when x > 0 -> Error (sprintf "Failed: plant exists at location:%s" (newLocation.ToString()))
                     | _ -> 
-                        match pd.GrowsInTerrain|>Array.contains (eids|>History.GetComponentForEntities enm.AgentEntities TerrainComponentID).[0].ToTerrain.Terrain with
+                        match pd.GrowsInTerrain|>Array.contains (eids|>Entities.GetComponentForEntities enm TerrainComponentID).[0].ToTerrain.Terrain with
                         | false -> Error "Failed: terrain is not suitable"
                         | true -> 
-                            let fco = e.EntityID |> enm.TryGetComponent FoodComponentID 
+                            let fco = e.EntityID |> Entities.TryGetComponent enm FoodComponentID 
                             match fco.IsNone with
                             | true -> Ok newLocation
                             | false ->

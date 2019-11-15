@@ -1,4 +1,5 @@
 ﻿module GameManager
+open agent_Entities
 open agent_GameLog
 open agent_Round
 open Component
@@ -14,25 +15,25 @@ open System
 open SystemManager
 
 
-type Game(wmr:EntityManager->uint32->unit, format:SaveGameFormats) =
+type Game(wmr:agent_Entities->uint32->unit, format:SaveGameFormats) =
     let agentForRound = new agent_Round()
     let gameLog = new agent_GameLog()
-    let entityMan = new EntityManager(gameLog)
-    let eventMan = new EventManager(entityMan, gameLog, agentForRound.Get)
+    let entities = new agent_Entities()
+    let eventMan = new EventManager(entities, gameLog, agentForRound.Get)
     let systemMan = new SystemManager()
-    let inputMan = new InputHandler(eventMan, entityMan)
+    let inputMan = new InputHandler(eventMan, entities)
  
     let setInitialForms (initialForms:Component[][]) = 
         initialForms 
         |> Array.Parallel.iter (fun cts -> if (cts.Length > 0) then eventMan.RaiseEvent (CreateEntity { Components = cts }))
 
     member _.EventManager = eventMan
-    member _.EntityManager = entityMan
+    member _.EntityManager = entities
     member _.Logger = gameLog
     member _.GetRound() = agentForRound.Get()
 
     member private me.assignController =
-        match entityMan.AgentEntities.GetEntitiesWithComponent ControllerComponentID with
+        match entities.GetEntitiesWithComponent ControllerComponentID with
         | [||] -> None
         | l -> Some l.[0]
 
@@ -51,23 +52,23 @@ type Game(wmr:EntityManager->uint32->unit, format:SaveGameFormats) =
         systemMan.UpdateSystems round
         waitForEndOfRound round
         gameLog.WriteLog
-        entityMan.AgentHistory.RecordHistory round (entityMan.AgentEntities.GetEntities(),entityMan.AgentEntities.GetComponentMap(),entityMan.AgentEntities.GetLocationMap())
-        ControllerSystem.UpdateCurrentActionsForAllEntities entityMan gameLog round
-        wmr entityMan (inputMan.GetEntityID.Value); printfn "Round#%i" round       
+        entities.RecordHistory round (entities.GetEntityMap(),entities.GetComponentMap(),entities.GetLocationMap())
+        ControllerSystem.UpdateCurrentActionsForAllEntities entities gameLog round
+        wmr entities (inputMan.GetEntityID.Value); printfn "Round#%i" round       
         agentForRound.Increment
 
     member private me.loadGame filename =
         let sgd = LoadAndSave.LoadGame format filename 
         agentForRound.Init sgd.Round
-        History.Init entityMan.AgentEntities sgd.ECMap sgd.MaxEntityID
+        entities.Init sgd.ECMap sgd.MaxEntityID
 
     member private me.saveGame =
         LoadAndSave.SaveGame 
             format
             { 
                 Round = agentForRound.Get() // Maybe this should be -1u
-                ECMap = entityMan.AgentEntities.GetEntities()
-                MaxEntityID = entityMan.AgentEntities.GetMaxID
+                ECMap = entities.GetEntityMap()
+                MaxEntityID = entities.GetMaxID
                 ScheduledEvents = eventMan.GetSchedule
             }
 
@@ -78,7 +79,7 @@ type Game(wmr:EntityManager->uint32->unit, format:SaveGameFormats) =
         | 0 -> 
             me.loadGame filename
             me.assignController |> inputMan.SetEntityID
-            wmr entityMan (inputMan.GetEntityID.Value)
+            wmr entities (inputMan.GetEntityID.Value)
             //printfn "Round#%i      " (eventMan.GetRound())
         | _ -> 
             setInitialForms initialForms

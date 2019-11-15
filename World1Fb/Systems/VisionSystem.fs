@@ -9,9 +9,9 @@ open LocationTypes
 open vision_Shadowcast
 open SystemManager
 open VisionComponent
+open agent_Entities
 
-
-type VisionSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
+type VisionSystem(description:string, isActive:bool, enm:agent_Entities, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
     
     let handleFOV (form:FormComponent) (vision:VisionComponent) (visionMap:LocationDataInt[]) =
@@ -20,7 +20,7 @@ type VisionSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
             |> Array.fold (fun (m:Map<LocationDataInt,FormComponent[]>) location -> 
                 let cts = 
                     location
-                    |> History.GetEntitiesAtLocationWithComponent enm.AgentEntities FormComponentID None
+                    |> Entities.GetEntitiesAtLocationWithComponent enm FormComponentID None
                     |> Array.Parallel.map (fun e -> e.ToForm)
                 m.Add(location,cts)
                 ) Map.empty
@@ -28,7 +28,7 @@ type VisionSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
 
     member private me.onLocationChanged round (ge:GameEventTypes) =
         let lc = ge.ToLocationChanged
-        match lc.EntityID |> enm.TryGetComponent VisionComponentID with
+        match lc.EntityID |> Entities.TryGetComponent enm VisionComponentID with
         | None -> Ok (Some "No vision Component")
         | Some v ->
             let vision = v.ToVision

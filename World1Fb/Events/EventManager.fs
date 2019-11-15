@@ -2,11 +2,11 @@
 open agent_EventListeners
 open agent_EventSchedule
 open agent_GameLog
-open EntityManager
+open agent_Entities
 open EventTypes
 
 
-type EventManager(enm:EntityManager, log:agent_GameLog, getRound:unit->uint32) =
+type EventManager(enm:agent_Entities, log:agent_GameLog, getRound:unit->uint32) =
     let agentForListeners = new agent_EventListeners(log)
     let agentForSchedule = new agent_EventSchedule(log, agentForListeners, enm)
 

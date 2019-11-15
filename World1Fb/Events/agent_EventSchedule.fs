@@ -3,7 +3,7 @@ open agent_GameLog
 open agent_EventListeners
 open CalendarTimings
 open CommonGenericFunctions
-open EntityManager
+open agent_Entities
 open EventTypes
 
 
@@ -14,7 +14,7 @@ type private agent_ScheduleMsg =
 | Schedule of round:uint32 * GameEventTypes
 
 
-type agent_EventSchedule(log:agent_GameLog, agentForListeners:agent_EventListeners, enm:EntityManager) =
+type agent_EventSchedule(log:agent_GameLog, agentForListeners:agent_EventListeners, enm:agent_Entities) =
 
     let agent =
         let mutable _schedule = Map.empty<uint32,GameEventTypes[]>
@@ -44,7 +44,7 @@ type agent_EventSchedule(log:agent_GameLog, agentForListeners:agent_EventListene
                                     | _ -> addToSchedule round (ScheduleEvent ({ sed with Schedule = RepeatFinite (x - 1u) }, ge)) false                                 
                             let executeAndReschedule (se:GameEventTypes) =
                                 let _,ge = se.ToScheduleEvent
-                                match enm.AgentEntities.EntityExists ge.EntityID with
+                                match enm.EntityExists ge.EntityID with
                                 | false -> ()
                                 | true ->
                                     agentForListeners.Execute round ge

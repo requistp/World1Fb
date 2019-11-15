@@ -2,9 +2,9 @@
 
 
 type private agent_SystemWorkTrackerMsg = 
-| Decrement
-| Increment
-| IsIdle of AsyncReplyChannel<bool>
+    | Decrement
+    | Increment
+    | IsIdle of AsyncReplyChannel<bool>
 
 
 type agent_SystemWorkTracker() = 

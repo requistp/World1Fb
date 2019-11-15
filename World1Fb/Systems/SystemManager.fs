@@ -1,7 +1,5 @@
 ﻿module SystemManager
 open agent_SystemWorkTracker
-open EntityManager
-open EventManager
 open EventTypes
 
 
