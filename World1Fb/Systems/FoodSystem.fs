@@ -1,17 +1,16 @@
 ﻿module FoodSystem
 open Component
 open ComponentEnums
+open EntityManager
+open EventManager
 open EventTypes
 open FoodComponent
-open GameManager
 open System
 open SystemManager
 
 
-type FoodSystem(description:string, game:Game, isActive:bool) =
+type FoodSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
-    let enm = game.EntityManager
-    let evm = game.EventManager    
     
     member private me.onAllEaten round (ge:GameEventTypes) =
         let e = ge.ToFoodAllEaten

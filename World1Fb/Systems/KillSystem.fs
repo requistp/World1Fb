@@ -1,13 +1,12 @@
 ﻿module KillSystem
+open EntityManager
+open EventManager   
 open EventTypes
-open GameManager
 open SystemManager
 
 
-type KillSystem(description:string, game:Game, isActive:bool) =
+type KillSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
-    let enm = game.EntityManager
-    let evm = game.EventManager    
 
     member private me.onKillAllEaten round (ge:GameEventTypes) =
         enm.RemoveEntity (ge.ToKillAllEaten.EateeID)

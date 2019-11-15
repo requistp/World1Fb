@@ -43,6 +43,9 @@ type EntityManager(log:agent_GameLog) =
         |> me.GetComponents 
         |> Array.find (fun x -> x.ComponentID = cid)
 
+    member _.GetComponentIDs (eid:uint32) =
+        agentForEntities.GetComponents eid |> Array.Parallel.map (fun ct -> ct.ComponentID)
+
     member _.GetEntities = agentForEntities.GetAll
 
     member _.GetEntitiesWithComponent c = agentForComponents.Get c
@@ -56,15 +59,27 @@ type EntityManager(log:agent_GameLog) =
         |> Array.Parallel.choose (fun eid -> eid |> me.TryGetComponent componentID)
 
     member _.GetHistory (round:uint32 option) = agentForHistory.Get round
-    
+
+    member _.GetHistory_Components (round:uint32 option) = 
+        let _,c,_ = agentForHistory.Get round
+        c
+        
+    member _.GetHistory_Entities (round:uint32 option) = 
+        let e,_,_ = agentForHistory.Get round
+        e
+
+    member _.GetHistory_Locations (round:uint32 option) = 
+        let _,_,l = agentForHistory.Get round
+        l
+
     member me.GetLocation (entityID:uint32) = (entityID|>me.GetComponent FormComponentID).ToForm.Location
 
     member _.GetMaxID = agentForEntityID.GetMaxID 
 
     member _.GetNewID = agentForEntityID.GetNewID
 
-    member _.HasAllComponents (cts:byte[]) (eid:uint32) =
-        let ects = agentForEntities.GetComponents eid |> Array.Parallel.map (fun ct -> ct.ComponentID)
+    member me.HasAllComponents (cts:byte[]) (eid:uint32) =
+        let ects = me.GetComponentIDs eid
         cts |> Array.forall (fun ct -> ects |> Array.contains ct)
 
     member _.Init (map:Map<uint32,Component[]>) =
@@ -120,13 +135,21 @@ type EntityManager(log:agent_GameLog) =
 
 module History =
 
+    let GetEntities (enm:EntityManager) round = enm.GetHistory_Entities round
+
     let GetComponent (componentID:byte) (entities:Map<uint32,Component[]>) (entityID:uint32) =
         entities.Item(entityID)
         |> Array.find (fun x -> x.ComponentID = componentID)
 
-    let GetEntitiesAtLocation (locationMap:Map<LocationDataInt,uint32[]>) (location:LocationDataInt) =
-        match locationMap.ContainsKey location with
+    let GetEntitiesAtLocation (enm:EntityManager) round (location:LocationDataInt) =
+        let locations = enm.GetHistory_Locations round
+        match locations.ContainsKey location with
         | false -> [||]
-        | true -> locationMap.Item location
-
+        | true -> locations.Item location
+    
+    let GetEntitiesWithComponent (enm:EntityManager) round componentID = 
+        let components = enm.GetHistory_Components round
+        match components.ContainsKey componentID with
+        | false -> [||]
+        | true -> components.Item componentID
 

@@ -3,16 +3,15 @@ open Component
 open ComponentEnums
 open CalendarTimings
 open CommonGenericFunctions
+open EntityManager
+open EventManager
 open EventTypes
-open GameManager
 open LocationTypes
 open SystemManager
 
 
-type PlantGrowthSystem(description:string, game:Game, isActive:bool) =
-    inherit AbstractSystem(description,isActive) 
-    let enm = game.EntityManager
-    let evm = game.EventManager    
+type PlantGrowthSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
+    inherit AbstractSystem(description,isActive)
   
     let makePlant momID (l:LocationDataInt) = 
         let makePlant_AdjustComponents (c:Component) =

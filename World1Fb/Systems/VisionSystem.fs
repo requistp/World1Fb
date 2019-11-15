@@ -1,19 +1,18 @@
 ﻿module VisionSystem
 open Component
 open ComponentEnums
+open EntityManager
+open EventManager
 open EventTypes
 open FormComponent
-open GameManager
 open LocationTypes
 open vision_Shadowcast
 open SystemManager
 open VisionComponent
 
 
-type VisionSystem(description:string, game:Game, isActive:bool) =
+type VisionSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
-    let enm = game.EntityManager
-    let evm = game.EventManager
     
     let handleFOV (form:FormComponent) (vision:VisionComponent) (visionMap:LocationDataInt[]) =
         let forms = 

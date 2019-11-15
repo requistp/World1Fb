@@ -1,12 +1,13 @@
 ﻿module SystemManager
 open agent_SystemWorkTracker
+open EntityManager
+open EventManager
 open EventTypes
 
 
 [<AbstractClass>]
 type AbstractSystem(description:string, isActive:bool) =
     let mutable _isInitialized = false
-
     let agentForWorkTracking = new agent_SystemWorkTracker()
 
     member _.Description = description
@@ -34,7 +35,8 @@ type SystemManager() =
 
     member _.Active = _systems |> Array.filter (fun s -> s.IsActive)
     member _.ActiveAndInitialized = _systems |> Array.filter (fun s -> s.IsActive && s.IsInitialized)
-    
+    member _.Get description = _systems |> Array.find (fun s -> s.Description = description)
+
     member me.AllSystemsIdle = 
         me.ActiveAndInitialized
         |> Array.forall (fun s -> s.IsIdle) 

@@ -3,33 +3,21 @@ open ControllerSystem
 open EatingSystem
 open EntitySystem
 open FoodSystem
-open FormSystem
 open GameManager
 open KillSystem
 open MatingSystem
-open MemorySystem
 open MovementSystem
 open PlantGrowthSystem
 open SystemManager
-open TerrainSystem
 open VisionSystem
 open ConsoleV1
 open WorldMapRenderer
 
-let format = LoadAndSave.SaveGameFormats.XML
+let format = LoadAndSave.SaveGameFormats.Binary
 
 let wmr = new WorldMapRenderer()
 
-let windows =
-    [|
-        "World Map",""
-        "Game Events List",""
-    |]
-let windowMan = new WindowManager(windows)
-
-let setDisplay = windowMan.SetDisplay
-
-let g = new Game(setDisplay, wmr.UpdateEntity, wmr.MoveWindow, format)
+let g = new Game(wmr.UpdateEntity, format)
 
 let startingEntities = 
     MakeMap g.EntityManager
@@ -38,18 +26,15 @@ let startingEntities =
     
 let systems =
     [|
-        ControllerSystem("ControllerSystem",g,true).Abstract
-        EatingSystem("EatingSystem",g,true).Abstract
-        EntitySystem("EntitySystem",g,true).Abstract
-        FoodSystem("FoodSystem",g,true).Abstract
-        //FormSystem(g,true,Middle).Abstract
-        KillSystem("KillSystem",g,true).Abstract
-        MatingSystem("MatingSystem",g,true).Abstract
-        MemorySystem("MemorySystem",g,true).Abstract
-        MovementSystem("MovementSystem",g,true).Abstract
-        PlantGrowthSystem("PlantGrowthSystem",g,true).Abstract
-        //TerrainSystem(g,true,Middle).Abstract
-        VisionSystem("VisionSystem",g,true).Abstract
+        ControllerSystem("Controller System", true, g.EntityManager, g.EventManager).Abstract
+        EatingSystem("Eating System", true, g.EntityManager, g.EventManager).Abstract
+        EntitySystem("Entity System", true, g.EntityManager, g.EventManager).Abstract
+        FoodSystem("Food System", true, g.EntityManager, g.EventManager).Abstract
+        KillSystem("Kill System", true, g.EntityManager, g.EventManager).Abstract
+        MatingSystem("Mating System", true, g.EntityManager, g.EventManager).Abstract
+        MovementSystem("Movement System", true, g.EntityManager, g.EventManager).Abstract
+        PlantGrowthSystem("Plant Growth System", true, g.EntityManager, g.EventManager).Abstract
+        VisionSystem("Vision System", true, g.EntityManager, g.EventManager).Abstract
     |]
 
 g.Start systems startingEntities ""

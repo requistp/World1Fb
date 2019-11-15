@@ -3,16 +3,14 @@ open CommonGenericFunctions
 open Component
 open ComponentEnums
 open EntityManager
+open EventManager
 open EventTypes
-open GameManager
 open MatingComponent
 open SystemManager
 
 
-type MatingSystem(description:string, game:Game, isActive:bool) =
+type MatingSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
-    let enm = game.EntityManager
-    let evm = game.EventManager    
     
     let MakeBaby momID round =
         let adjustComponents (c:Component) =

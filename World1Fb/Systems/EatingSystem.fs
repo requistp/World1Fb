@@ -4,17 +4,17 @@ open ComponentEnums
 open CalendarTimings
 open EatingComponent
 open EntityManager
+open EventManager
 open EventTypes
 open FoodComponent
-open GameManager
 open System
 open SystemManager
 
 
-type EatingSystem(description:string, game:Game, isActive:bool) =
+type EatingSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
-    let enm = game.EntityManager
-    let evm = game.EventManager    
+    //let enm = game.EntityManager
+    //let evm = game.EventManager    
     
     static let foodsAtLocation (enm:EntityManager) (eat:EatingComponent) =
         eat.EntityID

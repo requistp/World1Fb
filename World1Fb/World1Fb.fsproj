@@ -6,6 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Memories\agent_Memories.fs" />
+    <Compile Include="Memories\MemoryManager.fs" />
     <Compile Include="common\CommonGenericFunctions.fs" />
     <Compile Include="common\CalendarTimings.fs" />
     <Compile Include="common\LocationTypes.fs" />
@@ -33,30 +35,25 @@
     <Compile Include="Events\agent_EventListeners.fs" />
     <Compile Include="Events\agent_EventSchedule.fs" />
     <Compile Include="Events\EventManager.fs" />
-    <Compile Include="Memories\agent_Memories.fs" />
-    <Compile Include="Memories\MemoryManager.fs" />
-    <Compile Include="Managers\agent_Round.fs" />
-    <Compile Include="Managers\agent_SystemWorkTracker.fs" />
-    <Compile Include="Managers\SystemManager.fs" />
-    <Compile Include="Managers\InputHandler.fs" />
-    <Compile Include="Managers\LoadAndSave.fs" />
-    <Compile Include="Managers\GameManager.fs" />
+    <Compile Include="Systems\agent_SystemWorkTracker.fs" />
+    <Compile Include="Systems\SystemManager.fs" />
     <Compile Include="Systems\EatingSystem.fs" />
     <Compile Include="Systems\EntitySystem.fs" />
     <Compile Include="Systems\FoodSystem.fs" />
-    <Compile Include="Systems\FormSystem.fs" />
     <Compile Include="Systems\KillSystem.fs" />
     <Compile Include="Systems\MatingSystem.fs" />
-    <Compile Include="Systems\MemorySystem.fs" />
     <Compile Include="Systems\MovementSystem.fs" />
     <Compile Include="Systems\PlantGrowthSystem.fs" />
-    <Compile Include="Systems\TerrainSystem.fs" />
     <Compile Include="Systems\vision_Shadowcast.fs" />
     <Compile Include="Systems\VisionSystem.fs" />
     <Compile Include="Systems\ControllerSystem.fs" />
-    <Compile Include="Console\ColoredConsole.fs" />
-    <Compile Include="Console\WorldMapRenderer.fs" />
-    <Compile Include="Console\ConsoleV1.fs" />
+    <Compile Include="Game\agent_Round.fs" />
+    <Compile Include="Game\InputHandler.fs" />
+    <Compile Include="Game\LoadAndSave.fs" />
+    <Compile Include="Game\GameManager.fs" />
+    <Compile Include="Output\ColoredConsole.fs" />
+    <Compile Include="Output\WorldMapRenderer.fs" />
+    <Compile Include="Output\ConsoleV1.fs" />
     <Compile Include="BuildNewWorld.fs" />
     <Compile Include="Program.fs" />
     <Content Include="Notes.txt" />

@@ -79,10 +79,10 @@ type WorldMapRenderer() =
                     | false -> ColoredConsole.Console.DrawDarkGray
                     | true -> ColoredConsole.Console.DrawWhite
                 let forms = 
-                    let (es,_,ls) = enm.GetHistory (Some round)
+                    let es = History.GetEntities enm (Some round) 
                     location
-                    |> EntityManager.History.GetEntitiesAtLocation ls
-                    |> Array.Parallel.map (fun e -> (e|>EntityManager.History.GetComponent FormComponentID es).ToForm)
+                    |> History.GetEntitiesAtLocation enm (Some round)
+                    |> Array.Parallel.map (fun e -> (e|>History.GetComponent FormComponentID es).ToForm)
                 System.Console.SetCursorPosition(drawX,drawY)
                 drawCall forms.[0].Symbol
             )

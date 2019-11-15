@@ -3,15 +3,13 @@ open Component
 open ComponentEnums
 open ControllerComponent
 open EntityManager
+open EventManager
 open EventTypes
-open GameManager
 open SystemManager
 
 
-type MovementSystem(description:string, game:Game, isActive:bool) =
-    inherit AbstractSystem(description,isActive) 
-    let enm = game.EntityManager
-    let evm = game.EventManager    
+type MovementSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
+    inherit AbstractSystem(description,isActive)
   
     static member MovementActionsAllowed (enm:EntityManager) (entityID:uint32) =
         let mutable _allowed = Array.empty<ActionTypes>

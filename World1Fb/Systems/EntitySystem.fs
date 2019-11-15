@@ -1,15 +1,14 @@
 ﻿module EntitySystem
 open Component
 open ComponentEnums
+open EntityManager
+open EventManager
 open EventTypes
-open GameManager
 open SystemManager
 
 
-type EntitySystem(description:string, game:Game, isActive:bool) =
+type EntitySystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
-    let enm = game.EntityManager
-    let evm = game.EventManager    
 
     member private me.onCreateEntity round (ge:GameEventTypes) =
         let e = ge.ToCreateEntity
