@@ -7,9 +7,9 @@ open EventTypes
 open FoodComponent
 open System
 open SystemManager
-open agent_Entities
+open Entities
 
-type FoodSystem(description:string, isActive:bool, enm:agent_Entities, evm:EventManager) =
+type FoodSystem(description:string, isActive:bool, enm:Entities, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
     
     member private me.onAllEaten round (ge:GameEventTypes) =

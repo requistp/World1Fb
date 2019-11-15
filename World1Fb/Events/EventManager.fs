@@ -1,7 +1,6 @@
 ﻿module EventManager
-open agent_EventListeners
 open agent_GameLog
-open agent_Entities
+open Entities
 open CalendarTimings
 open CommonGenericFunctions
 open EventTypes
@@ -18,7 +17,7 @@ type private agentListenersMsg =
     | Execute of round:uint32 * gameEvent:GameEventTypes 
     | Register of listener:string * gameEventID:byte * GameEventCallback
 
-type EventManager(enm:agent_Entities, log:agent_GameLog, getRound:unit->uint32) =
+type EventManager(enm:Entities, log:agent_GameLog, getRound:unit->uint32) =
     let agentListeners =
         let mutable _listeners = Map.empty:Map<byte,(string*GameEventCallback)[]>
         MailboxProcessor<agentListenersMsg>.Start(
@@ -78,7 +77,7 @@ type EventManager(enm:agent_Entities, log:agent_GameLog, getRound:unit->uint32) 
                                 match enm.EntityExists ge.EntityID with
                                 | false -> ()
                                 | true ->
-                                    agentForListeners.Execute round ge
+                                    agentListeners.Post (Execute (round,ge))
                                     reschedule se
                             match _schedule.ContainsKey(round) with
                             | false -> ()
@@ -92,12 +91,12 @@ type EventManager(enm:agent_Entities, log:agent_GameLog, getRound:unit->uint32) 
                 }
             )
 
-    member _.AddToSchedule round scheduledEvent = agentSchedule.Post (AddToSchedule (round,scheduledEvent))
-    member _.ExecuteScheduledEvents round = agentSchedule.Post (ExecuteScheduled round)
+    member _.AddToSchedule scheduledEvent = agentSchedule.Post (AddToSchedule (getRound(),scheduledEvent))
+    member _.ExecuteScheduledEvents round = agentSchedule.Post (ExecuteScheduled (round))
     member _.Init map = agentSchedule.Post (Init map)
     member _.GetSchedule = agentSchedule.PostAndReply Get
     member _.PendingUpdates = agentSchedule.CurrentQueueLength > 0 || agentListeners.CurrentQueueLength > 0
-    member _.RaiseEvent round gameEvent = agentListeners.Post (Execute (round,gameEvent))
+    member _.RaiseEvent gameEvent = agentListeners.Post (Execute ((getRound()),gameEvent))
     member _.RegisterListener listener eventTypeID callback = agentListeners.Post (Register (listener,eventTypeID,callback))
 
 

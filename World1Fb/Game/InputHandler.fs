@@ -1,7 +1,7 @@
 ﻿module InputHandler
 open ComponentEnums
 open ControllerComponent
-open agent_Entities
+open Entities
 open EventManager
 open EventTypes
 open System
@@ -13,7 +13,7 @@ type KeyboardResult =
 | InfoOnly
 
 
-type InputHandler(evm:EventManager, enm:agent_Entities) =
+type InputHandler(evm:EventManager, enm:Entities) =
     let mutable _entityID = None
 
     member _.GetEntityID = _entityID

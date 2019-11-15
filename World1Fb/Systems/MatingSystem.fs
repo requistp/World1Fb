@@ -7,9 +7,9 @@ open EventManager
 open EventTypes
 open MatingComponent
 open SystemManager
-open agent_Entities
+open Entities
 
-type MatingSystem(description:string, isActive:bool, enm:agent_Entities, evm:EventManager) =
+type MatingSystem(description:string, isActive:bool, enm:Entities, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
     
     let MakeBaby momID round =
@@ -27,14 +27,14 @@ type MatingSystem(description:string, isActive:bool, enm:agent_Entities, evm:Eve
         evm.RaiseEvent (CreateEntity { Components = newcts })
         Ok (Some (sprintf "Born:%i" newcts.[0].EntityID))
 
-    static let eligibleFemales (enm:agent_Entities) (mating:MatingComponent) round = 
+    static let eligibleFemales (enm:Entities) (mating:MatingComponent) round = 
         mating.EntityID 
         |> Entities.GetLocation enm
         |> Entities.GetEntitiesAtLocationWithComponent enm MatingComponentID (Some mating.EntityID)
         |> Array.Parallel.map (fun c -> c.ToMating)
         |> Array.filter (fun m -> m.Species = mating.Species && m.MatingStatus = Female && m.CanMate round) // Same Species & Non-Pregnant Females & Can Retry
 
-    static member MateActionEnabled (enm:agent_Entities) (entityID:uint32) (round:uint32) =
+    static member MateActionEnabled (enm:Entities) (entityID:uint32) (round:uint32) =
         let m = (entityID|>enm.GetComponent MatingComponentID).ToMating
         match m.MatingStatus with
         | Male when m.CanMate round -> 
@@ -67,7 +67,7 @@ type MatingSystem(description:string, isActive:bool, enm:agent_Entities, evm:Eve
                 enm.ReplaceComponent (Mating (mc2.Update None None (Some round) None))
                 Error (sprintf "Reproduction failed (%f<%f)" chance rnd)
             | true ->
-                evm.AddToSchedule round (ScheduleEvent ({ Schedule = RunOnce; Frequency = mc2.Species.Gestation }, Birth { MomID = mc2.EntityID; DadID = mc.EntityID }))
+                evm.AddToSchedule (ScheduleEvent ({ Schedule = RunOnce; Frequency = mc2.Species.Gestation }, Birth { MomID = mc2.EntityID; DadID = mc.EntityID }))
                 enm.ReplaceComponent (Mating (mc2.Update None (Some Female_Pregnant) (Some round) None)) 
                 Ok (Some (sprintf "Reproduction succeeded (%f >= %f)" chance rnd))
 

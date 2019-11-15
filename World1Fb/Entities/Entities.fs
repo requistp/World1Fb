@@ -1,4 +1,4 @@
-﻿module agent_Entities
+﻿module Entities
 open CommonGenericFunctions
 open Component
 open ComponentEnums
@@ -40,7 +40,7 @@ type private agent_LocationsMsg =
     | MoveForm of oldForm:FormComponent * newForm:FormComponent
     | RemoveForm of FormComponent
 
-type agent_Entities() = 
+type Entities() = 
     let agentComponents =
         let mutable _map = Map.empty<byte,uint32[]>
         MailboxProcessor<agent_ComponentsMsg>.Start(

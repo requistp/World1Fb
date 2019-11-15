@@ -1,5 +1,5 @@
 ﻿module GameManager
-open agent_Entities
+open Entities
 open agent_GameLog
 open agent_Round
 open Component
@@ -15,10 +15,10 @@ open System
 open SystemManager
 
 
-type Game(wmr:agent_Entities->uint32->unit, format:SaveGameFormats) =
+type Game(wmr:Entities->uint32->unit, format:SaveGameFormats) =
     let agentForRound = new agent_Round()
     let gameLog = new agent_GameLog()
-    let entities = new agent_Entities()
+    let entities = new Entities()
     let eventMan = new EventManager(entities, gameLog, agentForRound.Get)
     let systemMan = new SystemManager()
     let inputMan = new InputHandler(eventMan, entities)

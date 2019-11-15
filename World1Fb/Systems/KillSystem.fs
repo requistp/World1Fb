@@ -3,9 +3,9 @@ open EntityManager
 open EventManager   
 open EventTypes
 open SystemManager
-open agent_Entities
+open Entities
 
-type KillSystem(description:string, isActive:bool, enm:agent_Entities, evm:EventManager) =
+type KillSystem(description:string, isActive:bool, enm:Entities, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
 
     member private me.onKillAllEaten round (ge:GameEventTypes) =

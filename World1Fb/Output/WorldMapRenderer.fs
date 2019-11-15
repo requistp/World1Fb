@@ -1,7 +1,7 @@
 ﻿module WorldMapRenderer
 open ComponentEnums
 open FormComponent
-open agent_Entities
+open Entities
 open EntityManager
 open LocationTypes
 open System
@@ -21,7 +21,7 @@ type WorldMapRenderer() =
         | ConsoleKey.RightArrow -> _windowLocation <- (Math.Clamp(fst _windowLocation + 1, 0, MapWidth-viewSizeX), snd _windowLocation)
         | _ -> ()
 
-    member me.Update (enm:agent_Entities) (entityID:uint32) = 
+    member me.Update (enm:Entities) (entityID:uint32) = 
         Console.CursorVisible <- false
         Console.Title <- "World Map"
         
@@ -54,7 +54,7 @@ type WorldMapRenderer() =
                     System.Console.Write(fd.Symbol)
 
         
-    member me.UpdateEntity (enm:agent_Entities) (entityID:uint32) = 
+    member me.UpdateEntity (enm:Entities) (entityID:uint32) = 
         Console.CursorVisible <- false
         Console.Title <- "Entity Viewer"
         Console.Clear()

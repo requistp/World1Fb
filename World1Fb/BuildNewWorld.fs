@@ -5,9 +5,9 @@ open CalendarTimings
 open CommonGenericFunctions
 open EntityManager
 open LocationTypes
-open agent_Entities
+open Entities
 
-let MakeMap (enm:agent_Entities) = 
+let MakeMap (enm:Entities) = 
     let AddTerrain l = 
         let eid = enm.GetNewID
         let t = 
@@ -32,7 +32,7 @@ let MakeMap (enm:agent_Entities) =
     MapLocations |> Array.Parallel.map (fun l -> AddTerrain l)
 
 
-let MakeGrasses (enm:agent_Entities) n =
+let MakeGrasses (enm:Entities) n =
     let MakeGrass x y =
         let eid = enm.GetNewID
         [| 
@@ -45,7 +45,7 @@ let MakeGrasses (enm:agent_Entities) n =
     | _ -> [|1..n|] |> Array.Parallel.map (fun i -> MakeGrass (random.Next(0,MapWidth)) (random.Next(0,MapHeight))) 
 
 
-let MakeRabbits (enm:agent_Entities) n = 
+let MakeRabbits (enm:Entities) n = 
     let MakeRabbit x y n rnd = 
         let eid = enm.GetNewID
         let cont = [| Controller { EntityID = eid; Actions = [||]; CurrentActions = [||] } |]

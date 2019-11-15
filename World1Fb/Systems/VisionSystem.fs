@@ -9,9 +9,9 @@ open LocationTypes
 open vision_Shadowcast
 open SystemManager
 open VisionComponent
-open agent_Entities
+open Entities
 
-type VisionSystem(description:string, isActive:bool, enm:agent_Entities, evm:EventManager) =
+type VisionSystem(description:string, isActive:bool, enm:Entities, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
     
     let handleFOV (form:FormComponent) (vision:VisionComponent) (visionMap:LocationDataInt[]) =

@@ -25,10 +25,9 @@
     <Compile Include="Components\TerrainComponent.fs" />
     <Compile Include="Components\VisionComponent.fs" />
     <Compile Include="Components\Component.fs" />
-    <Compile Include="Entities\agent_Entities.fs" />
+    <Compile Include="Entities\Entities.fs" />
     <Compile Include="Entities\EntityManager.fs" />
     <Compile Include="Events\EventTypes.fs" />
-    <Compile Include="Events\agent_EventListeners.fs" />
     <Compile Include="Events\EventManager.fs" />
     <Compile Include="Systems\agent_SystemWorkTracker.fs" />
     <Compile Include="Systems\SystemManager.fs" />
@@ -49,10 +48,6 @@
     <Compile Include="Output\ColoredConsole.fs" />
     <Compile Include="Output\WorldMapRenderer.fs" />
     <Compile Include="Output\ConsoleV1.fs" />
-    <Compile Include="Trash\agent_EventSchedule.fs" />
-    <Compile Include="Trash\agent_EntityHistory.fs" />
-    <Compile Include="Trash\agent_LocationEntity.fs" />
-    <Compile Include="Trash\agent_ComponentEntity.fs" />
     <Compile Include="BuildNewWorld.fs" />
     <Compile Include="Program.fs" />
     <Content Include="Notes.txt" />
@@ -60,6 +55,10 @@
 
   <ItemGroup>
     <PackageReference Include="FsPickler" Version="5.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Trash\" />
   </ItemGroup>
 
 </Project>

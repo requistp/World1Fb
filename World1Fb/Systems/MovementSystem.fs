@@ -6,12 +6,12 @@ open EntityManager
 open EventManager
 open EventTypes
 open SystemManager
-open agent_Entities
+open Entities
 
-type MovementSystem(description:string, isActive:bool, enm:agent_Entities, evm:EventManager) =
+type MovementSystem(description:string, isActive:bool, enm:Entities, evm:EventManager) =
     inherit AbstractSystem(description,isActive)
   
-    static member MovementActionsAllowed (enm:agent_Entities) (entityID:uint32) =
+    static member MovementActionsAllowed (enm:Entities) (entityID:uint32) =
         let mutable _allowed = Array.empty<ActionTypes>
         let moveo = entityID|>Entities.TryGetComponent enm MovementComponentID
         let location = entityID |> Entities.GetLocation enm

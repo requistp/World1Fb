@@ -9,19 +9,19 @@ open EventTypes
 open FoodComponent
 open System
 open SystemManager
-open agent_Entities
+open Entities
 
-type EatingSystem(description:string, isActive:bool, enm:agent_Entities, evm:EventManager) =
+type EatingSystem(description:string, isActive:bool, enm:Entities, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
     
-    static let foodsAtLocation (enm:agent_Entities) (eat:EatingComponent) =
+    static let foodsAtLocation (enm:Entities) (eat:EatingComponent) =
         eat.EntityID
         |> Entities.GetLocation enm
         |> Entities.GetEntitiesAtLocationWithComponent enm FoodComponentID (Some eat.EntityID)
         |> Array.Parallel.map (fun c -> c.ToFood)
         |> Array.filter (fun f -> eat.CanEat f.FoodType && f.Quantity > 0) // Types I can eat & Food remaining
 
-    static member EatActionEnabled (enm:agent_Entities) (entityID:uint32) =
+    static member EatActionEnabled (enm:Entities) (entityID:uint32) =
         let eat = (entityID|>enm.GetComponent EatingComponentID).ToEating
         (eat.QuantityRemaining > 0) && ((foodsAtLocation enm eat).Length > 0)
         
@@ -52,7 +52,7 @@ type EatingSystem(description:string, isActive:bool, enm:agent_Entities, evm:Eve
 
     member private me.onComponentAdded round (ge:GameEventTypes) =
         let e = ge.ToComponentAddedEating
-        evm.AddToSchedule round (ScheduleEvent ({ Schedule=RepeatIndefinitely; Frequency=uint32 MetabolismFrequency }, Metabolize { EntityID=e.EntityID }))
+        evm.AddToSchedule (ScheduleEvent ({ Schedule=RepeatIndefinitely; Frequency=uint32 MetabolismFrequency }, Metabolize { EntityID=e.EntityID }))
         Ok (Some (sprintf "Queued Metabolize to schedule. EntityID:%i" e.EntityID))
         
     member private me.onMetabolize round (ge:GameEventTypes) =

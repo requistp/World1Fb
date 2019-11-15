@@ -5,9 +5,9 @@ open EntityManager
 open EventManager
 open EventTypes
 open SystemManager
-open agent_Entities
+open Entities
 
-type EntitySystem(description:string, isActive:bool, enm:agent_Entities, evm:EventManager) =
+type EntitySystem(description:string, isActive:bool, enm:Entities, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
 
     member private me.onCreateEntity round (ge:GameEventTypes) =
