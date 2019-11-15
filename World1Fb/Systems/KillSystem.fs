@@ -1,11 +1,11 @@
 ﻿module KillSystem
-open EntityManager
 open EventManager   
 open EventTypes
 open SystemManager
-open Entities
+open EntityManager
 
-type KillSystem(description:string, isActive:bool, enm:Entities, evm:EventManager) =
+
+type KillSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
 
     member private me.onKillAllEaten round (ge:GameEventTypes) =

@@ -5,15 +5,15 @@ open Component
 open ComponentEnums
 open ControllerComponent
 open EatingSystem
-open EntityManager
+open EntityExtensions
 open EventManager
 open EventTypes
 open MatingSystem
 open MovementSystem
 open SystemManager
-open Entities
+open EntityManager
 
-let HandleAction (enm:Entities) (evm:EventManager) (action:ActionTypes) (entityID:uint32) = 
+let HandleAction (enm:EntityManager) (evm:EventManager) (action:ActionTypes) (entityID:uint32) = 
     match (entityID |> enm.GetComponent ControllerComponentID).ToController.CurrentActions |> Array.contains action with
     | false -> false
     | true when action = Idle -> true
@@ -30,38 +30,38 @@ let HandleAction (enm:Entities) (evm:EventManager) (action:ActionTypes) (entityI
         true
 
 let private getCurrentActions enm actions entityID round = 
-    let movesAllowed = MovementSystem.MovementActionsAllowed enm entityID
+    let movesAllowed = MovementActionsAllowed enm entityID
     let actionEnabledTest action =             
         match action with
-        | Eat -> if EatingSystem.EatActionEnabled enm entityID then Some Eat else None
+        | Eat -> if EatActionEnabled enm entityID then Some Eat else None
         | Idle -> Some Idle
-        | Mate -> if MatingSystem.MateActionEnabled enm entityID round then Some Mate else None
+        | Mate -> if MateActionEnabled enm entityID round then Some Mate else None
         | Move_North -> if movesAllowed |> Array.contains Move_North then Some Move_North else None
         | Move_East ->  if movesAllowed |> Array.contains Move_East  then Some Move_East  else None
         | Move_South -> if movesAllowed |> Array.contains Move_South then Some Move_South else None
         | Move_West ->  if movesAllowed |> Array.contains Move_West  then Some Move_West  else None
     actions |> Array.Parallel.choose (fun action -> actionEnabledTest action)
 
-let private setCurrentActions (enm:Entities) (log:agent_GameLog) round entityID = 
+let private setCurrentActions (enm:EntityManager) (log:agent_GameLog) round entityID = 
     let c = (entityID|>enm.GetComponent ControllerComponentID).ToController
     let newCurrent = getCurrentActions enm c.Actions c.EntityID round
     if not (ArrayContentsMatch newCurrent c.CurrentActions) then
         enm.ReplaceComponent (Controller (c.Update None (Some newCurrent)))
         log.Log round (sprintf "%-3s | %-20s -> %-30s #%7i : %A" "Ok" "Controller System" "Current actions" entityID newCurrent)
 
-let UpdateCurrentActionsForAllEntities (enm:Entities) (log:agent_GameLog) round = 
+let UpdateCurrentActionsForAllEntities (enm:EntityManager) (log:agent_GameLog) round = 
     ControllerComponentID
-    |> Entities.GetHistory_Components enm (Some round)
+    |> EntityExt.GetHistory_Components enm (Some round)
     |> Array.Parallel.iter (fun eid -> setCurrentActions enm log round eid)
 
 
-type ControllerSystem(description:string, isActive:bool, enm:Entities, evm:EventManager) =
+type ControllerSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
         
     member private me.onSetActions round (ge:GameEventTypes) =
         let c = ge.ToComponentAddedController.Component.ToController
         let actions = 
-            let ects = Entities.GetComponentIDs enm c.EntityID
+            let ects = EntityExt.GetComponentIDs enm c.EntityID
             ActionTypes.AsArray 
             |> Array.Parallel.choose (fun a -> if a.RequiredComponents |> Array.forall (fun ct -> ects |> Array.contains ct) then Some a else None)
         

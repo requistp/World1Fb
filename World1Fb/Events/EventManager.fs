@@ -1,8 +1,8 @@
 ﻿module EventManager
 open agent_GameLog
-open Entities
 open CalendarTimings
 open CommonGenericFunctions
+open EntityManager
 open EventTypes
 
 type GameEventCallback = uint32 -> GameEventTypes -> Result<string option,string>
@@ -17,7 +17,7 @@ type private agentListenersMsg =
     | Execute of round:uint32 * gameEvent:GameEventTypes 
     | Register of listener:string * gameEventID:byte * GameEventCallback
 
-type EventManager(enm:Entities, log:agent_GameLog, getRound:unit->uint32) =
+type EventManager(enm:EntityManager, log:agent_GameLog, getRound:unit->uint32) =
     let agentListeners =
         let mutable _listeners = Map.empty:Map<byte,(string*GameEventCallback)[]>
         MailboxProcessor<agentListenersMsg>.Start(

@@ -1,13 +1,13 @@
 ﻿module EntitySystem
 open Component
 open ComponentEnums
-open EntityManager
 open EventManager
 open EventTypes
 open SystemManager
-open Entities
+open EntityManager
 
-type EntitySystem(description:string, isActive:bool, enm:Entities, evm:EventManager) =
+
+type EntitySystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
 
     member private me.onCreateEntity round (ge:GameEventTypes) =

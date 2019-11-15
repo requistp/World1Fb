@@ -1,19 +1,19 @@
 ﻿module InputHandler
 open ComponentEnums
 open ControllerComponent
-open Entities
+open EntityManager
 open EventManager
 open EventTypes
 open System
 
 
 type KeyboardResult = 
-| ExitGame
-| GameAction
-| InfoOnly
+    | ExitGame
+    | GameAction
+    | InfoOnly
 
 
-type InputHandler(evm:EventManager, enm:Entities) =
+type InputHandler(evm:EventManager, enm:EntityManager) =
     let mutable _entityID = None
 
     member _.GetEntityID = _entityID
@@ -21,7 +21,7 @@ type InputHandler(evm:EventManager, enm:Entities) =
 
     member _.AwaitKeyboardInput =
         let handleKeyPressed (k:ConsoleKeyInfo) = 
-            let processAction (evm:EventManager) (action:ActionTypes) (entityID:uint32) = 
+            let processAction (action:ActionTypes) (entityID:uint32) = 
                 match ControllerSystem.HandleAction enm evm action entityID with
                 | false -> InfoOnly
                 | true -> GameAction
@@ -31,13 +31,13 @@ type InputHandler(evm:EventManager, enm:Entities) =
 
             match k.Key with 
             | ConsoleKey.Escape -> ExitGame
-            | ConsoleKey.E -> processAction evm Eat _entityID.Value
-            | ConsoleKey.Spacebar -> processAction evm Idle _entityID.Value
-            | ConsoleKey.M -> processAction evm Mate _entityID.Value
-            | ConsoleKey.RightArrow -> processAction evm Move_East _entityID.Value
-            | ConsoleKey.UpArrow -> processAction evm Move_North _entityID.Value
-            | ConsoleKey.DownArrow -> processAction evm Move_South _entityID.Value
-            | ConsoleKey.LeftArrow -> processAction evm Move_West _entityID.Value
+            | ConsoleKey.E -> processAction Eat _entityID.Value
+            | ConsoleKey.Spacebar -> processAction Idle _entityID.Value
+            | ConsoleKey.M -> processAction Mate _entityID.Value
+            | ConsoleKey.RightArrow -> processAction Move_East _entityID.Value
+            | ConsoleKey.UpArrow -> processAction Move_North _entityID.Value
+            | ConsoleKey.DownArrow -> processAction Move_South _entityID.Value
+            | ConsoleKey.LeftArrow -> processAction Move_West _entityID.Value
             | _ -> InfoOnly
 
         while not Console.KeyAvailable do

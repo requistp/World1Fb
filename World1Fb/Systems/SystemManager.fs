@@ -1,23 +1,41 @@
 ﻿module SystemManager
-open agent_SystemWorkTracker
 open EventTypes
 
-
+type private agent_SystemWorkTrackerMsg = 
+    | Decrement
+    | Increment
+    | IsIdle of AsyncReplyChannel<bool>
+    
 [<AbstractClass>]
 type AbstractSystem(description:string, isActive:bool) =
     let mutable _isInitialized = false
-    let agentForWorkTracking = new agent_SystemWorkTracker()
+
+    let agentWork = 
+        let mutable _tasks = 0u
+        MailboxProcessor<agent_SystemWorkTrackerMsg>.Start(
+            fun inbox ->
+                async { 
+                    while true do
+                        let! msg = inbox.Receive()
+                        match msg with
+                        | Decrement -> 
+                            _tasks <- _tasks - 1u
+                        | Increment -> 
+                            _tasks <- _tasks + 1u
+                        | IsIdle replyChannel ->
+                            replyChannel.Reply(inbox.CurrentQueueLength = 0 && _tasks = 0u)
+                }
+            )
 
     member _.Description = description
     member _.IsActive = isActive
-    member _.IsIdle = agentForWorkTracking.IsIdle
+    member _.IsIdle = agentWork.PostAndReply IsIdle
     member _.IsInitialized = _isInitialized
     member _.SetToInitialized = _isInitialized <- true
-    
     member _.TrackTask (task:uint32->GameEventTypes->Result<string option,string>) (round:uint32) (ge:GameEventTypes) = 
-        agentForWorkTracking.Start
+        agentWork.Post Increment
         let result = task round ge
-        agentForWorkTracking.End
+        agentWork.Post Decrement
         result
 
     abstract member Initialize : unit

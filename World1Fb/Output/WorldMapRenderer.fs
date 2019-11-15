@@ -1,8 +1,8 @@
 ﻿module WorldMapRenderer
 open ComponentEnums
 open FormComponent
-open Entities
 open EntityManager
+open EntityExtensions
 open LocationTypes
 open System
 //open ColoredConsole
@@ -21,7 +21,7 @@ type WorldMapRenderer() =
         | ConsoleKey.RightArrow -> _windowLocation <- (Math.Clamp(fst _windowLocation + 1, 0, MapWidth-viewSizeX), snd _windowLocation)
         | _ -> ()
 
-    member me.Update (enm:Entities) (entityID:uint32) = 
+    member me.Update (enm:EntityManager) (entityID:uint32) = 
         Console.CursorVisible <- false
         Console.Title <- "World Map"
         
@@ -37,13 +37,13 @@ type WorldMapRenderer() =
                     match fds.Length with
                     | 1 -> fds.[0]
                     | _ ->
-                        match fds |> Array.tryFind (fun c -> (Entities.TryGetComponent enm ControllerComponentID c.EntityID).IsSome) with
+                        match fds |> Array.tryFind (fun c -> (EntityExt.TryGetComponent enm ControllerComponentID c.EntityID).IsSome) with
                         | Some f -> f
                         | None ->
-                            (fds |> Array.sortBy (fun c -> (Entities.TryGetComponent enm TerrainComponentID c.EntityID).IsSome)).[0]
+                            (fds |> Array.sortBy (fun c -> (EntityExt.TryGetComponent enm TerrainComponentID c.EntityID).IsSome)).[0]
                 let fs = 
                     { X = x; Y = y; Z = 0 }
-                    |> Entities.GetEntitiesAtLocationWithComponent enm FormComponentID None
+                    |> EntityExt.GetEntitiesAtLocationWithComponent enm FormComponentID None
                     |> Array.map (fun c -> c.ToForm)
 
                 match fs.Length with
@@ -54,7 +54,7 @@ type WorldMapRenderer() =
                     System.Console.Write(fd.Symbol)
 
         
-    member me.UpdateEntity (enm:Entities) (entityID:uint32) = 
+    member me.UpdateEntity (enm:EntityManager) (entityID:uint32) = 
         Console.CursorVisible <- false
         Console.Title <- "Entity Viewer"
         Console.Clear()
@@ -80,10 +80,10 @@ type WorldMapRenderer() =
                     | false -> ColoredConsole.Console.DrawDarkGray
                     | true -> ColoredConsole.Console.DrawWhite
                 let forms = 
-                    let es = Entities.GetHistory_Entities enm (Some round) 
+                    let es = EntityExt.GetHistory_Entities enm (Some round) 
                     location
-                    |> Entities.GetHistory_Locations enm (Some round)
-                    |> Array.Parallel.map (fun e -> (e|>Entities.GetComponent2 es FormComponentID).ToForm)
+                    |> EntityExt.GetHistory_Locations enm (Some round)
+                    |> Array.Parallel.map (fun e -> (e|>EntityExt.GetComponent2 es FormComponentID).ToForm)
                 System.Console.SetCursorPosition(drawX,drawY)
                 drawCall forms.[0].Symbol
             )

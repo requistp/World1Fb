@@ -1,15 +1,16 @@
 ﻿module FoodSystem
 open Component
 open ComponentEnums
-open EntityManager
+open EntityExtensions
 open EventManager
 open EventTypes
 open FoodComponent
 open System
 open SystemManager
-open Entities
+open EntityManager
 
-type FoodSystem(description:string, isActive:bool, enm:Entities, evm:EventManager) =
+
+type FoodSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
     
     member private me.onAllEaten round (ge:GameEventTypes) =
@@ -22,7 +23,7 @@ type FoodSystem(description:string, isActive:bool, enm:Entities, evm:EventManage
 
     member private me.onEaten round (ge:GameEventTypes) =
         let e = ge.ToEaten        
-        match Entities.TryGetComponent enm FoodComponentID e.EateeID with
+        match EntityExt.TryGetComponent enm FoodComponentID e.EateeID with
         | None -> Error "Something else ate it first"
         | Some c -> 
             let f = c.ToFood
@@ -44,7 +45,7 @@ type FoodSystem(description:string, isActive:bool, enm:Entities, evm:EventManage
                 let quantity = Math.Clamp((int (Math.Round(pg.RegrowRate * (float f.QuantityMax),0))), 1, missing)
                 enm.ReplaceComponent (Food (f.Update None (Some (f.Quantity+quantity)) None)) 
                 Ok (Some (sprintf "EntityID:%i. Regrown quantity:%i" e.EntityID quantity))
-        match (e.EntityID|>Entities.TryGetComponent enm FoodComponentID) with
+        match (e.EntityID|>EntityExt.TryGetComponent enm FoodComponentID) with
         | None -> Ok None
         | Some c -> tryRegrowFood c.ToFood
         

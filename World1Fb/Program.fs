@@ -21,21 +21,21 @@ let wmr = new WorldMapRenderer()
 let g = new Game(wmr.UpdateEntity, format)
 
 let startingEntities = 
-    MakeMap g.EntityManager
-    |> Array.append (MakeGrasses g.EntityManager 5)
-    |> Array.append (MakeRabbits g.EntityManager 5)
+    MakeMap g.Entities
+    |> Array.append (MakeGrasses g.Entities 5)
+    |> Array.append (MakeRabbits g.Entities 5)
     
 let systems =
     [|
-        ControllerSystem("Controller System", true, g.EntityManager, g.EventManager).Abstract
-        EatingSystem("Eating System", true, g.EntityManager, g.EventManager).Abstract
-        EntitySystem("Entity System", true, g.EntityManager, g.EventManager).Abstract
-        FoodSystem("Food System", true, g.EntityManager, g.EventManager).Abstract
-        KillSystem("Kill System", true, g.EntityManager, g.EventManager).Abstract
-        MatingSystem("Mating System", true, g.EntityManager, g.EventManager).Abstract
-        MovementSystem("Movement System", true, g.EntityManager, g.EventManager).Abstract
-        PlantGrowthSystem("Plant Growth System", true, g.EntityManager, g.EventManager).Abstract
-        VisionSystem("Vision System", true, g.EntityManager, g.EventManager).Abstract
+        ControllerSystem("Controller System", true, g.Entities, g.Events).Abstract
+        EatingSystem("Eating System", true, g.Entities, g.Events).Abstract
+        EntitySystem("Entity System", true, g.Entities, g.Events).Abstract
+        FoodSystem("Food System", true, g.Entities, g.Events).Abstract
+        KillSystem("Kill System", true, g.Entities, g.Events).Abstract
+        MatingSystem("Mating System", true, g.Entities, g.Events).Abstract
+        MovementSystem("Movement System", true, g.Entities, g.Events).Abstract
+        PlantGrowthSystem("Plant Growth System", true, g.Entities, g.Events).Abstract
+        VisionSystem("Vision System", true, g.Entities, g.Events).Abstract
     |]
 
 g.Start systems startingEntities ""

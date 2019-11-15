@@ -25,11 +25,10 @@
     <Compile Include="Components\TerrainComponent.fs" />
     <Compile Include="Components\VisionComponent.fs" />
     <Compile Include="Components\Component.fs" />
-    <Compile Include="Entities\Entities.fs" />
     <Compile Include="Entities\EntityManager.fs" />
+    <Compile Include="Entities\EntityExtensions.fs" />
     <Compile Include="Events\EventTypes.fs" />
     <Compile Include="Events\EventManager.fs" />
-    <Compile Include="Systems\agent_SystemWorkTracker.fs" />
     <Compile Include="Systems\SystemManager.fs" />
     <Compile Include="Systems\EatingSystem.fs" />
     <Compile Include="Systems\EntitySystem.fs" />

@@ -3,34 +3,34 @@ open Component
 open ComponentEnums
 open CalendarTimings
 open EatingComponent
-open EntityManager
+open EntityExtensions
 open EventManager
 open EventTypes
 open FoodComponent
 open System
 open SystemManager
-open Entities
+open EntityManager
 
-type EatingSystem(description:string, isActive:bool, enm:Entities, evm:EventManager) =
+let FoodsAtLocation (enm:EntityManager) (eat:EatingComponent) =
+    eat.EntityID
+    |> EntityExt.GetLocation enm
+    |> EntityExt.GetEntitiesAtLocationWithComponent enm FoodComponentID (Some eat.EntityID)
+    |> Array.Parallel.map (fun c -> c.ToFood)
+    |> Array.filter (fun f -> eat.CanEat f.FoodType && f.Quantity > 0) // Types I can eat & Food remaining
+
+let EatActionEnabled (enm:EntityManager) (entityID:uint32) =
+    let eat = (entityID|>enm.GetComponent EatingComponentID).ToEating
+    (eat.QuantityRemaining > 0) && ((FoodsAtLocation enm eat).Length > 0)
+
+type EatingSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
     
-    static let foodsAtLocation (enm:Entities) (eat:EatingComponent) =
-        eat.EntityID
-        |> Entities.GetLocation enm
-        |> Entities.GetEntitiesAtLocationWithComponent enm FoodComponentID (Some eat.EntityID)
-        |> Array.Parallel.map (fun c -> c.ToFood)
-        |> Array.filter (fun f -> eat.CanEat f.FoodType && f.Quantity > 0) // Types I can eat & Food remaining
-
-    static member EatActionEnabled (enm:Entities) (entityID:uint32) =
-        let eat = (entityID|>enm.GetComponent EatingComponentID).ToEating
-        (eat.QuantityRemaining > 0) && ((foodsAtLocation enm eat).Length > 0)
-        
     member private me.onEat round (ge:GameEventTypes) =
         let eat = (ge.EntityID |> enm.GetComponent EatingComponentID).ToEating
 
         let selectFood =
             let foods =
-                foodsAtLocation enm eat
+                FoodsAtLocation enm eat
                 |> Array.sortByDescending (fun f -> f.FoodType.Calories) // Highest caloric food first
             match foods with 
             | [||] -> None

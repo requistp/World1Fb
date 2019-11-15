@@ -1,33 +1,32 @@
 ﻿module agent_Round
 
 
-type private agentRoundMsg =
-    | Get of AsyncReplyChannel<uint32>
-    | Increment
-    | Init of round:uint32
+type private agent_RoundMsg =
+    | GetRound of AsyncReplyChannel<uint32>
+    | IncrementRound
+    | InitRound of round:uint32
 
 
 type agent_Round() =
 
-    let agent =
+    let agentRound =
         let mutable _round = 0u
-        MailboxProcessor<agentRoundMsg>.Start(
+        MailboxProcessor<agent_RoundMsg>.Start(
             fun inbox ->
                 async { 
                     while true do
                         let! msg = inbox.Receive()
                         match msg with
-                        | Get replyChannel ->
+                        | GetRound replyChannel ->
                             replyChannel.Reply(_round)
-                        | Increment ->
+                        | IncrementRound ->
                             _round <- _round + 1u
-                        | Init round ->
+                        | InitRound round ->
                             _round <- round
                 }
             )
-    member _.Get() = agent.PostAndReply Get
-    member _.Increment = agent.Post Increment
-    member _.Init round = agent.Post (Init round)
-    member _.PendingUpdates = agent.CurrentQueueLength > 0
+    member _.Get() = agentRound.PostAndReply GetRound
+    member _.Increment = agentRound.Post IncrementRound
+    member _.Init round = agentRound.Post (InitRound round)
 
 
