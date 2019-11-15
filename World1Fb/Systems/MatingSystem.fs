@@ -67,7 +67,7 @@ type MatingSystem(description:string, isActive:bool, enm:agent_Entities, evm:Eve
                 enm.ReplaceComponent (Mating (mc2.Update None None (Some round) None))
                 Error (sprintf "Reproduction failed (%f<%f)" chance rnd)
             | true ->
-                evm.ScheduleEvent (ScheduleEvent ({ Schedule = RunOnce; Frequency = mc2.Species.Gestation }, Birth { MomID = mc2.EntityID; DadID = mc.EntityID }))
+                evm.AddToSchedule round (ScheduleEvent ({ Schedule = RunOnce; Frequency = mc2.Species.Gestation }, Birth { MomID = mc2.EntityID; DadID = mc.EntityID }))
                 enm.ReplaceComponent (Mating (mc2.Update None (Some Female_Pregnant) (Some round) None)) 
                 Ok (Some (sprintf "Reproduction succeeded (%f >= %f)" chance rnd))
 

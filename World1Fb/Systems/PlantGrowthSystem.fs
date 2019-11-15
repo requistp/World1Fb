@@ -31,8 +31,8 @@ type PlantGrowthSystem(description:string, isActive:bool, enm:agent_Entities, ev
     member private me.onComponentAdded round (ge:GameEventTypes) =
         let e = ge.ToComponentAddedPlantGrowth
         let pd = e.Component.ToPlantGrowth
-        if pd.RegrowRate > 0.0 then evm.ScheduleEvent (ScheduleEvent ({ Schedule=RepeatIndefinitely; Frequency=uint32 PlantGrowthFrequency }, PlantRegrowth { EntityID=e.EntityID }))
-        if pd.ReproductionRate > 0.0 then evm.ScheduleEvent (ScheduleEvent ({ Schedule=RepeatIndefinitely; Frequency=uint32 PlantReproductionFrequency }, PlantReproduce { EntityID=e.EntityID }))
+        if pd.RegrowRate > 0.0 then evm.AddToSchedule round (ScheduleEvent ({ Schedule=RepeatIndefinitely; Frequency=uint32 PlantGrowthFrequency }, PlantRegrowth { EntityID=e.EntityID }))
+        if pd.ReproductionRate > 0.0 then evm.AddToSchedule round (ScheduleEvent ({ Schedule=RepeatIndefinitely; Frequency=uint32 PlantReproductionFrequency }, PlantReproduce { EntityID=e.EntityID }))
         Ok (Some (sprintf "Queued Regrow to Schedule:%b. Queued Repopulate to Schedule:%b" (pd.RegrowRate > 0.0) (pd.ReproductionRate > 0.0)))
   
     member private me.onReproduce round (ge:GameEventTypes) =

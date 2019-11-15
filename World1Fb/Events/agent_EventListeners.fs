@@ -8,13 +8,13 @@ type GameEventCallback = uint32 -> GameEventTypes -> Result<string option,string
 
 
 type private agentListenersMsg =
-| Execute of round:uint32 * gameEvent:GameEventTypes 
-| Register of listener:string * gameEventID:byte * GameEventCallback
+    | Execute of round:uint32 * gameEvent:GameEventTypes 
+    | Register of listener:string * gameEventID:byte * GameEventCallback
 
 
 type agent_EventListeners(log:agent_GameLog) =
 
-    let agent =
+    let agentListeners =
         let mutable _listeners = Map.empty:Map<byte,(string*GameEventCallback)[]>
         MailboxProcessor<agentListenersMsg>.Start(
             fun inbox ->
@@ -40,7 +40,7 @@ type agent_EventListeners(log:agent_GameLog) =
                             log.Log 0u (sprintf "%-3s | %-20s -> %-30s" "Ok " "Registered System" listener)
                 }
             )
-    member _.Execute round gameEvent = agent.Post (Execute (round,gameEvent))
-    member _.PendingUpdates = agent.CurrentQueueLength > 0
-    member _.Register listener eventTypeID callback = agent.Post (Register (listener,eventTypeID,callback))
+    member _.Execute round gameEvent = agentListeners.Post (Execute (round,gameEvent))
+    member _.PendingUpdates = agentListeners.CurrentQueueLength > 0
+    member _.Register listener eventTypeID callback = agentListeners.Post (Register (listener,eventTypeID,callback))
 
