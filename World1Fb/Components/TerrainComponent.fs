@@ -4,8 +4,8 @@ open ComponentEnums
         
 type TerrainComponent = 
     { 
-        EntityID:uint32
-        Terrain:TerrainType 
+        EntityID : uint32
+        Terrain : TerrainType 
     } 
         
         

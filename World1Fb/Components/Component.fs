@@ -18,7 +18,7 @@ type Component =
     | Food of FoodComponent
     | Form of FormComponent
     | Mating of MatingComponent
-    | Memory of MemoryComponent
+    //| Memory of MemoryComponent
     | Movement of MovementComponent
     | PlantGrowth of PlantGrowthComponent
     | Terrain of TerrainComponent
@@ -30,7 +30,7 @@ type Component =
         | Food d -> Food { d with EntityID = newEID }
         | Form d -> Form { d with EntityID = newEID }
         | Mating d -> Mating { d with EntityID = newEID }
-        | Memory d -> Memory { d with EntityID = newEID }
+        //| Memory d -> Memory { d with EntityID = newEID }
         | Movement d -> Movement { d with EntityID = newEID }
         | PlantGrowth d -> PlantGrowth { d with EntityID = newEID }
         | Terrain d -> Terrain { d with EntityID = newEID }
@@ -42,7 +42,7 @@ type Component =
         | Food _ -> FoodComponentID
         | Form _ -> FormComponentID
         | Mating _ -> MatingComponentID
-        | Memory _ -> MemoryComponentID
+        //| Memory _ -> MemoryComponentID
         | Movement _ -> MovementComponentID
         | PlantGrowth _ -> PlantGrowthComponentID
         | Terrain _ -> TerrainComponentID
@@ -54,7 +54,7 @@ type Component =
         | Food d -> d.EntityID
         | Form d -> d.EntityID
         | Mating d -> d.EntityID
-        | Memory d -> d.EntityID
+        //| Memory d -> d.EntityID
         | Movement d -> d.EntityID
         | PlantGrowth d -> d.EntityID
         | Terrain d -> d.EntityID
@@ -74,9 +74,9 @@ type Component =
     member me.ToMating =
         let (Mating d) = me
         d
-    member me.ToMemory =
-        let (Memory d) = me
-        d
+    //member me.ToMemory =
+    //    let (Memory d) = me
+    //    d
     member me.ToMovement = 
         let (Movement d) = me
         d

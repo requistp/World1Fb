@@ -9,6 +9,7 @@ type private agentLogMsg =
 
 
 type agent_GameLog() =
+
     let agent =
         let mutable _log = Array.empty<uint32*string>
         let mutable _logging = true
@@ -29,10 +30,7 @@ type agent_GameLog() =
                                 _log <- Array.empty
                 }
             )
-    
     member _.Log round s = agent.Post (Log (round,s))
-
     member _.SetLogging b = agent.Post (SetLogging b)
-
     member _.WriteLog = agent.Post WriteLog
 

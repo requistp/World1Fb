@@ -42,7 +42,7 @@ type WorldMapRenderer() =
                             (fds |> Array.sortBy (fun c -> (enm.TryGetComponent TerrainComponentID c.EntityID).IsSome)).[0]
                 let fs = 
                     { X = x; Y = y; Z = 0 }
-                    |> enm.GetEntitiesAtLocationWithComponent None FormComponentID
+                    |> History.GetEntitiesAtLocationWithComponent enm.AgentEntities FormComponentID None
                     |> Array.map (fun c -> c.ToForm)
 
                 match fs.Length with
@@ -79,10 +79,10 @@ type WorldMapRenderer() =
                     | false -> ColoredConsole.Console.DrawDarkGray
                     | true -> ColoredConsole.Console.DrawWhite
                 let forms = 
-                    let es = History.GetEntities enm (Some round) 
+                    let es = History.GetEntities enm.AgentHistory (Some round) 
                     location
-                    |> History.GetEntitiesAtLocation enm (Some round)
-                    |> Array.Parallel.map (fun e -> (e|>History.GetComponent FormComponentID es).ToForm)
+                    |> History.GetEntitiesAtLocation enm.AgentHistory (Some round)
+                    |> Array.Parallel.map (fun e -> (e|>History.GetComponent2 es FormComponentID).ToForm)
                 System.Console.SetCursorPosition(drawX,drawY)
                 drawCall forms.[0].Symbol
             )

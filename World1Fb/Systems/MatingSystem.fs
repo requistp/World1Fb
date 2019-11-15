@@ -22,15 +22,15 @@ type MatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
             | _ -> c    
         let newcts = 
             momID
-            |> enm.CopyEntity
+            |> History.CopyEntity enm.AgentEntities
             |> Array.Parallel.map (fun c -> adjustComponents c)
         evm.RaiseEvent (CreateEntity { Components = newcts })
         Ok (Some (sprintf "Born:%i" newcts.[0].EntityID))
 
     static let eligibleFemales (enm:EntityManager) (mating:MatingComponent) round = 
         mating.EntityID 
-        |> enm.GetLocation
-        |> enm.GetEntitiesAtLocationWithComponent (Some mating.EntityID) MatingComponentID
+        |> History.GetLocation enm.AgentEntities
+        |> History.GetEntitiesAtLocationWithComponent enm.AgentEntities MatingComponentID (Some mating.EntityID)
         |> Array.Parallel.map (fun c -> c.ToMating)
         |> Array.filter (fun m -> m.Species = mating.Species && m.MatingStatus = Female && m.CanMate round) // Same Species & Non-Pregnant Females & Can Retry
 

@@ -23,7 +23,7 @@ type PlantGrowthSystem(description:string, isActive:bool, enm:EntityManager, evm
             | _ -> c          
         let newcts = 
             momID
-            |> enm.CopyEntity 
+            |> History.CopyEntity enm.AgentEntities 
             |> Array.Parallel.map (fun c -> makePlant_AdjustComponents c)
         evm.RaiseEvent (CreateEntity { Components = newcts })
         Ok (Some (sprintf "New plant:%i. Location:%s" (newcts.[0].EntityID) (l.ToString())))
@@ -48,11 +48,11 @@ type PlantGrowthSystem(description:string, isActive:bool, enm:EntityManager, evm
                 match newLocation.IsOnMap with
                 | false -> Error (sprintf "Failed: location not on map:%s" (newLocation.ToString()))
                 | true ->
-                    let eids = enm.GetEntitiesAtLocation newLocation
-                    match (eids |> enm.TryGetComponentForEntities PlantGrowthComponentID).Length with 
+                    let eids = enm.AgentEntities.GetEntitiesAtLocation newLocation
+                    match (eids |> History.GetComponentForEntities enm.AgentEntities PlantGrowthComponentID).Length with 
                     | x when x > 0 -> Error (sprintf "Failed: plant exists at location:%s" (newLocation.ToString()))
                     | _ -> 
-                        match pd.GrowsInTerrain|>Array.contains (eids|>enm.TryGetComponentForEntities TerrainComponentID).[0].ToTerrain.Terrain with
+                        match pd.GrowsInTerrain|>Array.contains (eids|>History.GetComponentForEntities enm.AgentEntities TerrainComponentID).[0].ToTerrain.Terrain with
                         | false -> Error "Failed: terrain is not suitable"
                         | true -> 
                             let fco = e.EntityID |> enm.TryGetComponent FoodComponentID 

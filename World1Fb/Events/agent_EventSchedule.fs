@@ -44,7 +44,7 @@ type agent_EventSchedule(log:agent_GameLog, agentForListeners:agent_EventListene
                                     | _ -> addToSchedule round (ScheduleEvent ({ sed with Schedule = RepeatFinite (x - 1u) }, ge)) false                                 
                             let executeAndReschedule (se:GameEventTypes) =
                                 let _,ge = se.ToScheduleEvent
-                                match enm.Exists ge.EntityID with
+                                match enm.AgentEntities.EntityExists ge.EntityID with
                                 | false -> ()
                                 | true ->
                                     agentForListeners.Execute round ge
@@ -62,15 +62,10 @@ type agent_EventSchedule(log:agent_GameLog, agentForListeners:agent_EventListene
                             addToSchedule round se true
                 }
             )
-
     member _.ExecuteScheduled round = agent.Post (ExecuteScheduled round)
-
     member _.Init map = agent.Post (Init map)
-
     member _.Get = agent.PostAndReply Get
-
     member _.PendingUpdates = agent.CurrentQueueLength > 0
-
-    member _.Schedule round se = agent.Post (Schedule (round,se))
+    member _.Schedule round scheduledEvent = agent.Post (Schedule (round,scheduledEvent))
 
 

@@ -13,13 +13,11 @@ open SystemManager
 
 type EatingSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
-    //let enm = game.EntityManager
-    //let evm = game.EventManager    
     
     static let foodsAtLocation (enm:EntityManager) (eat:EatingComponent) =
         eat.EntityID
-        |> enm.GetLocation 
-        |> enm.GetEntitiesAtLocationWithComponent (Some eat.EntityID) FoodComponentID 
+        |> History.GetLocation enm.AgentEntities
+        |> History.GetEntitiesAtLocationWithComponent enm.AgentEntities FoodComponentID (Some eat.EntityID)
         |> Array.Parallel.map (fun c -> c.ToFood)
         |> Array.filter (fun f -> eat.CanEat f.FoodType && f.Quantity > 0) // Types I can eat & Food remaining
 

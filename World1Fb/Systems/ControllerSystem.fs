@@ -50,7 +50,7 @@ let private setCurrentActions (enm:EntityManager) (log:agent_GameLog) round enti
 
 let UpdateCurrentActionsForAllEntities (enm:EntityManager) (log:agent_GameLog) round = 
     ControllerComponentID
-    |> History.GetEntitiesWithComponent enm (Some round)
+    |> History.GetEntitiesWithComponent enm.AgentHistory (Some round)
     |> Array.Parallel.iter (fun eid -> setCurrentActions enm log round eid)
 
 
@@ -60,7 +60,7 @@ type ControllerSystem(description:string, isActive:bool, enm:EntityManager, evm:
     member private me.onSetActions round (ge:GameEventTypes) =
         let c = ge.ToComponentAddedController.Component.ToController
         let actions = 
-            let ects = enm.GetComponentIDs c.EntityID
+            let ects = History.GetComponentIDs enm.AgentEntities c.EntityID
             ActionTypes.AsArray 
             |> Array.Parallel.choose (fun a -> if a.RequiredComponents |> Array.forall (fun ct -> ects |> Array.contains ct) then Some a else None)
         

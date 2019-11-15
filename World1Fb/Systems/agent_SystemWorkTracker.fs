@@ -9,9 +9,8 @@ type private agent_SystemWorkTrackerMsg =
 
 type agent_SystemWorkTracker() = 
 
-    let mutable _tasks = 0u
-
-    let agent =    
+    let agent = 
+        let mutable _tasks = 0u
         MailboxProcessor<agent_SystemWorkTrackerMsg>.Start(
             fun inbox ->
                 async { 
@@ -26,11 +25,8 @@ type agent_SystemWorkTracker() =
                             replyChannel.Reply(inbox.CurrentQueueLength = 0 && _tasks = 0u)
                 }
             )
-
     member _.End = agent.Post Decrement
-
     member _.IsIdle = agent.PostAndReply IsIdle
-
     member _.Start = agent.Post Increment
     
     

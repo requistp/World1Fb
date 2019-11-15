@@ -7,14 +7,14 @@ type historyTuple = Map<uint32,Component[]> * Map<byte,uint32[]> * Map<LocationD
 
 
 type private agent_EntityHistoryMsg = 
-| Add of round:uint32 * historyTuple
-| Get of round:uint32 option * AsyncReplyChannel<historyTuple>
-| GetAll of AsyncReplyChannel<Map<uint32,historyTuple> >
-| Init of Map<uint32,historyTuple>
+    | GetHistory of round:uint32 option * history:AsyncReplyChannel<historyTuple>
+    | GetAllHistory of allHistory:AsyncReplyChannel<Map<uint32,historyTuple> >
+    | InitHistory of allHistory:Map<uint32,historyTuple>
+    | RecordHistory of round:uint32 * history:historyTuple
 
 
 type agent_EntityHistory() =    
-    let agent =
+    let agentHistory =
         let mutable _history = Map.empty<uint32,historyTuple>
         MailboxProcessor<agent_EntityHistoryMsg>.Start(
             fun inbox ->
@@ -22,27 +22,23 @@ type agent_EntityHistory() =
                     while true do
                         let! msg = inbox.Receive()
                         match msg with
-                        | Add (round,h) -> 
-                            _history <- _history.Add(round,h)
-                        | Get (round,replyChannel) ->
+                        | GetHistory (round,replyChannel) ->
                             replyChannel.Reply(
                                 match round with
                                 | Some r -> _history.Item r
                                 | None -> _history.Item (uint32 (_history.Count - 1))
                                 )
-                        | GetAll replyChannel ->
+                        | GetAllHistory replyChannel ->
                             replyChannel.Reply(_history)
-                        | Init hs ->
+                        | InitHistory hs ->
                             _history <- hs
+                        | RecordHistory (round,h) -> 
+                            _history <- _history.Add(round,h)
                 }
             )
+    member _.GetHistory (round:uint32 option) = agentHistory.PostAndReply (fun replyChannel -> GetHistory (round,replyChannel))
+    member _.GetAllHistory = agentHistory.PostAndReply GetAllHistory
+    member _.InitHistory allHistory = agentHistory.Post (InitHistory allHistory)
+    //member _.PendingUpdates = agentHistory.CurrentQueueLength > 0
+    member _.RecordHistory round history = agentHistory.Post (RecordHistory (round,history))
 
-    member _.Add round h = agent.Post (Add (round,h))
-
-    member _.Get (round:uint32 option) = agent.PostAndReply (fun replyChannel -> Get (round,replyChannel))
-
-    member _.GetAll = agent.PostAndReply GetAll
-
-    member _.Init hs = agent.Post (Init hs)
-
-    member _.PendingUpdates = agent.CurrentQueueLength > 0

@@ -8,9 +8,9 @@ open System
 
 
 type KeyboardResult = 
-    | ExitGame
-    | GameAction
-    | InfoOnly
+| ExitGame
+| GameAction
+| InfoOnly
 
 
 type InputHandler(evm:EventManager, enm:EntityManager) =
@@ -25,7 +25,7 @@ type InputHandler(evm:EventManager, enm:EntityManager) =
                 match ControllerSystem.HandleAction enm evm action entityID with
                 | false -> InfoOnly
                 | true -> GameAction
-            
+
             while Console.KeyAvailable do //Might help clear double movement keys entered in one turn
                 Console.ReadKey(true).Key |> ignore
 

@@ -1,7 +1,6 @@
 ﻿module EventTypes
 open Component
 open ComponentEnums
-open ControllerComponent
 
 let Event_ActionEat_ID = 1uy
 let Event_ActionMate_ID = Event_ActionEat_ID + 1uy
@@ -65,12 +64,6 @@ type GameEventTypes =
     | PlantReproduce of Event_PlantReproduce
     | ScheduleEvent of Event_ScheduleEvent * GameEventTypes
     | Starving of Event_Starving
-    //member me.ActionType = 
-    //    match me with
-    //    | Action_Eat _ -> Some Eat
-    //    | Action_Mate _ -> Some Mate
-    //    | Action_Movement _ -> Some Move
-    //    | _ -> None
     member me.EntityID =
         match me with
         | Action_Eat d -> d.EntityID

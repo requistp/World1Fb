@@ -1,155 +1,120 @@
 ﻿module EntityManager
-open agent_ComponentEntity
-open agent_EntityComponent
-open agent_EntityID
+open agent_Entities
 open agent_EntityHistory
 open agent_GameLog
-open agent_LocationEntity
 open Component
 open ComponentEnums
 open CommonGenericFunctions
 open LocationTypes
-open System
 
 
 type EntityManager(log:agent_GameLog) =
-    let agentForEntityID = new agent_EntityID()
-    let agentForComponents = new agent_ComponentEntity()
-    let agentForLocations = new agent_LocationEntity()
     let agentForEntities = new agent_EntityComponent() 
     let agentForHistory = new agent_EntityHistory()
 
-    member _.CopyEntity (oldeid:uint32) =
-        let neweid = agentForEntityID.GetNewID
-        oldeid
-        |> agentForEntities.GetComponents
-        |> Array.Parallel.map (fun ct -> ct.Copy neweid)
-
-    member _.CreateEntity (cts:Component[]) = 
-        Async.Parallel 
-        (
-            agentForEntities.CreateEntity cts
-            agentForComponents.Add cts
-            agentForLocations.Add cts
-        ) |> ignore
-        Ok None
-
-    member _.Exists eid = agentForEntities.Exists eid
-
-    member _.GetComponents (eid:uint32) = agentForEntities.GetComponents eid
+    member _.AgentHistory = agentForHistory
+    member _.AgentEntities = agentForEntities
 
     member me.GetComponent (cid:byte) (eid:uint32) =
         eid
-        |> me.GetComponents 
+        |> agentForEntities.GetComponents 
         |> Array.find (fun x -> x.ComponentID = cid)
 
-    member _.GetComponentIDs (eid:uint32) =
-        agentForEntities.GetComponents eid |> Array.Parallel.map (fun ct -> ct.ComponentID)
-
-    member _.GetEntities = agentForEntities.GetAll
-
-    member _.GetEntitiesWithComponent c = agentForComponents.Get c
-
-    member _.GetEntitiesAtLocation location = agentForLocations.Get location
-
-    member me.GetEntitiesAtLocationWithComponent (excludeEntityID:uint32 option) (componentID:byte) (location:LocationDataInt) = 
-        location
-        |> me.GetEntitiesAtLocation
-        |> Array.filter (fun eid -> excludeEntityID.IsNone || eid <> excludeEntityID.Value) // Not excluded or not me
-        |> Array.Parallel.choose (fun eid -> eid |> me.TryGetComponent componentID)
-
-    member _.GetHistory (round:uint32 option) = agentForHistory.Get round
-
-    member _.GetHistory_Components (round:uint32 option) = 
-        let _,c,_ = agentForHistory.Get round
-        c
-        
-    member _.GetHistory_Entities (round:uint32 option) = 
-        let e,_,_ = agentForHistory.Get round
-        e
-
-    member _.GetHistory_Locations (round:uint32 option) = 
-        let _,_,l = agentForHistory.Get round
-        l
-
-    member me.GetLocation (entityID:uint32) = (entityID|>me.GetComponent FormComponentID).ToForm.Location
-
-    member _.GetMaxID = agentForEntityID.GetMaxID 
-
-    member _.GetNewID = agentForEntityID.GetNewID
-
-    member me.HasAllComponents (cts:byte[]) (eid:uint32) =
-        let ects = me.GetComponentIDs eid
-        cts |> Array.forall (fun ct -> ects |> Array.contains ct)
-
-    member _.Init (map:Map<uint32,Component[]>) =
-        agentForEntities.Init map
-        let ctss = map |> MapValuesToArray
-        ctss |> Array.Parallel.iter (fun cts -> agentForComponents.Add cts)
-        ctss |> Array.Parallel.iter (fun cts -> cts |> Array.filter (fun c -> c.ComponentID=FormComponentID) |> Array.Parallel.iter (fun c -> agentForLocations.Add c.ToForm))
-    
-    member _.Init (maxEntityID:uint32) = agentForEntityID.Init maxEntityID
-
-    member _.PendingUpdates = 
-        agentForEntities.PendingUpdates || agentForEntityID.PendingUpdates || agentForComponents.PendingUpdates || agentForLocations.PendingUpdates || agentForHistory.PendingUpdates
-
-    member me.RecordHistory round =
-        agentForHistory.Add round (agentForEntities.GetAll(), agentForComponents.GetAll(), agentForLocations.GetAll())
-
-    member _.RemoveEntity (eid:uint32) =
-        let cts = agentForEntities.GetComponents eid
-        Async.Parallel 
-        (
-            agentForComponents.Remove cts
-            agentForLocations.Remove cts
-            agentForEntities.RemoveEntity eid
-        ) |> ignore
-        Ok None
-        
     member me.ReplaceComponent (c:Component) =
-        match c with
-        | Form f -> f |> agentForLocations.Move (me.GetComponent FormComponentID c.EntityID).ToForm
-        | _ -> ()
         agentForEntities.ReplaceComponent c
 
     member _.TryGet (eid:uint32) =
-        agentForEntities.Exists eid |> TrueSomeFalseNone (agentForEntities.GetComponents eid)
+        agentForEntities.EntityExists eid |> TrueSomeFalseNone (agentForEntities.GetComponents eid)
 
-    member me.TryGetComponent (cid:byte) (eid:uint32) : Option<Component> = 
-        me.TryGet eid
+    member me.TryGetComponent (componentID:byte) (entityID:uint32) : Option<Component> = 
+        entityID
+        |> me.TryGet 
         |> Option.bind (fun cts -> 
-            match cts |> Array.filter (fun c -> c.ComponentID = cid) with
+            match cts |> Array.filter (fun c -> c.ComponentID = componentID) with
             | [||] -> None
             | l -> Some (l.[0]))
-        //match me.TryGet eid with
-        //| None -> None
-        //| Some cts -> match cts |> Array.filter (fun c -> c.ComponentID = cid) with
-        //              | [||] -> None
-        //              | l -> Some (l.[0])
-
-    member me.TryGetComponentForEntities (cid:byte) (eids:uint32[]) = 
-        me.GetEntitiesWithComponent cid
-        |> Array.filter (fun e -> eids|>Array.contains e)
-        |> Array.Parallel.map (fun e -> me.GetComponent cid e)
 
 
-module History =
+module rec History = 
 
-    let GetEntities (enm:EntityManager) round = enm.GetHistory_Entities round
+    let CopyEntity (agentEntity:agent_EntityComponent) (oldeid:uint32) =
+        let neweid = agentEntity.GetNewID
+        oldeid
+        |> agentEntity.GetComponents
+        |> Array.Parallel.map (fun ct -> ct.Copy neweid)
 
-    let GetComponent (componentID:byte) (entities:Map<uint32,Component[]>) (entityID:uint32) =
+    //let CreateEntity (agentEntity:agent_EntityComponent) (components:Component[]) = 
+    //    agentEntity.CreateEntity components
+    //    Ok None
+
+    let GetComponent2 (entities:Map<uint32,Component[]>) (componentID:byte) (entityID:uint32) =
         entities.Item(entityID)
         |> Array.find (fun x -> x.ComponentID = componentID)
 
-    let GetEntitiesAtLocation (enm:EntityManager) round (location:LocationDataInt) =
-        let locations = enm.GetHistory_Locations round
+    let GetComponent (agentEntity:agent_EntityComponent) (componentID:byte) (entityID:uint32) =
+        entityID
+        |> agentEntity.GetComponents
+        |> Array.find (fun x -> x.ComponentID = componentID)
+
+    let GetComponentForEntities (agentEntity:agent_EntityComponent) (componentID:byte) (entityIDs:uint32[]) = 
+        componentID
+        |> agentEntity.GetEntitiesWithComponent
+        |> Array.filter (fun e -> entityIDs |> Array.contains e)
+        |> Array.Parallel.map (fun e -> GetComponent agentEntity componentID e)
+
+    let GetComponentIDs (agentEntity:agent_EntityComponent) (eid:uint32) =
+        eid 
+        |> agentEntity.GetComponents 
+        |> Array.Parallel.map (fun ct -> ct.ComponentID)
+
+    let GetEntities (agentHistory:agent_EntityHistory) (round:uint32 option) = 
+        let e,_,_ = agentHistory.GetHistory round
+        e
+
+    let GetEntitiesAtLocation (agentHistory:agent_EntityHistory) (round:uint32 option) (location:LocationDataInt) =
+        let _,_,locations = agentHistory.GetHistory round
         match locations.ContainsKey location with
         | false -> [||]
         | true -> locations.Item location
-    
-    let GetEntitiesWithComponent (enm:EntityManager) round componentID = 
-        let components = enm.GetHistory_Components round
+
+    let GetEntitiesAtLocationWithComponent (agentEntity:agent_EntityComponent) (componentID:byte) (excludeEntityID:uint32 option) (location:LocationDataInt) = 
+        location
+        |> agentEntity.GetEntitiesAtLocation
+        |> Array.filter (fun eid -> excludeEntityID.IsNone || eid <> excludeEntityID.Value) // Not excluded or not me
+        |> Array.Parallel.choose (fun eid -> eid |> TryGetComponent agentEntity componentID)
+
+    let GetEntitiesWithComponent (agentHistory:agent_EntityHistory) (round:uint32 option) (componentID:byte) = 
+        let _,components,_ = agentHistory.GetHistory round
         match components.ContainsKey componentID with
         | false -> [||]
         | true -> components.Item componentID
+    
+    let GetLocation (agentEntity:agent_EntityComponent) (entityID:uint32) = (entityID|>GetComponent agentEntity FormComponentID).ToForm.Location
+
+    let Init (agentEntity:agent_EntityComponent) (map:Map<uint32,Component[]>) (maxEntityID:uint32) =
+        agentEntity.Init map maxEntityID
+        //////let ctss = map |> MapValuesToArray
+        //////ctss |> Array.Parallel.iter (fun cts -> agentComponents.AddComponentsToMap cts)
+        //////ctss |> Array.Parallel.iter (fun cts -> cts |> Array.filter (fun c -> c.ComponentID=FormComponentID) |> Array.Parallel.iter (fun c -> agentLocations.Add c.ToForm))
+
+    //let PendingUpdates (agentEntity:agent_EntityComponent) (agentComponents:agent_ComponentEntity) (agentLocations:agent_LocationEntity) (agentHistory:agent_EntityHistory) = 
+    //    agentEntity.PendingUpdates || agentComponents.PendingUpdates || agentLocations.PendingUpdates || agentHistory.PendingUpdates
+
+    //let RemoveEntity (agentEntity:agent_EntityComponent) (agentLocations:agent_LocationEntity) (eid:uint32) =
+    //    agentEntity.RemoveEntity eid
+
+    let TryGet (agentEntity:agent_EntityComponent) (entityID:uint32) =
+        entityID 
+        |> agentEntity.EntityExists 
+        |> TrueSomeFalseNone (agentEntity.GetComponents entityID)
+
+    let TryGetComponent (agentEntity:agent_EntityComponent) (componentID:byte) (entityID:uint32) : Option<Component> = 
+        entityID
+        |> TryGet agentEntity
+        |> Option.bind (fun cts -> 
+            match cts |> Array.filter (fun c -> c.ComponentID = componentID) with
+            | [||] -> None
+            | l -> Some (l.[0]))
+
+
 

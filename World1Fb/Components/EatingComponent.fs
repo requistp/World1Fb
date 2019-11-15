@@ -6,15 +6,14 @@ open System
 
 type EatingComponent = 
     { 
-        EntityID:uint32
-        Calories:int
-        CaloriesPerDay:int
-        Foods:FoodTypes[]
-        Quantity:int
-        QuantityMax:int
-        QuantityPerAction:int 
-    } with 
-
+        EntityID : uint32
+        Calories : int
+        CaloriesPerDay : int
+        Foods : FoodTypes[]
+        Quantity : int
+        QuantityMax : int
+        QuantityPerAction : int 
+    } 
     member me.CaloriesPerMetabolize = Math.Clamp(convertAmountByFrequency me.CaloriesPerDay Day MetabolismFrequency,1,me.CaloriesPerDay)
     
     member me.CanEat (fd:FoodTypes) = me.Foods |> Array.contains fd    

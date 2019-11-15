@@ -20,7 +20,7 @@ type VisionSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
             |> Array.fold (fun (m:Map<LocationDataInt,FormComponent[]>) location -> 
                 let cts = 
                     location
-                    |> enm.GetEntitiesAtLocationWithComponent None FormComponentID
+                    |> History.GetEntitiesAtLocationWithComponent enm.AgentEntities FormComponentID None
                     |> Array.Parallel.map (fun e -> e.ToForm)
                 m.Add(location,cts)
                 ) Map.empty

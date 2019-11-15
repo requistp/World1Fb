@@ -4,12 +4,11 @@ open ComponentEnums
 
 type FoodComponent = 
     { 
-        EntityID:uint32
-        FoodType:FoodTypes
-        Quantity:int
-        QuantityMax:int 
-    } with     
-
+        EntityID : uint32
+        FoodType : FoodTypes
+        Quantity : int
+        QuantityMax : int 
+    }
     member me.Update (foodTypeUpdate:FoodTypes option) (quantityUpdate:int option) (quantityMaxUpdate:int option) =
         {
             me with

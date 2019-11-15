@@ -14,12 +14,12 @@ type MovementSystem(description:string, isActive:bool, enm:EntityManager, evm:Ev
     static member MovementActionsAllowed (enm:EntityManager) (entityID:uint32) =
         let mutable _allowed = Array.empty<ActionTypes>
         let moveo = entityID|>enm.TryGetComponent MovementComponentID
-        let location = enm.GetLocation entityID
+        let location = entityID |> History.GetLocation enm.AgentEntities
         let testOnMap (direction:MovementDirection) = (direction.AddToLocation location).IsOnMap
         let formImpassableAtLocation (direction:MovementDirection) =
             location
             |> direction.AddToLocation 
-            |> enm.GetEntitiesAtLocationWithComponent (Some entityID) FormComponentID
+            |> History.GetEntitiesAtLocationWithComponent enm.AgentEntities FormComponentID (Some entityID)
             |> Array.exists (fun f -> not f.ToForm.IsPassable)
 
         match moveo.IsNone || moveo.Value.ToMovement.MovesPerTurn = 0 with 
@@ -47,7 +47,7 @@ type MovementSystem(description:string, isActive:bool, enm:EntityManager, evm:Ev
                 let testForImpassableFormAtLocation junk =
                     let formImpassableAtLocation =
                         dest
-                        |> enm.GetEntitiesAtLocationWithComponent (Some e.EntityID) FormComponentID
+                        |> History.GetEntitiesAtLocationWithComponent enm.AgentEntities FormComponentID (Some e.EntityID)
                         |> Array.exists (fun f -> not f.ToForm.IsPassable)
                     match formImpassableAtLocation with
                     | true -> Error (sprintf "Form at location %s" (dest.ToString()))

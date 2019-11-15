@@ -4,7 +4,7 @@ open ComponentEnums
 
 type MovementComponent = 
     { 
-        EntityID:uint32
-        MovesPerTurn:int 
+        EntityID : uint32
+        MovesPerTurn : int 
     }
 

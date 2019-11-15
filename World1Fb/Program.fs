@@ -13,6 +13,7 @@ open VisionSystem
 open ConsoleV1
 open WorldMapRenderer
 
+
 let format = LoadAndSave.SaveGameFormats.Binary
 
 let wmr = new WorldMapRenderer()
@@ -40,4 +41,6 @@ let systems =
 g.Start systems startingEntities ""
 
 //g.Start systems Array.empty "Save_201911041343"
+
+
 

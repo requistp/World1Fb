@@ -1,10 +1,10 @@
 ﻿module agent_Round
 
 
-type agentRoundMsg =
+type private agentRoundMsg =
 | Get of AsyncReplyChannel<uint32>
 | Increment
-| Init of uint32
+| Init of round:uint32
 
 
 type agent_Round() =
@@ -25,12 +25,9 @@ type agent_Round() =
                             _round <- round
                 }
             )
-
     member _.Get() = agent.PostAndReply Get
-
     member _.Increment = agent.Post Increment
-
     member _.Init round = agent.Post (Init round)
-
     member _.PendingUpdates = agent.CurrentQueueLength > 0
+
 

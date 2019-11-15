@@ -4,15 +4,14 @@ open ComponentEnums
 
 type MatingComponent = 
     { 
-        EntityID:uint32
-        ChanceOfReproduction:float
-        LastMatingAttempt:uint32
-        MatingStatus:MatingStatus
-        Species:Species 
-    } with 
-
+        EntityID : uint32
+        ChanceOfReproduction : float
+        LastMatingAttempt : uint32
+        MatingStatus : MatingStatus
+        Species : Species 
+    }
     member me.CanMate round =
-        me.MatingStatus <> MatingStatus.Female_Pregnant && (me.LastMatingAttempt = 0u || me.LastMatingAttempt + me.Species.MaxMatingFrequency <= round)
+        (me.MatingStatus <> MatingStatus.Female_Pregnant) && (me.LastMatingAttempt = 0u || me.LastMatingAttempt + me.Species.MaxMatingFrequency <= round)
 
     member me.Update (chanceOfReproductionUpdate:float option) (matingStatusUpdate:MatingStatus option) (lastMatingAttemptUpdate:uint32 option) (speciesUpdate:Species option) =
         {

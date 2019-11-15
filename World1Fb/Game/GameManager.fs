@@ -32,7 +32,7 @@ type Game(wmr:EntityManager->uint32->unit, format:SaveGameFormats) =
     member _.GetRound() = agentForRound.Get()
 
     member private me.assignController =
-        match ControllerComponentID|>entityMan.GetEntitiesWithComponent with
+        match entityMan.AgentEntities.GetEntitiesWithComponent ControllerComponentID with
         | [||] -> None
         | l -> Some l.[0]
 
@@ -51,7 +51,7 @@ type Game(wmr:EntityManager->uint32->unit, format:SaveGameFormats) =
         systemMan.UpdateSystems round
         waitForEndOfRound round
         gameLog.WriteLog
-        entityMan.RecordHistory round
+        entityMan.AgentHistory.RecordHistory round (entityMan.AgentEntities.GetEntities(),entityMan.AgentEntities.GetComponentMap(),entityMan.AgentEntities.GetLocationMap())
         ControllerSystem.UpdateCurrentActionsForAllEntities entityMan gameLog round
         wmr entityMan (inputMan.GetEntityID.Value); printfn "Round#%i" round       
         agentForRound.Increment
@@ -59,16 +59,15 @@ type Game(wmr:EntityManager->uint32->unit, format:SaveGameFormats) =
     member private me.loadGame filename =
         let sgd = LoadAndSave.LoadGame format filename 
         agentForRound.Init sgd.Round
-        entityMan.Init sgd.ECMap
-        entityMan.Init sgd.MaxEntityID
+        History.Init entityMan.AgentEntities sgd.ECMap sgd.MaxEntityID
 
     member private me.saveGame =
         LoadAndSave.SaveGame 
             format
             { 
                 Round = agentForRound.Get() // Maybe this should be -1u
-                ECMap = entityMan.GetEntities()
-                MaxEntityID = entityMan.GetMaxID
+                ECMap = entityMan.AgentEntities.GetEntities()
+                MaxEntityID = entityMan.AgentEntities.GetMaxID
                 ScheduledEvents = eventMan.GetSchedule
             }
 

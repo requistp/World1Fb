@@ -9,7 +9,7 @@ open LocationTypes
 
 let MakeMap (enm:EntityManager) = 
     let AddTerrain l = 
-        let eid = enm.GetNewID
+        let eid = enm.AgentEntities.GetNewID
         let t = 
             match random.Next(1,50) with
             | 1 -> Rock
@@ -34,7 +34,7 @@ let MakeMap (enm:EntityManager) =
 
 let MakeGrasses (enm:EntityManager) n =
     let MakeGrass x y =
-        let eid = enm.GetNewID
+        let eid = enm.AgentEntities.GetNewID
         [| 
             Food { EntityID = eid; FoodType = Food_Carrot; Quantity = 20; QuantityMax = 20 }
             Form { EntityID = eid; Born = 0u; CanSeePast = true; IsPassable = true; Name = Food_Carrot.ToString(); Symbol = Food_Carrot.Symbol.Value; Location = {X=x;Y=y;Z=0} }
@@ -47,7 +47,7 @@ let MakeGrasses (enm:EntityManager) n =
 
 let MakeRabbits (enm:EntityManager) n = 
     let MakeRabbit x y n rnd = 
-        let eid = enm.GetNewID
+        let eid = enm.AgentEntities.GetNewID
         let cont = [| Controller { EntityID = eid; Actions = [||]; CurrentActions = [||] } |]
         let matingStatus = if n = 1 || rnd = 0 then Male else Female
         let symbol = if matingStatus = Male then 'R' else 'r'
@@ -61,7 +61,7 @@ let MakeRabbits (enm:EntityManager) n =
                 Eating { EntityID = eid; Calories = 150; CaloriesPerDay = 300; Foods = [|Food_Carrot;Food_Grass|]; Quantity = 75; QuantityMax = 150; QuantityPerAction = 1 }
                 Form { EntityID = eid; Born = 0u; CanSeePast = true; IsPassable = true; Name = "rabbit"; Symbol = symbol; Location = location }
                 Mating { EntityID = eid; ChanceOfReproduction = 0.9; LastMatingAttempt = 0u; MatingStatus = matingStatus; Species = Rabbit }
-                Memory { EntityID = eid; Memories = Map.empty; Retention = 30u }
+                //Memory { EntityID = eid; Memories = Map.empty; Retention = 30u }
                 Movement { EntityID = eid; MovesPerTurn = 1 }
                 Vision { EntityID = eid; Range = visionRange; RangeTemplate = rangeTemplate; ViewedMap = viewedMap; ViewableMap = visionMap; VisionMap = visionMap }
             |]

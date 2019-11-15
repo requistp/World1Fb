@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Memories\MemoryComponent.fs" />
     <Compile Include="Memories\agent_Memories.fs" />
     <Compile Include="Memories\MemoryManager.fs" />
     <Compile Include="common\CommonGenericFunctions.fs" />
@@ -19,17 +20,13 @@
     <Compile Include="Components\FoodComponent.fs" />
     <Compile Include="Components\FormComponent.fs" />
     <Compile Include="Components\MatingComponent.fs" />
-    <Compile Include="Components\MemoryComponent.fs" />
     <Compile Include="Components\MovementComponent.fs" />
     <Compile Include="Components\PlantGrowthComponent.fs" />
     <Compile Include="Components\TerrainComponent.fs" />
     <Compile Include="Components\VisionComponent.fs" />
     <Compile Include="Components\Component.fs" />
-    <Compile Include="Entities\agent_ComponentEntity.fs" />
-    <Compile Include="Entities\agent_EntityComponent.fs" />
+    <Compile Include="Entities\agent_Entities.fs" />
     <Compile Include="Entities\agent_EntityHistory.fs" />
-    <Compile Include="Entities\agent_EntityID.fs" />
-    <Compile Include="Entities\agent_LocationEntity.fs" />
     <Compile Include="Entities\EntityManager.fs" />
     <Compile Include="Events\EventTypes.fs" />
     <Compile Include="Events\agent_EventListeners.fs" />
@@ -54,6 +51,8 @@
     <Compile Include="Output\ColoredConsole.fs" />
     <Compile Include="Output\WorldMapRenderer.fs" />
     <Compile Include="Output\ConsoleV1.fs" />
+    <Compile Include="Trash\agent_LocationEntity.fs" />
+    <Compile Include="Trash\agent_ComponentEntity.fs" />
     <Compile Include="BuildNewWorld.fs" />
     <Compile Include="Program.fs" />
     <Content Include="Notes.txt" />
