@@ -198,7 +198,8 @@ type EntityManager() =
     member _.GetLocationMap() = agentLocations.PostAndReply GetLocationMap
     member _.GetMaxID = agentID.PostAndReply GetID
     member _.GetNewID = agentID.PostAndReply NewID
-    member _.Init (map:Map<uint32,Component[]>) (startMax:uint32) = 
+    member _.Init (history:Map<uint32,historyTuple>) (startMax:uint32) round = 
+        let map,_,_ = history.Item(round)
         let ctss = map |> MapValuesToArray
         Async.Parallel 
         (
@@ -206,8 +207,8 @@ type EntityManager() =
             agentID.Post (agent_IDMsg.InitID startMax)
             ctss |> Array.Parallel.iter (fun cts -> addEntityToComponents cts)
             ctss |> Array.Parallel.iter (fun cts -> addEntityToLocations cts)
+            agentHistory.Post (InitHistory history)
         ) |> ignore
-    //member _.InitHistory allHistory = agentHistory.Post (InitHistory allHistory)
     member _.PendingUpdates = 
         agentEntities.CurrentQueueLength > 0 || 
         agentID.CurrentQueueLength > 0 || 

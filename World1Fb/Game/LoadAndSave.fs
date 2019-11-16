@@ -1,5 +1,5 @@
 ﻿module LoadAndSave
-open Component
+open EntityManager
 open EventTypes
 open MBrace.FsPickler
 open System
@@ -7,7 +7,7 @@ open System.IO
 
 type SaveGameData = 
     { 
-        ECMap : Map<uint32,Component[]> 
+        EntityHistory : Map<uint32,historyTuple> 
         MaxEntityID : uint32
         Round : uint32
         ScheduledEvents : Map<uint32,GameEventTypes[]>

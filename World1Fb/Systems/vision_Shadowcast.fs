@@ -9,11 +9,6 @@ type OctantTransform(xx:int, xy:int, yx:int, yy:int) =
     member _.XY = xy
     member _.YX = yx
     member _.YY = yy
-    (*    public override string ToString() {
-        // consider formatting in constructor to reduce garbage
-        return string.Format("[OctantTransform {0,2:D} {1,2:D} {2,2:D} {3,2:D}]",
-            xx, xy, yx, yy);
-    }    *)
 
 let OctantTransforms =
     [|

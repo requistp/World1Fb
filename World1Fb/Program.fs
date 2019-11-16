@@ -8,9 +8,7 @@ open KillSystem
 open MatingSystem
 open MovementSystem
 open PlantGrowthSystem
-open SystemManager
 open VisionSystem
-open ConsoleV1
 open WorldMapRenderer
 
 
@@ -40,7 +38,7 @@ let systems =
 
 g.Start systems startingEntities ""
 
-//g.Start systems Array.empty "Save_201911041343"
+//g.Start systems Array.empty "Save_201911152259"
 
 
 

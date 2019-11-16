@@ -1,4 +1,8 @@
 ﻿
+use Z in location for height
+
+draw terrain first
+
 Utility System
 
 

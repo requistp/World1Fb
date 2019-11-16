@@ -3,7 +3,7 @@ open CommonGenericFunctions
 open System
 
 [<Literal>]
-let MapWidth = 30
+let MapWidth = 38
 
 
 [<Literal>]
