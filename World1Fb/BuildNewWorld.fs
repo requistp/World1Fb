@@ -45,12 +45,12 @@ let MakeGrasses (enm:EntityManager) n =
 
 
 let MakeRabbits (enm:EntityManager) n = 
-    let MakeRabbit x y n rnd = 
+    let MakeRabbit x y rnd n = 
         let eid = enm.GetNewID
         let controller = 
             match n with
             | 1 -> Controller { EntityID = eid; ControllerType = Keyboard; CurrentAction = Idle; CurrentActions = [|Idle|]; PotentialActions = [|Idle|] }
-            | _ -> Controller { EntityID = eid; ControllerType = Keyboard; CurrentAction = Idle; CurrentActions = [|Idle|]; PotentialActions = [|Idle|] }
+            | _ -> Controller { EntityID = eid; ControllerType = AI_Random; CurrentAction = Idle; CurrentActions = [|Idle|]; PotentialActions = [|Idle|] }
         let matingStatus = if n = 1 || rnd = 0 then Male else Female
         let symbol = if matingStatus = Male then 'R' else 'r'
         let location = { X = x; Y = y; Z = 0 }
@@ -70,6 +70,5 @@ let MakeRabbits (enm:EntityManager) n =
         baseBunny
     match n with 
     | 0 -> Array.empty<Component[]>
-    | _ -> [|1..n|] |> Array.Parallel.map (fun i -> MakeRabbit (random.Next(0,MapWidth)) (random.Next(0,MapHeight)) i (random.Next(0,2))) 
-
-
+    | _ -> [|1..n|] |> Array.Parallel.map (fun i -> MakeRabbit (random.Next(0,MapWidth)) (random.Next(0,MapHeight)) (random.Next(0,2)) i) 
+    

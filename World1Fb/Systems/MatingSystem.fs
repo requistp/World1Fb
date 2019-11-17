@@ -37,7 +37,7 @@ type MatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
         let newcts = 
             momID
             |> EntityExt.CopyEntity enm
-            |> Array.Parallel.map (fun c -> adjustComponents c)
+            |> Array.Parallel.map adjustComponents
         evm.RaiseEvent (CreateEntity { Components = newcts })
         Ok (Some (sprintf "Born:%i" newcts.[0].EntityID))
 
@@ -88,13 +88,4 @@ type MatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
 
     override me.Update round = 
         ()
-
-
-// No longer necessary as I moved to the controller step
-//let checkMatingStatus =
-//    match mc.MatingStatus with
-//    | Female_Pregnant -> Error "Pregnant" 
-//    | Female -> Error "Female"
-//    | Male when not (mc.CanMate round) -> Error "Too early to retry"
-//    | _ -> Ok None
 

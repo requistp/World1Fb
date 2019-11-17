@@ -16,7 +16,7 @@ let format = LoadAndSave.SaveGameFormats.Binary
 
 let wmr = new WorldMapRenderer()
 
-let g = new Game(wmr.Update, format)
+let g = new Game(wmr.Update, wmr.UpdateEntity, format)
 
 let startingEntities = 
     MakeMap g.Entities
@@ -38,7 +38,7 @@ let systems =
 
 g.Start systems startingEntities ""
 
-//g.Start systems Array.empty "Save_201911152259"
+//g.Start systems Array.empty "Save_201911170010"
 
 
 

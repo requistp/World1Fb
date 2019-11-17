@@ -15,7 +15,7 @@ type PlantGrowthSystem(description:string, isActive:bool, enm:EntityManager, evm
     inherit AbstractSystem(description,isActive)
   
     let makePlant momID (l:LocationDataInt) = 
-        let makePlant_AdjustComponents (c:Component) =
+        let adjustComponents (c:Component) =
             match c with
             | Food d -> 
                 Food (d.Update None (Some 1) None)
@@ -25,7 +25,7 @@ type PlantGrowthSystem(description:string, isActive:bool, enm:EntityManager, evm
         let newcts = 
             momID
             |> EntityExt.CopyEntity enm 
-            |> Array.Parallel.map (fun c -> makePlant_AdjustComponents c)
+            |> Array.Parallel.map adjustComponents
         evm.RaiseEvent (CreateEntity { Components = newcts })
         Ok (Some (sprintf "New plant:%i. Location:%s" (newcts.[0].EntityID) (l.ToString())))
 

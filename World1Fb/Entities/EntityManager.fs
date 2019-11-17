@@ -194,7 +194,12 @@ type EntityManager() =
     member _.GetEntitiesAtLocation (location:LocationDataInt) = agentLocations.PostAndReply (fun replyChannel -> GetEntitiesAtLocation (location,replyChannel))
     member _.GetEntitiesWithComponent (componentID:byte) = agentComponents.PostAndReply (fun replyChannel -> GetEntitiesWithComponent (componentID,replyChannel))
     member _.GetEntityMap() = agentEntities.PostAndReply GetEntityMap
-    member _.GetHistory (round:uint32 option) = agentHistory.PostAndReply (fun replyChannel -> GetHistory (round,replyChannel))
+    member me.GetHistory (round:uint32 option) = 
+        match round with
+        | None -> (me.GetEntityMap(), me.GetComponentMap(), me.GetLocationMap())
+        | Some r when r = 0u -> (me.GetEntityMap(), me.GetComponentMap(), me.GetLocationMap())
+        | _ -> agentHistory.PostAndReply (fun replyChannel -> GetHistory (round,replyChannel))
+        //agentHistory.PostAndReply (fun replyChannel -> GetHistory (round,replyChannel))
     member _.GetLocationMap() = agentLocations.PostAndReply GetLocationMap
     member _.GetMaxID = agentID.PostAndReply GetID
     member _.GetNewID = agentID.PostAndReply NewID
@@ -205,8 +210,8 @@ type EntityManager() =
         (
             agentEntities.Post (agent_EntitiesMsg.InitEntities map)
             agentID.Post (agent_IDMsg.InitID startMax)
-            ctss |> Array.Parallel.iter (fun cts -> addEntityToComponents cts)
-            ctss |> Array.Parallel.iter (fun cts -> addEntityToLocations cts)
+            ctss |> Array.Parallel.iter addEntityToComponents
+            ctss |> Array.Parallel.iter addEntityToLocations
             agentHistory.Post (InitHistory history)
         ) |> ignore
     member _.PendingUpdates = 

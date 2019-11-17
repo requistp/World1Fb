@@ -18,7 +18,7 @@ type EntitySystem(description:string, isActive:bool, enm:EntityManager, evm:Even
             | x when x = EatingComponentID -> evm.RaiseEvent (ComponentAdded_Eating { EntityID=c.EntityID; Component=c })
             | x when x = PlantGrowthComponentID -> evm.RaiseEvent (ComponentAdded_PlantGrowth { EntityID=c.EntityID; Component=c })
             | _ -> ()
-        e.Components |> Array.Parallel.iter (fun c -> checkComponentForEvents c)
+        e.Components |> Array.Parallel.iter checkComponentForEvents
         enm.CreateEntity e.Components
 
     override me.Initialize =

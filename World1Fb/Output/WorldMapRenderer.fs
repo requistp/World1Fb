@@ -21,7 +21,7 @@ type WorldMapRenderer() =
         | ConsoleKey.RightArrow -> _windowLocation <- (Math.Clamp(fst _windowLocation + 1, 0, MapWidth-viewSizeX), snd _windowLocation)
         | _ -> ()
 
-    member me.Update (enm:EntityManager) (entityID:uint32) = 
+    member me.Update (enm:EntityManager) = 
         Console.CursorVisible <- false
         Console.Title <- "World Map"
         

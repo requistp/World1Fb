@@ -27,7 +27,7 @@ let private getCurrentActions (enm:EntityManager) (actions:ActionTypes[]) (entit
         | Move_West ->  if movesAllowed |> Array.contains Move_West  then Some Move_West  else None
     actions |> Array.Parallel.choose (fun action -> actionEnabledTest action)
 
-let GetInputForAllEntities (enm:EntityManager) (log:agent_GameLog) (round:uint32) = 
+let GetInputForAllEntities (enm:EntityManager) (log:agent_GameLog) (round:uint32) (renderer:EntityManager -> uint32 -> unit) = 
     let setCurrentActions (controller:ControllerComponent) = 
         let newCurrent = getCurrentActions enm controller.PotentialActions controller.EntityID round
         match (ArrayContentsMatch newCurrent controller.CurrentActions) with
@@ -52,8 +52,7 @@ let GetInputForAllEntities (enm:EntityManager) (log:agent_GameLog) (round:uint32
         let newAction,cont =
             match controller.ControllerType with
             | Keyboard -> 
-                AwaitKeyboardInput controller
-                //(controller.CurrentActions.[random.Next(controller.CurrentActions.Length)], true)
+                AwaitKeyboardInput enm controller renderer round
             | _ -> Idle,false
         match cont with
         | false -> false
@@ -64,12 +63,11 @@ let GetInputForAllEntities (enm:EntityManager) (log:agent_GameLog) (round:uint32
             true
 
     let handleSplitInputTypes (keyboard:ControllerComponent[],ai:ControllerComponent[]) =
-        ai 
-            |> Array.Parallel.iter (fun c -> getAIInputForEntity c)
+        ai |> Array.Parallel.iter getAIInputForEntity
 
         keyboard 
-            |> Array.map (fun c -> getKeyboardInputForEntity c)
-            |> Array.forall (fun b -> b)
+        |> Array.map getKeyboardInputForEntity
+        |> Array.forall (fun b -> b)
 
     ControllerComponentID
     |> EntityExt.GetEntitiesWithComponent enm 
@@ -124,20 +122,3 @@ type ControllerSystem(description:string, isActive:bool, enm:EntityManager, evm:
 
 
 
-        (*
-        let newAction,cont =
-            match controller.ControllerType with
-            | AI_Random -> 
-                (controller.CurrentActions.[random.Next(controller.CurrentActions.Length)], true)
-            | Keyboard -> 
-                AwaitKeyboardInput controller
-                //(controller.CurrentActions.[random.Next(controller.CurrentActions.Length)], true)
-
-        match cont with
-        | false -> false
-        | true -> 
-            if (newAction <> controller.CurrentAction) then
-                enm.ReplaceComponent (Controller (controller.Update None (Some newAction) None None))
-                log.Log round (sprintf "%-3s | %-20s -> %-30s #%7i : %A" "Ok" "Controller System" "Current action:" controller.EntityID newAction)
-            true
-            *)

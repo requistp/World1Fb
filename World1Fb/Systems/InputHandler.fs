@@ -1,10 +1,14 @@
 ﻿module InputHandler
 open ControllerComponent
+open EntityManager
 open System
 
 
-let AwaitKeyboardInput (controller:ControllerComponent) : ActionTypes * bool =
+let AwaitKeyboardInput (enm:EntityManager) (controller:ControllerComponent) (renderer:EntityManager -> uint32 -> unit) (round:uint32) : ActionTypes * bool =
     let mutable _action = None
+    
+    // Uncomment for Entity-view... 
+    renderer enm (controller.EntityID)
 
     let handleKeyPressed (k:ConsoleKeyInfo) = 
         while Console.KeyAvailable do //Might help clear double movement keys entered in one turn
@@ -27,4 +31,5 @@ let AwaitKeyboardInput (controller:ControllerComponent) : ActionTypes * bool =
         _action <- handleKeyPressed (Console.ReadKey(true))
 
     _action.Value
+
 
