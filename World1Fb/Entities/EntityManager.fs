@@ -214,7 +214,7 @@ type EntityManager() =
         agentID.CurrentQueueLength > 0 || 
         agentComponents.CurrentQueueLength > 0 || 
         agentLocations.CurrentQueueLength > 0
-    member _.RecordHistory round history = agentHistory.Post (RecordHistory (round,history))
+    member me.RecordHistory round = agentHistory.Post (RecordHistory (round,(me.GetEntityMap(),me.GetComponentMap(),me.GetLocationMap())))
     member me.RemoveEntity (entityID:uint32) = 
         let cts = me.GetComponents entityID
         Async.Parallel 

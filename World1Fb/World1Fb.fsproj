@@ -39,9 +39,9 @@
     <Compile Include="Systems\PlantGrowthSystem.fs" />
     <Compile Include="Systems\vision_Shadowcast.fs" />
     <Compile Include="Systems\VisionSystem.fs" />
+    <Compile Include="Systems\InputHandler.fs" />
     <Compile Include="Systems\ControllerSystem.fs" />
     <Compile Include="Game\agent_Round.fs" />
-    <Compile Include="Game\InputHandler.fs" />
     <Compile Include="Game\LoadAndSave.fs" />
     <Compile Include="Game\GameManager.fs" />
     <Compile Include="Output\ColoredConsole.fs" />

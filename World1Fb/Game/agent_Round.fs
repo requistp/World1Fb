@@ -3,7 +3,7 @@
 
 type private agent_RoundMsg =
     | GetRound of AsyncReplyChannel<uint32>
-    | IncrementRound
+    | IncrementRound of AsyncReplyChannel<uint32>
     | InitRound of round:uint32
 
 
@@ -19,14 +19,15 @@ type agent_Round() =
                         match msg with
                         | GetRound replyChannel ->
                             replyChannel.Reply(_round)
-                        | IncrementRound ->
+                        | IncrementRound replyChannel ->
                             _round <- _round + 1u
+                            replyChannel.Reply(_round)
                         | InitRound round ->
                             _round <- round
                 }
             )
     member _.Get() = agentRound.PostAndReply GetRound
-    member _.Increment = agentRound.Post IncrementRound
+    member _.Increment = agentRound.PostAndReply IncrementRound
     member _.Init round = agentRound.Post (InitRound round)
 
 

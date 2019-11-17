@@ -1,9 +1,8 @@
 ﻿module BuildNewWorld
+open CommonGenericFunctions
 open Component
 open ComponentEnums
-open CalendarTimings
-open CommonGenericFunctions
-open EntityExtensions
+open ControllerComponent
 open LocationTypes
 open EntityManager
 
@@ -48,7 +47,10 @@ let MakeGrasses (enm:EntityManager) n =
 let MakeRabbits (enm:EntityManager) n = 
     let MakeRabbit x y n rnd = 
         let eid = enm.GetNewID
-        let cont = [| Controller { EntityID = eid; Actions = [||]; CurrentActions = [||] } |]
+        let controller = 
+            match n with
+            | 1 -> Controller { EntityID = eid; ControllerType = Keyboard; CurrentAction = Idle; CurrentActions = [|Idle|]; PotentialActions = [|Idle|] }
+            | _ -> Controller { EntityID = eid; ControllerType = Keyboard; CurrentAction = Idle; CurrentActions = [|Idle|]; PotentialActions = [|Idle|] }
         let matingStatus = if n = 1 || rnd = 0 then Male else Female
         let symbol = if matingStatus = Male then 'R' else 'r'
         let location = { X = x; Y = y; Z = 0 }
@@ -58,16 +60,14 @@ let MakeRabbits (enm:EntityManager) n =
         let viewedMap = visionMap |> Array.fold (fun (v:Map<LocationDataInt,uint32>) l -> v.Add(l,0u)) Map.empty
         let baseBunny = 
             [|
+                controller
                 Eating { EntityID = eid; Calories = 150; CaloriesPerDay = 300; Foods = [|Food_Carrot;Food_Grass|]; Quantity = 75; QuantityMax = 150; QuantityPerAction = 1 }
                 Form { EntityID = eid; Born = 0u; CanSeePast = true; IsPassable = true; Name = "rabbit"; Symbol = symbol; Location = location }
                 Mating { EntityID = eid; ChanceOfReproduction = 0.9; LastMatingAttempt = 0u; MatingStatus = matingStatus; Species = Rabbit }
-                //Memory { EntityID = eid; Memories = Map.empty; Retention = 30u }
                 Movement { EntityID = eid; MovesPerTurn = 1 }
                 Vision { EntityID = eid; Range = visionRange; RangeTemplate = rangeTemplate; ViewedMap = viewedMap; ViewableMap = visionMap; VisionMap = visionMap }
             |]
-        match n = 1 with
-        | false -> baseBunny
-        | true -> baseBunny |> Array.append cont
+        baseBunny
     match n with 
     | 0 -> Array.empty<Component[]>
     | _ -> [|1..n|] |> Array.Parallel.map (fun i -> MakeRabbit (random.Next(0,MapWidth)) (random.Next(0,MapHeight)) i (random.Next(0,2))) 

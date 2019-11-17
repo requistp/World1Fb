@@ -16,12 +16,12 @@ let format = LoadAndSave.SaveGameFormats.Binary
 
 let wmr = new WorldMapRenderer()
 
-let g = new Game(wmr.UpdateEntity, format)
+let g = new Game(wmr.Update, format)
 
 let startingEntities = 
     MakeMap g.Entities
     |> Array.append (MakeGrasses g.Entities 5)
-    |> Array.append (MakeRabbits g.Entities 5)
+    |> Array.append (MakeRabbits g.Entities 3)
     
 let systems =
     [|

@@ -34,6 +34,11 @@ module rec EntityExt =
         |> Array.filter (fun eid -> excludeEntityID.IsNone || eid <> excludeEntityID.Value) // Not excluded or not me
         |> Array.Parallel.choose (fun eid -> eid |> TryGetComponent entities componentID)
 
+    let GetEntitiesWithComponent (entities:EntityManager) (componentID:byte) =
+        componentID
+        |> entities.GetEntitiesWithComponent
+        |> Array.Parallel.map (fun eid -> eid |> entities.GetComponent componentID)
+
     let GetHistory_Components (entities:EntityManager) (round:uint32 option) (componentID:byte) = 
         let _,components,_ = entities.GetHistory round
         match components.ContainsKey componentID with

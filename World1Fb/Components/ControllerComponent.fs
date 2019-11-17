@@ -31,15 +31,27 @@ type ActionTypes =
         | Move_West -> [| FormComponentID; MovementComponentID |]
 
 
+type ControllerTypes = 
+    | AI_Random
+    | Keyboard
+
+
 type ControllerComponent = 
     { 
         EntityID : uint32
-        Actions : ActionTypes[]
-        CurrentActions : ActionTypes[]
+        ControllerType : ControllerTypes
+        CurrentAction : ActionTypes
+        CurrentActions : ActionTypes[]   // Actions that can be done this turn
+        PotentialActions : ActionTypes[] // Actions that can be done by entities components
     }
-    member me.Update (actionsUpdate:ActionTypes[] option) (currentActionsUpdate:ActionTypes[] option) =
+    member me.ActionAllowed (action:ActionTypes) = me.CurrentActions |> Array.contains action
+
+    member me.Update (controllerTypeUpdate:ControllerTypes option) (currentActionUpdate:ActionTypes option) (currentActionsUpdate:ActionTypes[] option) (potentialActionsUpdate:ActionTypes[] option) =
         {
             me with
-                Actions = if actionsUpdate.IsSome then actionsUpdate.Value else me.Actions
+                ControllerType = if controllerTypeUpdate.IsSome then controllerTypeUpdate.Value else me.ControllerType
+                CurrentAction = if currentActionUpdate.IsSome then currentActionUpdate.Value else me.CurrentAction
                 CurrentActions = if currentActionsUpdate.IsSome then currentActionsUpdate.Value else me.CurrentActions
+                PotentialActions = if potentialActionsUpdate.IsSome then potentialActionsUpdate.Value else me.PotentialActions
         }
+
