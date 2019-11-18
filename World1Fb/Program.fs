@@ -12,7 +12,7 @@ open VisionSystem
 open WorldMapRenderer
 
 
-let format = LoadAndSave.SaveGameFormats.Binary
+let format = LoadAndSave.SaveGameFormats.XML
 
 let wmr = new WorldMapRenderer()
 
@@ -25,15 +25,15 @@ let startingEntities =
     
 let systems =
     [|
-        ControllerSystem("Controller System", true, g.Entities, g.Events).Abstract
-        EatingSystem("Eating System", true, g.Entities, g.Events).Abstract
+        //ControllerSystem("Controller System", true, g.Entities, g.Events).Abstract
+        //EatingSystem("Eating System", true, g.Entities, g.Events).Abstract
         EntitySystem("Entity System", true, g.Entities, g.Events).Abstract
-        FoodSystem("Food System", true, g.Entities, g.Events).Abstract
-        KillSystem("Kill System", true, g.Entities, g.Events).Abstract
-        MatingSystem("Mating System", true, g.Entities, g.Events).Abstract
-        MovementSystem("Movement System", true, g.Entities, g.Events).Abstract
-        PlantGrowthSystem("Plant Growth System", true, g.Entities, g.Events).Abstract
-        VisionSystem("Vision System", true, g.Entities, g.Events).Abstract
+        //FoodSystem("Food System", true, g.Entities, g.Events).Abstract
+        //KillSystem("Kill System", true, g.Entities, g.Events).Abstract
+        //MatingSystem("Mating System", true, g.Entities, g.Events).Abstract
+        //MovementSystem("Movement System", true, g.Entities, g.Events).Abstract
+        //PlantGrowthSystem("Plant Growth System", true, g.Entities, g.Events).Abstract
+        //VisionSystem("Vision System", true, g.Entities, g.Events).Abstract
     |]
 
 g.Start systems startingEntities ""

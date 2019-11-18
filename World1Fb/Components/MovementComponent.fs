@@ -3,8 +3,8 @@ open ComponentEnums
 
 
 type MovementComponent = 
-    { 
-        EntityID : uint32
+    {
+        EntityID : int
         MovesPerTurn : int 
     }
 

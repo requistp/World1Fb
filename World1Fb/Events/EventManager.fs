@@ -74,7 +74,7 @@ type EventManager(enm:EntityManager, log:agent_GameLog, getRound:unit->uint32) =
                                     | _ -> addToSchedule round (ScheduleEvent ({ sed with Schedule = RepeatFinite (x - 1u) }, ge)) false                                 
                             let executeAndReschedule (se:GameEventTypes) =
                                 let _,ge = se.ToScheduleEvent
-                                match enm.EntityExists ge.EntityID with
+                                match enm.EntityExists (Some round) ge.EntityID with
                                 | false -> ()
                                 | true ->
                                     agentListeners.Post (Execute (round,ge))

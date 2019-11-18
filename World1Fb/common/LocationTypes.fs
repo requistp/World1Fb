@@ -3,21 +3,22 @@ open CommonGenericFunctions
 open System
 
 [<Literal>]
-let MapWidth = 38
+let MapWidth = 20
 
 
 [<Literal>]
-let MapHeight = 18
+let MapHeight = 20
 
 
 let IsOnMap2D x y = 
     x >= 0 && x <= MapWidth-1 && y >=0 && y <= MapHeight-1
 
-type LocationDataInt = {
-    X : int
-    Y : int
-    Z : int
-    } with
+type LocationDataInt = 
+    {
+        X : int
+        Y : int
+        Z : int
+    } 
     member me.Add (l:LocationDataInt) = { X = me.X + l.X; Y = me.Y + l.Y; Z = me.Z + l.Z }
     member me.AddOffset (rangeX:int) (rangeY:int) (rangeZ:int) (allow000:bool) (doubleRandom:bool) =
         me.Add (LocationDataInt.Offset rangeX rangeY rangeZ allow000 doubleRandom)

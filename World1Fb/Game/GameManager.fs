@@ -9,7 +9,7 @@ open EventTypes
 open LoadAndSave
 open SystemManager
 
-type Game(wmrAll:EntityManager->unit, wmrEntity:EntityManager->uint32->unit, format:SaveGameFormats) =
+type Game(wmrAll:EntityManager->uint32 option->unit, wmrEntity:EntityManager->uint32->unit, format:SaveGameFormats) =
     let agentForRound = new agent_Round()
     let gameLog = new agent_GameLog()
     let entities = new EntityManager()
@@ -19,22 +19,22 @@ type Game(wmrAll:EntityManager->unit, wmrEntity:EntityManager->uint32->unit, for
     member _.Events = events
     member _.Entities = entities
 
-    member private me.loadGame filename =
-        let sgd = LoadAndSave.LoadGame format filename 
-        agentForRound.Init sgd.Round
-        entities.Init sgd.EntityHistory sgd.MaxEntityID sgd.Round
-        sgd.Round
+    //member private me.loadGame filename =
+    //    let sgd = LoadAndSave.LoadGame format filename 
+    //    agentForRound.Init sgd.Round
+    //    entities.Init sgd.EntityHistory sgd.MaxEntityID sgd.Round
+    //    sgd.Round
 
-    member private me.saveGame =
-        System.Threading.Thread.Sleep 100
-        LoadAndSave.SaveGame 
-            format
-            { 
-                EntityHistory = entities.GetAllHistory()
-                MaxEntityID = entities.GetMaxID
-                Round = agentForRound.Get() - 1u
-                ScheduledEvents = events.GetSchedule
-            }
+    //member private me.saveGame =
+    //    System.Threading.Thread.Sleep 100
+    //    LoadAndSave.SaveGame 
+    //        format
+    //        { 
+    //            EntityHistory = entities.GetAllHistory()
+    //            MaxEntityID = entities.GetMaxID
+    //            Round = agentForRound.Get() - 1u
+    //            ScheduledEvents = events.GetSchedule
+    //        }
 
     member private me.gameLoop (round:uint32) =
         let handleEndOfRound loops = 
@@ -43,11 +43,12 @@ type Game(wmrAll:EntityManager->unit, wmrEntity:EntityManager->uint32->unit, for
                     if (round > 0u && x > 1) then gameLog.Log round (sprintf "%-3s | %-20s -> %-30s #%7i : %s" "xld" "End of round" "Cancelled pending more events" x "Events") 
                     System.Threading.Thread.Sleep 1)
             gameLog.WriteLog
-            entities.RecordHistory round
+            //entities.RecordHistory round
         events.ExecuteScheduledEvents round
         systemMan.UpdateSystems round
-        handleEndOfRound 10
-        // Uncomment for world-view: wmrAll entities; printfn "Round#%i" round
+        handleEndOfRound 5
+        // Uncomment for world-view: 
+        wmrAll entities None; printfn "Round#%i" round
             
     member me.Start (ss:AbstractSystem[]) (initialForms:Component[][]) (filename:string) = 
         let mutable _round = 0u
@@ -55,19 +56,20 @@ type Game(wmrAll:EntityManager->unit, wmrEntity:EntityManager->uint32->unit, for
         systemMan.Init ss
 
         match initialForms.Length with
-        | 0 -> 
-            _round <- me.loadGame filename
+        //| 0 -> 
+        //    _round <- me.loadGame filename
         | _ -> 
             initialForms 
             |> Array.Parallel.iter (fun cts -> if (cts.Length > 0) then events.RaiseEvent (CreateEntity { Components = cts }))
-            System.Threading.Thread.Sleep 100
+            System.Threading.Thread.Sleep 1000
+        
+        // Uncomment for world-view: 
+        wmrAll entities None; printfn "Round#%i" _round
 
-        // Uncomment for world-view: wmrAll entities; printfn "Round#%i" _round
-
-        while  (ControllerSystem.GetInputForAllEntities entities gameLog _round wmrEntity) do
+        while  (ControllerSystem.GetInputForAllEntities entities gameLog _round wmrEntity) && (_round<500u) do
             me.gameLoop _round
             _round <- agentForRound.Increment
             
-        me.saveGame // Exiting Game
+        //me.saveGame // Exiting Game
     
 
