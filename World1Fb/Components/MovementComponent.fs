@@ -1,10 +1,12 @@
 ﻿module MovementComponent
+open CommonGenericFunctions
 open ComponentEnums
 
 
 type MovementComponent = 
     {
-        EntityID : int
+        ID : ComponentID
+        EntityID : EntityID
         MovesPerTurn : int 
     }
 

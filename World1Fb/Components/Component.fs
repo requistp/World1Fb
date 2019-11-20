@@ -17,7 +17,6 @@ type Component =
     //| Food of FoodComponent
     | Form of FormComponent
     //| Mating of MatingComponent
-    //| Memory of MemoryComponent
     | Movement of MovementComponent
     //| PlantGrowth of PlantGrowthComponent
     | Terrain of TerrainComponent
@@ -29,19 +28,30 @@ type Component =
     //    | Food d -> Food { d with EntityID = newEID }
     //    | Form d -> Form { d with EntityID = newEID }
     //    | Mating d -> Mating { d with EntityID = newEID }
-    //    //| Memory d -> Memory { d with EntityID = newEID }
     //    | Movement d -> Movement { d with EntityID = newEID }
     //    | PlantGrowth d -> PlantGrowth { d with EntityID = newEID }
     //    | Terrain d -> Terrain { d with EntityID = newEID }
     //    | Vision d -> Vision { d with EntityID = newEID }
-    member me.ComponentID =
+    static member GetID (c:Component) =
+        c.ID
+    static member GetComponentTypeID (c:Component) =
+        c.ComponentTypeID
+    static member GetEntityID (c:Component) =
+        c.EntityID
+
+    member me.ID = 
+        match me with 
+        | Controller d -> d.ID
+        | Form d -> d.ID
+        | Movement d -> d.ID
+        | Terrain d -> d.ID
+    member me.ComponentTypeID =
         match me with
         | Controller _ -> ControllerComponentID
         //| Eating _ -> EatingComponentID
         //| Food _ -> FoodComponentID
         | Form _ -> FormComponentID
         //| Mating _ -> MatingComponentID
-        ////| Memory _ -> MemoryComponentID
         | Movement _ -> MovementComponentID
         //| PlantGrowth _ -> PlantGrowthComponentID
         | Terrain _ -> TerrainComponentID
@@ -53,7 +63,7 @@ type Component =
         //| Food d -> d.EntityID
         | Form d -> d.EntityID
         //| Mating d -> d.EntityID
-        //| Movement d -> d.EntityID
+        | Movement d -> d.EntityID
         //| PlantGrowth d -> d.EntityID
         | Terrain d -> d.EntityID
         //| Vision d -> d.EntityID
@@ -84,5 +94,3 @@ type Component =
     //member me.ToVision = 
     //    let (Vision d) = me
     //    d
-
-

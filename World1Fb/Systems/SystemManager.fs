@@ -1,4 +1,5 @@
 ﻿module SystemManager
+open CommonGenericFunctions
 open EventTypes
 
 type private agent_SystemWorkTrackerMsg = 
@@ -32,7 +33,7 @@ type AbstractSystem(description:string, isActive:bool) =
     member _.IsIdle = agentWork.PostAndReply IsIdle
     member _.IsInitialized = _isInitialized
     member _.SetToInitialized = _isInitialized <- true
-    member _.TrackTask (task:uint32->GameEventTypes->Result<string option,string>) (round:uint32) (ge:GameEventTypes) = 
+    member _.TrackTask (task:RoundNumber->GameEventTypes->Result<string option,string>) (round:RoundNumber) (ge:GameEventTypes) = 
         agentWork.Post Increment
         let result = task round ge
         agentWork.Post Decrement
@@ -41,7 +42,7 @@ type AbstractSystem(description:string, isActive:bool) =
     abstract member Initialize : unit
     default me.Initialize = me.SetToInitialized
 
-    abstract member Update : uint32 -> unit
+    abstract member Update : RoundNumber -> unit
 
     member me.Abstract = me :> AbstractSystem
 

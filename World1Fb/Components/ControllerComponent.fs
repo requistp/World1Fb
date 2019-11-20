@@ -1,4 +1,5 @@
 ﻿module ControllerComponent
+open CommonGenericFunctions
 open ComponentEnums
 
 
@@ -38,7 +39,8 @@ type ControllerTypes =
 
 type ControllerComponent = 
     { 
-        EntityID : uint32
+        ID : ComponentID
+        EntityID : EntityID
         ControllerType : ControllerTypes
         CurrentAction : ActionTypes
         CurrentActions : ActionTypes[]   // Actions that can be done this turn

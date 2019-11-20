@@ -8,7 +8,7 @@ open EntityManager
 
 let MakeMap (enm:EntityManager) = 
     let AddTerrain l = 
-        let eid = enm.GetNewID
+        let eid = enm.NewEntityID()
         let t = 
             match random.Next(1,50) with
             | 1 -> Rock
@@ -20,8 +20,8 @@ let MakeMap (enm:EntityManager) =
             
         let mutable baseTerrain =
             [| 
-                Form { EntityID = eid; Born = 0u; CanSeePast = canSeePast; IsPassable = t.IsPassable; Name = t.ToString(); Symbol = t.Symbol; Location = l }
-                Terrain { EntityID = eid; Terrain = t }
+                Form { ID = enm.NewComponentID(); EntityID = eid; Born = 0u; CanSeePast = canSeePast; IsPassable = t.IsPassable; Name = t.ToString(); Symbol = t.Symbol; Location = l }
+                Terrain { ID = enm.NewComponentID(); EntityID = eid; Terrain = t }
             |] 
             // I left this mechanic in place because there will be some component that is appropriate to add to Terrain--like a burrow
             //match food.IsSome with
@@ -33,10 +33,10 @@ let MakeMap (enm:EntityManager) =
 
 let MakeGrasses (enm:EntityManager) n =
     let MakeGrass x y =
-        let eid = enm.GetNewID
+        let eid = enm.NewEntityID()
         [| 
             //Food { EntityID = eid; FoodType = Food_Carrot; Quantity = 20; QuantityMax = 20 }
-            Form { EntityID = eid; Born = 0u; CanSeePast = true; IsPassable = true; Name = Food_Carrot.ToString(); Symbol = Food_Carrot.Symbol.Value; Location = {X=x;Y=y;Z=0} }
+            Form { ID = enm.NewComponentID(); EntityID = eid; Born = 0u; CanSeePast = true; IsPassable = true; Name = Food_Carrot.ToString(); Symbol = Food_Carrot.Symbol.Value; Location = {X=x;Y=y;Z=0} }
             //PlantGrowth { EntityID = eid; GrowsInTerrain = [|Dirt|]; RegrowRate = 0.1; ReproductionRate = 0.25; ReproductionRange = 5; ReproductionRequiredFoodQuantity = 0.75 }
         |] 
     match n with 
@@ -46,11 +46,11 @@ let MakeGrasses (enm:EntityManager) n =
 
 let MakeRabbits (enm:EntityManager) n = 
     let MakeRabbit x y rnd n = 
-        let eid = enm.GetNewID
+        let eid = enm.NewEntityID()
         let controller = 
             match n with
-            | 1 -> Controller { EntityID = eid; ControllerType = Keyboard; CurrentAction = Idle; CurrentActions = [|Idle|]; PotentialActions = [|Idle|] }
-            | _ -> Controller { EntityID = eid; ControllerType = AI_Random; CurrentAction = Idle; CurrentActions = [|Idle|]; PotentialActions = [|Idle|] }
+            | 1 -> Controller { ID = enm.NewComponentID(); EntityID = eid; ControllerType = Keyboard; CurrentAction = Idle; CurrentActions = [|Idle|]; PotentialActions = [|Idle|] }
+            | _ -> Controller { ID = enm.NewComponentID(); EntityID = eid; ControllerType = AI_Random; CurrentAction = Idle; CurrentActions = [|Idle|]; PotentialActions = [|Idle|] }
         let matingStatus = if n = 1 || rnd = 0 then Male else Female
         let symbol = if matingStatus = Male then 'R' else 'r'
         let location = { X = x; Y = y; Z = 0 }
@@ -62,9 +62,9 @@ let MakeRabbits (enm:EntityManager) n =
             [|
                 controller
                 //Eating { EntityID = eid; Calories = 150; CaloriesPerDay = 300; Foods = [|Food_Carrot;Food_Grass|]; Quantity = 75; QuantityMax = 150; QuantityPerAction = 1 }
-                Form { EntityID = eid; Born = 0u; CanSeePast = true; IsPassable = true; Name = "rabbit"; Symbol = symbol; Location = location }
+                Form { ID = enm.NewComponentID(); EntityID = eid; Born = 0u; CanSeePast = true; IsPassable = true; Name = "rabbit"; Symbol = symbol; Location = location }
                 //Mating { EntityID = eid; ChanceOfReproduction = 0.9; LastMatingAttempt = 0u; MatingStatus = matingStatus; Species = Rabbit }
-                //Movement { EntityID = eid; MovesPerTurn = 1 }
+                Movement { ID = enm.NewComponentID(); EntityID = eid; MovesPerTurn = 1 }
                 //Vision { EntityID = eid; Range = visionRange; RangeTemplate = rangeTemplate; ViewedMap = viewedMap; ViewableMap = visionMap; VisionMap = visionMap }
             |]
         baseBunny

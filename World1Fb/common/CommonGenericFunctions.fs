@@ -1,6 +1,22 @@
 ﻿module CommonGenericFunctions
 open System
 
+type ComponentID = uint32
+type ComponentTypeID = byte
+type EntityID = uint32
+type RoundNumber = uint32 
+
+let rec searchArrayDataForRound (round:RoundNumber option) (arrayToSearch:(RoundNumber*'a option)[]) =
+    match arrayToSearch with
+    | [||] -> None
+    | _ -> 
+        match Array.head arrayToSearch with
+        | r,c when round.IsNone || r <= round.Value -> c
+        | _ -> 
+            match Array.tail arrayToSearch with
+            | [||] -> None
+            | t -> searchArrayDataForRound round t
+
 let castEnumToArray<'a> = (Enum.GetValues(typeof<'a>) :?> ('a [])) //This only works if the enum has been assigned int values
 let castEnumToStringArray<'a> = Enum.GetNames(typeof<'a>) 
 
@@ -12,11 +28,11 @@ let ArrayContentsMatch (a:'a[]) (b:'a[]) =
     | true -> 
         (a |> Array.fold (fun s t -> s |> Array.filter (fun e -> e <> t )) b) = [||]
 
-//let MapKeys(map: Map<'K,'V>) =
-//    seq {
-//        for KeyValue(key,_) in map do
-//            yield key
-//    } |> Set.ofSeq
+let MapKeys(map: Map<'K,'V>) =
+    seq {
+        for KeyValue(key,_) in map do
+            yield key
+    } |> Set.ofSeq
 
 let MapValuesToArray (map:Map<'K,'V>) =
     seq {

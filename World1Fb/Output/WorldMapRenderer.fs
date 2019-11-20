@@ -1,4 +1,5 @@
 ﻿module WorldMapRenderer
+open CommonGenericFunctions
 open ComponentEnums
 open FormComponent
 open EntityManager
@@ -21,7 +22,7 @@ type WorldMapRenderer() =
         | ConsoleKey.RightArrow -> _windowLocation <- (Math.Clamp(fst _windowLocation + 1, 0, MapWidth-viewSizeX), snd _windowLocation)
         | _ -> ()
 
-    member me.Update (enm:EntityManager) (round:uint32 option) = 
+    member me.Update (enm:EntityManager) (round:RoundNumber option) = 
         Console.CursorVisible <- false
         Console.Title <- "World Map"
         
@@ -52,9 +53,8 @@ type WorldMapRenderer() =
                     let fd = selectForm fs
                     System.Console.SetCursorPosition(x - fst _windowLocation, y - snd _windowLocation)
                     System.Console.Write(fd.Symbol)
-
         
-    member me.UpdateEntity (enm:EntityManager) (entityID:uint32) = 
+    member me.UpdateEntity (enm:EntityManager) (entityID:EntityID) = 
         Console.CursorVisible <- false
         Console.Title <- "Entity Viewer"
         Console.Clear()

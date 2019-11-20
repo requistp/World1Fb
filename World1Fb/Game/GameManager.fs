@@ -1,6 +1,7 @@
 ﻿module GameManager
 open agent_GameLog
 open agent_Round
+open CommonGenericFunctions
 open Component
 open ComponentEnums
 open EntityManager
@@ -9,7 +10,7 @@ open EventTypes
 open LoadAndSave
 open SystemManager
 
-type Game(wmrAll:EntityManager->uint32 option->unit, wmrEntity:EntityManager->uint32->unit, format:SaveGameFormats) =
+type Game(wmrAll:EntityManager->RoundNumber option->unit, wmrEntity:EntityManager->EntityID->unit, format:SaveGameFormats) =
     let agentForRound = new agent_Round()
     let gameLog = new agent_GameLog()
     let entities = new EntityManager()
@@ -36,17 +37,18 @@ type Game(wmrAll:EntityManager->uint32 option->unit, wmrEntity:EntityManager->ui
     //            ScheduledEvents = events.GetSchedule
     //        }
 
-    member private me.gameLoop (round:uint32) =
+    member private me.gameLoop (round:RoundNumber) =
         let handleEndOfRound loops = 
             [|1..loops|] |> Array.iter (fun x -> 
                 while (not systemMan.AllSystemsIdle || events.PendingUpdates) do 
                     if (round > 0u && x > 1) then gameLog.Log round (sprintf "%-3s | %-20s -> %-30s #%7i : %s" "xld" "End of round" "Cancelled pending more events" x "Events") 
                     System.Threading.Thread.Sleep 1)
             gameLog.WriteLog
-            //entities.RecordHistory round
+
         events.ExecuteScheduledEvents round
         systemMan.UpdateSystems round
         handleEndOfRound 5
+
         // Uncomment for world-view: 
         wmrAll entities None; printfn "Round#%i" round
             

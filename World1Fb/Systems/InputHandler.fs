@@ -1,10 +1,11 @@
 ﻿module InputHandler
+open CommonGenericFunctions
 open ControllerComponent
 open EntityManager
 open System
 
 
-let AwaitKeyboardInput (enm:EntityManager) (controller:ControllerComponent) (renderer:EntityManager -> uint32 -> unit) (round:uint32) : ActionTypes * bool =
+let AwaitKeyboardInput (enm:EntityManager) (controller:ControllerComponent) (renderer:EntityManager->EntityID->unit) (round:RoundNumber) : ActionTypes * bool =
     let mutable _action = None
     
     // Uncomment for Entity-view... renderer enm (controller.EntityID)

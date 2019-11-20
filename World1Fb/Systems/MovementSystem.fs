@@ -1,4 +1,5 @@
 ﻿module MovementSystem
+open CommonGenericFunctions
 open Component
 open ComponentEnums
 open ControllerComponent
@@ -10,8 +11,8 @@ open EntityManager
 
 let MovementActionsAllowed (enm:EntityManager) (entityID:uint32) =
     let mutable _allowed = Array.empty<ActionTypes>
-    let moveo = entityID|>EntityExt.TryGetComponent enm None MovementComponentID
-    let location = entityID |> EntityExt.GetLocation enm
+    let moveo = entityID |> EntityExt.TryGetComponent enm None MovementComponentID
+    let location = entityID |> EntityExt.GetLocation enm None
     let testOnMap (direction:MovementDirection) = (direction.AddToLocation location).IsOnMap
     let formImpassableAtLocation (direction:MovementDirection) =
         location
@@ -28,47 +29,47 @@ let MovementActionsAllowed (enm:EntityManager) (entityID:uint32) =
         _allowed
 
 
-//type MovementSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
-//    inherit AbstractSystem(description,isActive)
+type MovementSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
+    inherit AbstractSystem(description,isActive)
   
-//    member private me.onMovementKeyPressed round (ge:GameEventTypes) =
-//        let e = ge.ToAction_Movement
+    member private me.onMovementKeyPressed (round:RoundNumber) (ge:GameEventTypes) =
+        let e = ge.ToAction_Movement
 
-//        let formo = EntityExt.TryGetComponent enm FormComponentID e.EntityID
+        let formo = EntityExt.TryGetComponent enm (Some round) FormComponentID e.EntityID
 
-//        let checkIfMovementIsValid (c:Component) = 
-//            let form = c.ToForm
-//            let dest = e.Direction.AddToLocation form.Location
-//            let isMovementValid = 
-//                let checkIfDestinationOnMap =
-//                     match dest.IsOnMap with
-//                     | false -> Error (sprintf "Not on map %s" (dest.ToString()))
-//                     | true -> Ok None
-//                let testForImpassableFormAtLocation junk =
-//                    let formImpassableAtLocation =
-//                        dest
-//                        |> EntityExt.GetEntitiesAtLocationWithComponent enm FormComponentID (Some e.EntityID)
-//                        |> Array.exists (fun f -> not f.ToForm.IsPassable)
-//                    match formImpassableAtLocation with
-//                    | true -> Error (sprintf "Form at location %s" (dest.ToString()))
-//                    | false -> Ok None
-//                checkIfDestinationOnMap
-//                |> Result.bind testForImpassableFormAtLocation
-//            match isMovementValid with
-//            | Error s -> Error s
-//            | Ok _ -> 
-//                let f = Form (form.Update None None None (Some dest))
-//                enm.UpdateComponent f
-//                evm.RaiseEvent (LocationChanged { EntityID = e.EntityID; Form = f })
-//                Ok (Some (sprintf "Location %s" (dest.ToString())))
-//        match formo with
-//        | None -> Error "Entity not in next dictionary"
-//        | Some c -> checkIfMovementIsValid c
+        let checkIfMovementIsValid (c:Component) = 
+            let form = c.ToForm
+            let dest = e.Direction.AddToLocation form.Location
+            let isMovementValid = 
+                let checkIfDestinationOnMap =
+                     match dest.IsOnMap with
+                     | false -> Error (sprintf "Not on map %s" (dest.ToString()))
+                     | true -> Ok None
+                let testForImpassableFormAtLocation junk =
+                    let formImpassableAtLocation =
+                        dest
+                        |> EntityExt.GetEntitiesAtLocationWithComponent enm (Some round) FormComponentID (Some e.EntityID)
+                        |> Array.exists (fun f -> not f.ToForm.IsPassable)
+                    match formImpassableAtLocation with
+                    | true -> Error (sprintf "Form at location %s" (dest.ToString()))
+                    | false -> Ok None
+                checkIfDestinationOnMap
+                |> Result.bind testForImpassableFormAtLocation
+            match isMovementValid with
+            | Error s -> Error s
+            | Ok _ -> 
+                let f = Form (form.Update None None None (Some dest))
+                enm.UpdateComponent round f
+                evm.RaiseEvent (LocationChanged { EntityID = e.EntityID; Form = f })
+                Ok (Some (sprintf "Location %s" (dest.ToString())))
+        match formo with
+        | None -> Error "Entity not in next dictionary"
+        | Some c -> checkIfMovementIsValid c
 
-//    override me.Initialize = 
-//        evm.RegisterListener me.Description Event_ActionMovement_ID (me.TrackTask me.onMovementKeyPressed)
-//        base.SetToInitialized
+    override me.Initialize = 
+        evm.RegisterListener me.Description Event_ActionMovement_ID (me.TrackTask me.onMovementKeyPressed)
+        base.SetToInitialized
 
-//    override me.Update round = 
-//        ()
+    override me.Update round = 
+        ()
 

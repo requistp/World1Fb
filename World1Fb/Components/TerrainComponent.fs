@@ -1,10 +1,12 @@
 ﻿module TerrainComponent
+open CommonGenericFunctions
 open ComponentEnums
 
         
 type TerrainComponent = 
     { 
-        EntityID : uint32
+        ID : ComponentID
+        EntityID : EntityID
         Terrain : TerrainType 
     } 
         

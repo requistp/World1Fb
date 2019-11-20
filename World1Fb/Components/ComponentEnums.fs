@@ -1,4 +1,5 @@
 ﻿module ComponentEnums
+open CommonGenericFunctions
 open LocationTypes
 
 let ControllerComponentID = 1uy

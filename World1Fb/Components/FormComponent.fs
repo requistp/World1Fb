@@ -1,11 +1,13 @@
 ﻿module FormComponent
+open CommonGenericFunctions
 open LocationTypes
 
 
 type FormComponent = 
     { 
-        EntityID : uint32
-        Born : uint32
+        ID : ComponentID
+        EntityID : EntityID
+        Born : RoundNumber
         CanSeePast : bool
         IsPassable : bool
         Location : LocationDataInt

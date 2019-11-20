@@ -12,67 +12,63 @@ module rec EntityExt =
     //    oldeid
     //    |> entities.GetComponents
     //    |> Array.Parallel.map (fun ct -> ct.Copy neweid)
-
     //let GetComponent2 (entities:Map<uint32,Component[]>) (componentID:byte) (entityID:uint32) =
     //    entities.Item(entityID)
     //    |> Array.find (fun x -> x.ComponentID = componentID)
-
     //let GetComponentForEntities (entities:EntityManager) (componentID:byte) (entityIDs:uint32[]) = 
     //    componentID
     //    |> entities.GetEntitiesWithComponent
     //    |> Array.filter (fun e -> entityIDs |> Array.contains e)
     //    |> Array.Parallel.map (entities.GetComponent componentID)
 
-    //let GetComponentIDs (entities:EntityManager) (eid:uint32) =
-    //    eid 
-    //    |> entities.GetComponents 
-    //    |> Array.Parallel.map (fun ct -> ct.ComponentID)
+    let GetComponentTypeIDs (enm:EntityManager) (round:RoundNumber option) (eid:EntityID) =
+        eid
+        |> enm.GetComponents round
+        |> Array.Parallel.map Component.GetComponentTypeID
 
-    let GetEntitiesAtLocationWithComponent (entities:EntityManager) (round:uint32 option) (componentID:byte) (excludeEntityID:uint32 option) (location:LocationDataInt) = 
+    let GetEntitiesAtLocationWithComponent (enm:EntityManager) (round:RoundNumber option) (ctid:ComponentTypeID) (excludeEID:EntityID option) (location:LocationDataInt) = 
         location
-        |> entities.GetEntitiesAtLocation round
-        |> Array.filter (fun eid -> excludeEntityID.IsNone || eid <> excludeEntityID.Value) // Not excluded or not me
-        |> Array.Parallel.choose (TryGetComponent entities round componentID)
+        |> enm.GetEntityIDsAtLocation round
+        |> Array.filter (fun eid -> excludeEID.IsNone || eid <> excludeEID.Value) // Not excluded or not me
+        |> Array.Parallel.choose (TryGetComponent enm round ctid)
 
-    let GetEntitiesAtLocationWithComponents (entities:EntityManager) (round:uint32 option) (location:LocationDataInt) = 
-        location
-        |> entities.GetEntitiesAtLocation round
-        |> Array.Parallel.map (fun eid -> entities.GetComponents round eid)
+    //let GetEntitiesAtLocationWithComponents (entities:EntityManager) (round:uint32 option) (location:LocationDataInt) = 
+    //    location
+    //    |> entities.GetEntitiesAtLocation round
+    //    |> Array.Parallel.map (fun eid -> entities.GetComponents round eid)
 
-    //let GetEntitiesWithComponent (entities:EntityManager) (componentID:byte) =
-    //    componentID
-    //    |> entities.GetEntitiesWithComponent
-    //    |> Array.Parallel.map (entities.GetComponent componentID)
+    let GetEntitiesWithComponent (enm:EntityManager) (round:RoundNumber option) (ctid:ComponentTypeID) =
+        ctid
+        |> enm.GetComponentIDsByType round
+        |> enm.GetComponents_ByID round
 
     //let GetHistory_Components (entities:EntityManager) (round:uint32 option) (componentID:byte) = 
     //    let _,components,_ = entities.GetHistory round
     //    match components.ContainsKey componentID with
     //    | false -> [||]
     //    | true -> components.Item componentID
-    
     //let GetHistory_Entities (entities:EntityManager) (round:uint32 option) = 
     //    let e,_,_ = entities.GetHistory round
     //    e
-
     //let GetHistory_Locations (entities:EntityManager) (round:uint32 option) (location:LocationDataInt) =
     //    let _,_,locations = entities.GetHistory round
     //    match locations.ContainsKey location with
     //    | false -> [||]
     //    | true -> locations.Item location
+    
+    let GetLocation (enm:EntityManager) (round:RoundNumber option) (eid:EntityID) = 
+        (eid |> enm.GetComponentByType round FormComponentID).[0].ToForm.Location
 
-    //let GetLocation (entities:EntityManager) (entityID:uint32) = 
-    //    (entityID |> entities.GetComponent FormComponentID).ToForm.Location
+    let TryGet (enm:EntityManager) (round:RoundNumber option) (eid:EntityID) =
+        eid 
+        |> enm.EntityExists round
+        |> TrueSomeFalseNone (enm.GetComponents round eid)
 
-    let TryGet (entities:EntityManager) (round:uint32 option) (entityID:uint32) =
-        entityID 
-        |> entities.EntityExists round
-        |> TrueSomeFalseNone (entities.GetComponents round entityID)
-
-    let TryGetComponent (entities:EntityManager) (round:uint32 option) (componentID:byte) (entityID:uint32) : Option<Component> = 
-        entityID
-        |> TryGet entities round
+    let TryGetComponent (enm:EntityManager) (round:RoundNumber option) (ctid:ComponentTypeID) (eid:EntityID) : Option<Component> = 
+        eid
+        |> TryGet enm round
         |> Option.bind (fun cts -> 
-            match cts |> Array.filter (fun c -> c.ComponentID = componentID) with
+            match cts |> Array.filter (fun c -> c.ComponentTypeID = ctid) with
             | [||] -> None
             | l -> Some (l.[0]) )
 
