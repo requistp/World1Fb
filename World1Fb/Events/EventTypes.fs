@@ -34,7 +34,7 @@ type Event_ComponentAdded_Controller = { EntityID:uint32; Component:Component }
 type Event_ComponentAdded_Eating = { EntityID:uint32; Component:Component }
 type Event_ComponentAdded_PlantGrowth = { EntityID:uint32; Component:Component }
 type Event_CreateEntity = { Components:Component[] }
-type Event_Eaten = { EaterID:uint32; EateeID:uint32; Quantity:uint32 }
+type Event_Eaten = { EaterID:uint32; EateeID:uint32; Quantity:int }
 type Event_FoodAllEaten = { EaterID:uint32; EateeID:uint32 }
 type Event_KillAllEaten = { EaterID:uint32; EateeID:uint32 }
 type Event_LocationChanged = { EntityID:uint32; Form:Component }
@@ -44,6 +44,7 @@ type Event_PlantGrowth = { EntityID:uint32 }
 type Event_PlantReproduce = { EntityID:uint32 }
 type Event_ScheduleEvent = { Frequency:uint32; Schedule:ScheduleType }
 type Event_Starving = { EntityID:uint32 }
+
 
 type GameEventTypes =
     | Action_Eat of Event_ActionEat
@@ -178,4 +179,33 @@ type GameEventTypes =
     member me.ToStarving = 
         let (Starving d) = me
         d
+
+let EntityID (ge:GameEventTypes) = 
+    match ge with
+    | Action_Eat d -> d.EntityID
+    | Action_Mate d -> d.EntityID
+    | Action_Movement d -> d.EntityID
+    | Birth d -> d.MomID
+    | ComponentAdded_Controller d -> d.EntityID
+    | ComponentAdded_Eating d -> d.EntityID
+    | ComponentAdded_PlantGrowth d -> d.EntityID
+    | CreateEntity d -> d.Components.[0].EntityID
+    | Eaten d -> d.EaterID
+    | Food_AllEaten d -> d.EateeID
+    | Kill_AllEaten d -> d.EateeID
+    | LocationChanged d -> d.EntityID
+    | Metabolize d -> d.EntityID
+    | Movement d -> d.EntityID
+    | PlantRegrowth d -> d.EntityID
+    | PlantReproduce d -> d.EntityID
+    | ScheduleEvent (_,ge) -> ge.EntityID
+    | Starving d -> d.EntityID
+
+
+//let x = Action_Eat { EntityID = 0u }
+//let y = Terrain { ID = 0u; EntityID = 1u; Terrain = Dirt }
+
+//let a = EntityID x
+//let b = Component.EntityID y
+
 

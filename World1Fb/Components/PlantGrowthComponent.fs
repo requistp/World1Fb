@@ -1,15 +1,17 @@
 ﻿module PlantGrowthComponent
+open CommonGenericFunctions
 open ComponentEnums
 
 
-//type PlantGrowthComponent = 
-//    { 
-//        EntityID : uint32
-//        GrowsInTerrain : TerrainType[]
-//        RegrowRate : float
-//        ReproductionRate : float
-//        ReproductionRange : int
-//        ReproductionRequiredFoodQuantity : float 
-//    } 
+type PlantGrowthComponent = 
+    { 
+        ID : ComponentID
+        EntityID : EntityID
+        GrowsInTerrain : TerrainType[]
+        RegrowRate : float
+        ReproductionRate : float
+        ReproductionRange : int
+        ReproductionRequiredFoodQuantity : float 
+    } 
 
 

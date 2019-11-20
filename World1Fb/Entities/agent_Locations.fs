@@ -8,8 +8,8 @@ type private agent_LocationsMsg =
     | Add of RoundNumber * LocationDataInt * ComponentID
     | Get of LocationDataInt * AsyncReplyChannel<(RoundNumber*ComponentID[] option)[]>
     //| GetLocationMap of AsyncReplyChannel<Map<LocationDataInt,uint32[]> >
-    //| RemoveForm of FormComponent
     | Move of RoundNumber * oldForm:FormComponent * newForm:FormComponent
+    | Remove of RoundNumber * LocationDataInt * ComponentID
 
 
 type agent_Locations() = 
@@ -67,9 +67,26 @@ type agent_Locations() =
                                     | Some oldNewComponents -> 
                                         Some (Array.append oldNewComponents [|newForm.ID|])
                                 _map <- _map.Remove(newForm.Location).Add(newForm.Location, Array.append [|(round,newNewComponents)|] newHistory)
+                        | Remove (round,location,cid) -> 
+                            match _map.ContainsKey(location) with
+                            | false -> ()
+                            | true -> 
+                                let history = _map.Item(location)
+                                match (snd history.[0]) with 
+                                | None -> ()
+                                | Some a ->
+                                    match Array.contains cid a with 
+                                    | false -> ()
+                                    | true -> 
+                                        let newArray = 
+                                            match a |> Array.filter (fun c -> c <> cid) with 
+                                            | [||] -> None
+                                            | filtered -> Some filtered
+                                        _map <- _map.Remove(location).Add(location,Array.append [|(round,newArray)|] history)
                 }
             )
-    member _.Add round location cid = agent_Locations.Post (Add (round,location,cid))
+    member _.Add round (form:FormComponent) = agent_Locations.Post (Add (round,form.Location,form.ID))
     member _.Get round location = agent_Locations.PostAndReply (fun replyChannel -> Get (location,replyChannel)) |> searchArrayDataForRound round
     member _.Move round oldForm newForm = agent_Locations.Post (Move (round,oldForm,newForm))
+    member _.Remove round (form:FormComponent) = agent_Locations.Post (Remove (round,form.Location,form.ID))
 

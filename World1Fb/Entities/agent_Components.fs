@@ -57,6 +57,6 @@ type agent_Components() =
     member _.Init (startMap:Map<ComponentID,(RoundNumber*Component option)[]>) =
         agent_Components.Post (Init startMap)
         idMan.Init (MapKeys startMap |>Seq.max)
-    member _.Remove round cid = agent_Components.Post (Remove (round,cid))
+    member _.Remove round (comp:Component) = agent_Components.Post (Remove (round,comp.ID))
     member _.Update round comp = agent_Components.Post (Update (round,comp))
 

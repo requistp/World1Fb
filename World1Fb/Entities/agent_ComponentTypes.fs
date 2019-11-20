@@ -7,7 +7,7 @@ type private agent_ComponentTypesMsg =
     | Add of RoundNumber * ComponentTypeID * ComponentID
     | Get of ComponentTypeID * AsyncReplyChannel<(RoundNumber*ComponentID[] option)[]>
     //| GetComponentMap of AsyncReplyChannel<Map<byte,uint32[]> >
-    //| RemoveComponent of Component
+    | Remove of RoundNumber * ComponentTypeID * ComponentID
 
 type agent_ComponentTypes() = 
 
@@ -37,10 +37,27 @@ type agent_ComponentTypes() =
                                 | true -> _map.Item(ctid))
                         //| GetComponentMap replyChannel -> 
                         //    replyChannel.Reply(_map)
-                        //| RemoveComponent ct ->
-                        //    _map <- Map_RemoveValueFromArray _map ct.ComponentID ct.EntityID
+                        | Remove (round,ctid,cid) ->
+                            match _map.ContainsKey(ctid) with
+                            | false -> ()
+                            | true -> 
+                                let history = _map.Item(ctid)
+                                match (snd history.[0]) with 
+                                | None -> ()
+                                | Some a ->
+                                    match Array.contains cid a with 
+                                    | false -> ()
+                                    | true -> 
+                                        let newArray = 
+                                            match a |> Array.filter (fun c -> c <> cid) with 
+                                            | [||] -> None
+                                            | filtered -> Some filtered
+                                        _map <- _map.Remove(ctid).Add(ctid,Array.append [|(round,newArray)|] history)
                 }
             )
 
     member _.Add round ctid cid = agent_ComponentTypes.Post (Add (round,ctid,cid))
     member _.Get round ctid = agent_ComponentTypes.PostAndReply (fun replyChannel -> Get (ctid,replyChannel)) |> searchArrayDataForRound round
+    member _.Remove round (comp:Component) = agent_ComponentTypes.Post (Remove (round,comp.ComponentTypeID,comp.ID))
+
+

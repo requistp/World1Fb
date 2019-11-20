@@ -41,13 +41,9 @@ type EntityManager() =
         |> Array.Parallel.map (fun c -> c.ID)
         |> agent_Entities.Add round (cts.[0].EntityID)
 
-        cts
-        |> Array.Parallel.iter (fun c -> agent_ComponentTypes.Add round c.ComponentTypeID c.ID)
+        cts |> Array.Parallel.iter (fun c -> agent_ComponentTypes.Add round c.ComponentTypeID c.ID)
 
-        cts
-        |> Array.filter (fun c -> c.ComponentTypeID = FormComponentID)
-        |> Array.Parallel.iter (fun c -> agent_Locations.Add round c.ToForm.Location c.ID)
-
+        cts |> Array.Parallel.iter (fun c -> if c.ComponentTypeID = FormComponentID then agent_Locations.Add round (ToForm c))
         Ok None
 
     member me.EntityExists (round:uint32 option) (entityID:uint32) = //agentEntities.PostAndReply (fun replyChannel -> EntityExists(entityID,replyChannel))
@@ -114,15 +110,20 @@ type EntityManager() =
     //    agentComponents.CurrentQueueLength > 0 || 
     //    agentLocations.CurrentQueueLength > 0
     //member me.RecordHistory round = agentHistory.Post (RecordHistory (round,(me.GetEntityMap(),me.GetComponentMap(),me.GetLocationMap())))
-    //member me.RemoveEntity (entityID:uint32) = 
-    //    let cts = me.GetComponents entityID
-    //    Async.Parallel 
-    //    (
-    //        agentEntities.Post (RemoveEntity entityID)
-    //        removeEntityFromComponents cts
-    //        removeEntityFromLocations cts
-    //    ) |> ignore
-    //    Ok None
+    member me.RemoveEntity (round:RoundNumber) (eid:EntityID) = 
+        let cts = eid |> me.GetComponents (Some round)
+        
+        Async.Parallel
+        (
+            cts |> Array.Parallel.iter (agent_Components.Remove round)
+
+            cts |> Array.Parallel.iter (agent_ComponentTypes.Remove round)
+
+            cts |> Array.Parallel.iter (fun c -> if c.ComponentTypeID = FormComponentID then agent_Locations.Remove round (ToForm c))
+
+            agent_Entities.Remove round eid
+        ) |> ignore
+        Ok None
     member _.NewComponentID() = agent_Components.NewComponentID()
     member _.NewEntityID() = agent_Entities.NewEntityID()
     //member me.RemoveComponent (round:uint32) (compID:int) =

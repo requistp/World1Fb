@@ -18,9 +18,9 @@ let private getCurrentActions (enm:EntityManager) (actions:ActionTypes[]) (entit
     let movesAllowed = MovementActionsAllowed enm entityID
     let actionEnabledTest action =             
         match action with
-        | Eat -> None //if EatActionEnabled enm entityID then Some Eat else None
+        | Eat -> if EatActionEnabled enm entityID then Some Eat else None
         | Idle -> Some Idle
-        | Mate -> None //if MateActionEnabled enm entityID round then Some Mate else None
+        | Mate -> if MateActionEnabled enm entityID round then Some Mate else None
         | Move_North -> if movesAllowed |> Array.contains Move_North then Some Move_North else None
         | Move_East ->  if movesAllowed |> Array.contains Move_East  then Some Move_East  else None
         | Move_South -> if movesAllowed |> Array.contains Move_South then Some Move_South else None
