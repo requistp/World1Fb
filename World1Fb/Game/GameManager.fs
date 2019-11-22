@@ -20,22 +20,21 @@ type Game(wmrAll:EntityManager->RoundNumber option->unit, wmrEntity:EntityManage
     member _.Events = events
     member _.Entities = entities
 
-    //member private me.loadGame filename =
-    //    let sgd = LoadAndSave.LoadGame format filename 
-    //    agentForRound.Init sgd.Round
-    //    entities.Init sgd.EntityHistory sgd.MaxEntityID sgd.Round
-    //    sgd.Round
+    member private me.loadGame filename =
+        let sgd = LoadAndSave.LoadGame format filename 
+        agentForRound.Init sgd.Round
+        entities.Init sgd.Entities
+        sgd.Round
 
-    //member private me.saveGame =
-    //    System.Threading.Thread.Sleep 100
-    //    LoadAndSave.SaveGame 
-    //        format
-    //        { 
-    //            EntityHistory = entities.GetAllHistory()
-    //            MaxEntityID = entities.GetMaxID
-    //            Round = agentForRound.Get() - 1u
-    //            ScheduledEvents = events.GetSchedule
-    //        }
+    member private me.saveGame =
+        System.Threading.Thread.Sleep 100
+        LoadAndSave.SaveGame 
+            format
+            { 
+                Entities = entities.GetForSave
+                Round = agentForRound.Get() - 1u
+                ScheduledEvents = events.GetSchedule
+            }
 
     member private me.gameLoop (round:RoundNumber) =
         let handleEndOfRound loops = 
@@ -58,8 +57,8 @@ type Game(wmrAll:EntityManager->RoundNumber option->unit, wmrEntity:EntityManage
         systemMan.Init ss
 
         match initialForms.Length with
-        //| 0 -> 
-        //    _round <- me.loadGame filename
+        | 0 -> 
+            _round <- me.loadGame filename
         | _ -> 
             initialForms 
             |> Array.Parallel.iter (fun cts -> if (cts.Length > 0) then events.RaiseEvent (CreateEntity { Components = cts }))
@@ -68,10 +67,10 @@ type Game(wmrAll:EntityManager->RoundNumber option->unit, wmrEntity:EntityManage
         // Uncomment for world-view: 
         wmrAll entities None; printfn "Round#%i" _round.ToUint32
 
-        while  (ControllerSystem.GetInputForAllEntities entities gameLog _round wmrEntity) && (_round.ToUint32<500u) do
+        while  (ControllerSystem.GetInputForAllEntities entities gameLog _round wmrEntity) && (_round.ToUint32<1000u) do
             me.gameLoop _round
             _round <- agentForRound.Increment
             
-        //me.saveGame // Exiting Game
+        me.saveGame // Exiting Game
     
 

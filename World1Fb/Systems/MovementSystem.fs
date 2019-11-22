@@ -36,8 +36,8 @@ type MovementSystem(description:string, isActive:bool, enm:EntityManager, evm:Ev
         let (Form form) = enm.GetComponent None FormComponentID e.EntityID
         let destination = e.Direction.AddToLocation form.Location
             
-        match EntityExt.FormImpassableAtLocation enm None (Some e.EntityID) destination with
-        | true -> Error (sprintf "Form at location %s" (destination.ToString()))
+        match not destination.IsOnMap || EntityExt.FormImpassableAtLocation enm None (Some e.EntityID) destination with
+        | true -> Error (sprintf "Off map or form at location %s" (destination.ToString()))
         | false -> 
             let f = form.Update None None None (Some destination)
             enm.UpdateComponent round (Form f)

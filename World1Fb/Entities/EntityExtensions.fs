@@ -34,6 +34,7 @@ module rec EntityExt =
         |> Array.filter (fun eid -> excludeEID.IsNone || eid <> excludeEID.Value) // Not excluded or not me
         |> Array.Parallel.choose (TryGetComponent enm round ctid)
 
+    
     let GetLocation (enm:EntityManager) (round:RoundNumber option) (eid:EntityID) = 
         (ToForm (eid |> enm.GetComponent round FormComponentID)).Location
 
@@ -43,6 +44,9 @@ module rec EntityExt =
         | cts -> Some cts.[0]
 
 
+        //let GetHistory_Entities (entities:EntityManager) (round:uint32 option) = 
+        //    let e,_,_ = entities.GetHistory round
+        //    e
 
     //let GetEntitiesAtLocationWithComponents (entities:EntityManager) (round:uint32 option) (location:LocationDataInt) = 
     //    location
@@ -64,9 +68,7 @@ module rec EntityExt =
     //    match components.ContainsKey componentID with
     //    | false -> [||]
     //    | true -> components.Item componentID
-    //let GetHistory_Entities (entities:EntityManager) (round:uint32 option) = 
-    //    let e,_,_ = entities.GetHistory round
-    //    e
+
     //let GetHistory_Locations (entities:EntityManager) (round:uint32 option) (location:LocationDataInt) =
     //    let _,_,locations = entities.GetHistory round
     //    match locations.ContainsKey location with

@@ -9,13 +9,26 @@ type private agent_CurrentMsg =
     | AddMany of Component[]
     | Get of ComponentID * AsyncReplyChannel<Component option>
     | GetMany of ComponentID[] * AsyncReplyChannel<Component[]>
+    | GetMap of AsyncReplyChannel<Map<ComponentID,Component> >
     | Init of Map<ComponentID,Component>
     | Remove of Component
     | RemoveMany of Component[]
     | Update of Component
 
-
+type private agent_HistoryMsg =
+    | History_Add of RoundNumber * Component
+    | History_AddMany of RoundNumber * Component[]
+    | History_Init of Map<ComponentID,(RoundNumber*Component option)[]>
+    | History_Remove of RoundNumber * Component
+    | History_RemoveMany of RoundNumber * Component[]
+    
 type agent_Components() =
+    let mutable _history = Map.empty<ComponentID,(RoundNumber*Component option)[]>
+
+    let getHistory round cid = 
+        match (_history.ContainsKey cid) with
+        | false -> None
+        | true -> searchArrayDataForRound round (_history.Item cid)
 
     let idMan = new agent_IDManager()
 
@@ -31,24 +44,19 @@ type agent_Components() =
                                 match _map.ContainsKey comp.ID with
                                 | false -> _map.Add(comp.ID,comp)
                                 | true -> _map.Remove(comp.ID).Add(comp.ID,comp)
+                        let get cid =
+                            match _map.ContainsKey cid with
+                            | false -> None
+                            | true -> Some (_map.Item cid)
                         let remove (comp:Component) =
                             if (_map.ContainsKey comp.ID) then
                                 _map <- _map.Remove(comp.ID)
                         match msg with
                         | Add comp -> add comp
                         | AddMany cts -> cts |> Array.iter add
-                        | Get (cid,replyChannel) ->
-                            replyChannel.Reply(
-                                match _map.ContainsKey cid with
-                                | false -> None
-                                | true -> Some (_map.Item(cid)))
-                        | GetMany (cids,replyChannel) ->
-                            replyChannel.Reply(
-                                cids 
-                                |> Array.choose (fun cid ->
-                                    match _map.ContainsKey cid with
-                                    | false -> None
-                                    | true -> Some (_map.Item cid)))
+                        | Get (cid,replyChannel) -> replyChannel.Reply(get cid)
+                        | GetMany (cids,replyChannel) -> replyChannel.Reply(cids |> Array.choose get)
+                        | GetMap replyChannel -> replyChannel.Reply(_map)
                         | Init startMap ->
                             _map <- startMap
                         | Remove c -> remove c
@@ -61,80 +69,89 @@ type agent_Components() =
                 }
             )
 
+    let agent_History =
+        MailboxProcessor<agent_HistoryMsg>.Start(
+            fun inbox ->
+                async { 
+                    while true do
+                        let! msg = inbox.Receive()
+                        let add round (comp:Component) =
+                            _history <- 
+                                match _history.ContainsKey comp.ID with
+                                | false -> _history.Add(comp.ID,[|round,Some comp|])
+                                | true -> 
+                                    let h,t = _history.Item(comp.ID) |> Array.splitAt 1
+                                    let newArray = 
+                                        match ((fst h.[0]) = round) with
+                                        | false -> Array.append [|round,Some comp|] t
+                                        | true -> Array.append [|round,Some comp|] (_history.Item(comp.ID))
+                                    _history.Remove(comp.ID).Add(comp.ID,newArray)
+                        let remove round (c:Component) =
+                            if (_history.ContainsKey c.ID) then
+                                _history <- _history.Add(c.ID,[|round,None|])
+                        match msg with
+                        | History_Add (round,comp) -> add round comp
+                        | History_AddMany (round,comps) -> comps |> Array.iter (add round)
+                        | History_Init historyMap -> _history <- historyMap
+                        | History_Remove (round,c) -> remove round c
+                        | History_RemoveMany (round,cts) -> cts |> Array.iter (remove round)
+                }
+            )
+
     member _.Add (round:RoundNumber) comp = 
-        agent_Current.Post (Add comp)
-        // Fix history
+        Async.Parallel
+        (
+            agent_Current.Post (Add comp)
+            agent_History.Post (History_Add (round,comp))
+        )
     member _.AddMany (round:RoundNumber) comps = 
-        agent_Current.Post (AddMany comps)
-        // Fix history
+        Async.Parallel
+        (
+            agent_Current.Post (AddMany comps)
+            agent_History.Post (History_AddMany (round,comps))
+        )
     member _.Get (round:RoundNumber option) cid = 
         match round with
         | None -> agent_Current.PostAndReply (fun replyChannel -> Get (cid,replyChannel))
-        | Some r -> agent_Current.PostAndReply (fun replyChannel -> Get (cid,replyChannel)) // FIX
+        | Some r -> getHistory r cid
+    member _.GetForSave =
+        agent_Current.PostAndReply GetMap
+        ,
+        _history
     member _.GetMany (round:RoundNumber option) cids = 
         match round with
         | None -> agent_Current.PostAndReply (fun replyChannel -> GetMany (cids,replyChannel))
-        | Some r -> agent_Current.PostAndReply (fun replyChannel -> GetMany (cids,replyChannel)) // FIX
+        | Some r -> cids |> Array.choose (getHistory r)
     member _.NewComponentID() = ComponentID(idMan.GetNewID())
-    member _.Init (startMap:Map<ComponentID,Component>) =
-        agent_Current.Post (Init startMap)
-        idMan.Init (MapKeys startMap |> Seq.map (fun k -> k.ToUint32) |> Seq.max)
+    member _.Init (currentMap:Map<ComponentID,Component>) historyMap =
+        Async.Parallel
+        (
+            agent_Current.Post (Init currentMap)
+            idMan.Init (MapKeys currentMap |> Seq.map (fun k -> k.ToUint32) |> Seq.max)
+            agent_History.Post (History_Init historyMap)
+        )
     member _.Remove (round:RoundNumber) c = 
-        agent_Current.Post (Remove c)
-        //Fix history
+        Async.Parallel
+        (
+            agent_Current.Post (Remove c)
+            agent_History.Post (History_Remove (round,c))
+        )
     member _.RemoveMany (round:RoundNumber) cts = 
-        agent_Current.Post (RemoveMany cts)
-        //Fix history
+        Async.Parallel
+        (
+            agent_Current.Post (RemoveMany cts)
+            agent_History.Post (History_RemoveMany (round,cts))
+        )
     member _.Update (round:RoundNumber) comp = 
-        agent_Current.Post (Update comp)
-        //Fix History
+        Async.Parallel
+        (
+            agent_Current.Post (Update comp)
+            agent_History.Post (History_Add (round,comp))
+        )
 
 
 
-    (*
-    let agent_ComponentHistory =
-         let mutable _map = Map.empty<ComponentID,(RoundNumber*Component option)[]>
-         MailboxProcessor<agent_ComponentsMsg>.Start(
-             fun inbox ->
-                 async { 
-                     while true do
-                         let! msg = inbox.Receive()
-                         match msg with
-                         | Add (round,comp) ->
-                             _map <- _map.Add(comp.ID,[|(round,Some comp)|])
-                         | Get (cid,replyChannel) ->
-                             replyChannel.Reply(
-                                 match _map.ContainsKey(cid) with
-                                 | false -> [||]
-                                 | true -> _map.Item(cid))
-                         | Init startMap ->
-                             _map <- startMap
-                         | Remove (round,cid) ->
-                             match _map.ContainsKey(cid) with
-                             | false -> ()
-                             | true ->
-                                 let a = _map.Item(cid)
-                                 match (snd a.[0]).IsNone with
-                                 | true -> () 
-                                 | false -> 
-                                     _map <- _map.Remove(cid).Add(cid,Array.append [|(round,None)|] a)
-                         | Update (round,comp) ->
-                             match _map.ContainsKey(comp.ID) with
-                             | false -> _map <- _map.Add(comp.ID,[|(round,Some comp)|])
-                             | true ->
-                                 let a = _map.Item(comp.ID)
-                                 _map <- _map.Remove(comp.ID).Add(comp.ID,Array.append [|(round,Some comp)|] a)
-                 }
-             )
-
-     member _.Add round comp = agent_ComponentHistory.Post (Add (round,comp))
-     member _.Get round cid = agent_ComponentHistory.PostAndReply (fun replyChannel -> Get (cid,replyChannel)) |> searchArrayDataForRound round
-     member _.NewComponentID() = idMan.GetNewID()
-     member _.Init (startMap:Map<ComponentID,(RoundNumber*Component option)[]>) =
-         agent_ComponentHistory.Post (Init startMap)
-         idMan.Init (MapKeys startMap |>Seq.max)
-     member _.Remove round (comp:Component) = agent_ComponentHistory.Post (Remove (round,comp.ID))
-     member _.Update round comp = agent_ComponentHistory.Post (Update (round,comp))
 
 
-*)
+
+

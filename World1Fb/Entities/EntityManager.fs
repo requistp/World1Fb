@@ -51,10 +51,23 @@ type EntityManager() =
     member  _.GetComponents round eid = agent_Entities.Get round eid
     member  _.GetComponentsOfType round ctid = agent_ComponentTypes.Get round ctid
     member  _.GetFormsAtLocation round location = agent_Locations.Get round location
+    member  _.GetForSave =
+        agent_Components.GetForSave
+        ,
+        agent_ComponentTypes.GetForSave
+        ,
+        agent_Entities.GetForSave
+        ,
+        agent_Locations.GetForSave
     member me.GetEntityIDsAtLocation round location = 
         me.GetFormsAtLocation round location
         |> Array.Parallel.map (fun f -> f.EntityID)
     member  _.GetLocationMap round = agent_Locations.GetMap round
+    member  _.Init ((ccMap,chMap),(cctMap,hctMap),(ceMap,heMap),(clMap,hlMap)) =
+        agent_Components.Init ccMap chMap
+        agent_ComponentTypes.Init cctMap hctMap
+        agent_Entities.Init ceMap heMap
+        agent_Locations.Init clMap hlMap
     member  _.NewComponentID() = agent_Components.NewComponentID()
     member  _.NewEntityID() = agent_Entities.NewEntityID()
     member me.RemoveEntity round eid = 

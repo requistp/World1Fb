@@ -4,68 +4,32 @@ open CommonGenericFunctions
 open Component
 
 
-//type private agent_HistoryMsg = 
-//    | AddHistory of RoundNumber * ComponentTypeID * ComponentID
-//    | GetHistory of ComponentTypeID * AsyncReplyChannel<(RoundNumber*ComponentID[] option)[]>
-//    //| GetComponentMap of AsyncReplyChannel<Map<byte,uint32[]> >
-//    | RemoveHistory of RoundNumber * ComponentTypeID * ComponentID
-
-    
 type private agent_CurrentMsg = 
     | Add of Component
     | AddMany of Component[]
     | Get of ComponentTypeID * AsyncReplyChannel<ComponentID[]>
-    //| GetComponentMap of AsyncReplyChannel<Map<byte,uint32[]> >
+    | GetMap of AsyncReplyChannel<Map<ComponentTypeID,ComponentID[]> >
+    | Init of Map<ComponentTypeID,ComponentID[]>
     | Remove of Component
     | RemoveMany of Component[]
-    
-    
+        
+type private agent_HistoryMsg = 
+    | History_Add of RoundNumber * Component
+    | History_AddMany of RoundNumber * Component[]
+    | History_Init of Map<ComponentTypeID,(RoundNumber*ComponentID[] option)[]>
+    | History_Remove of RoundNumber * Component
+    | History_RemoveMany of RoundNumber * Component[]
+        
 type agent_ComponentTypes(compMan:agent_Components) = 
+    let mutable _history = Map.empty<ComponentTypeID,(RoundNumber*ComponentID[] option)[]>
 
-    //let agent_History =
-    //    let mutable _map = Map.empty<ComponentTypeID,(RoundNumber*ComponentID[] option)[]>
-    //    MailboxProcessor<agent_HistoryMsg>.Start(
-    //        fun inbox ->
-    //            async { 
-    //                while true do
-    //                    let! msg = inbox.Receive()
-    //                    match msg with
-    //                    | AddHistory (round,ctid,cid) ->
-    //                        _map <-
-    //                            match _map.ContainsKey(ctid) with
-    //                            | false -> _map.Add(ctid,[|(round,Some [|cid|])|])
-    //                            | true -> 
-    //                                let oldArray = _map.Item(ctid)
-    //                                let addNew =
-    //                                    match (snd oldArray.[0]) with
-    //                                    | None -> [|(round,Some [|cid|])|]
-    //                                    | Some eids -> [|(round, Some (Array.append eids [|cid|]))|]
-    //                                _map.Remove(ctid).Add(ctid,Array.append addNew oldArray) 
-    //                    | GetHistory (ctid,replyChannel) -> 
-    //                        replyChannel.Reply(
-    //                            match _map.ContainsKey(ctid) with
-    //                            | false -> Array.empty
-    //                            | true -> _map.Item(ctid))
-    //                    //| GetComponentMap replyChannel -> 
-    //                    //    replyChannel.Reply(_map)
-    //                    | RemoveHistory (round,ctid,cid) ->
-    //                        match _map.ContainsKey(ctid) with
-    //                        | false -> ()
-    //                        | true -> 
-    //                            let history = _map.Item(ctid)
-    //                            match (snd history.[0]) with 
-    //                            | None -> ()
-    //                            | Some a ->
-    //                                match Array.contains cid a with 
-    //                                | false -> ()
-    //                                | true -> 
-    //                                    let newArray = 
-    //                                        match a |> Array.filter (fun c -> c <> cid) with 
-    //                                        | [||] -> None
-    //                                        | filtered -> Some filtered
-    //                                    _map <- _map.Remove(ctid).Add(ctid,Array.append [|(round,newArray)|] history)
-    //            }
-    //        )
+    let getHistory round ctid = 
+        match (_history.ContainsKey ctid) with
+        | false -> [||]
+        | true -> 
+            match searchArrayDataForRound round (_history.Item ctid) with
+            | None -> [||]
+            | Some a -> a
 
     let agent_Current =
         let mutable _map = Map.empty<ComponentTypeID,ComponentID[]>
@@ -92,36 +56,109 @@ type agent_ComponentTypes(compMan:agent_Components) =
                             replyChannel.Reply(
                                 match _map.ContainsKey ctid with
                                 | false -> Array.empty
-                                | true -> _map.Item(ctid))
-                        //| GetComponentMap replyChannel -> 
-                        //    replyChannel.Reply(_map)
+                                | true -> _map.Item ctid)
+                        | GetMap replyChannel -> replyChannel.Reply(_map)
+                        | Init startMap -> _map <- startMap
                         | Remove comp -> remove comp
                         | RemoveMany cts -> cts |> Array.iter remove
                 }
             )
+    
+    let agent_History =
+        MailboxProcessor<agent_HistoryMsg>.Start(
+            fun inbox ->
+                async { 
+                    while true do
+                        let! msg = inbox.Receive()
+                        let add round (c:Component) = 
+                            _history <- 
+                                match _history.ContainsKey c.ComponentTypeID with
+                                | false -> _history.Add(c.ComponentTypeID,[|round,Some [|c.ID|]|])
+                                | true -> 
+                                    let h,t = _history.Item(c.ComponentTypeID) |> Array.splitAt 1
+                                    let newArray = 
+                                        match ((fst h.[0]) = round) with
+                                        | false -> Array.append [|round,Some [|c.ID|]|] t
+                                        | true -> Array.append [|round,Some [|c.ID|]|] (_history.Item c.ComponentTypeID)
+                                    _history.Remove(c.ComponentTypeID).Add(c.ComponentTypeID,newArray)
+                        let remove round (c:Component) =
+                            if (_history.ContainsKey c.ComponentTypeID) then
+                                match snd (_history.Item c.ComponentTypeID).[0] with
+                                | None -> ()
+                                | Some a ->
+                                    if a |> Array.contains c.ID then
+                                        _history <-
+                                            match a |> Array.filter (fun id -> id <> c.ID) with
+                                            | [||] -> _history.Add(c.ComponentTypeID,[|round,None|])
+                                            | n -> _history.Add(c.ComponentTypeID,[|round,Some n|])
+                        match msg with
+                        | History_Add (round,c) -> add round c
+                        | History_AddMany (round,cs) -> cs |> Array.iter (add round)
+                        | History_Init startMap -> _history <- startMap
+                        | History_Remove (round,c) -> remove round c
+                        | History_RemoveMany (round,cs) -> cs |> Array.iter (remove round)
+                }
+            )
+    
     member _.Add (round:RoundNumber) comp = 
-        agent_Current.Post (Add comp)
-        // FIX history
+        Async.Parallel
+        (
+            agent_Current.Post (Add comp)
+            agent_History.Post (History_Add (round,comp))
+        )
     member _.AddMany (round:RoundNumber) cts = 
-        agent_Current.Post (AddMany cts)
-        // FIX history
+        Async.Parallel
+        (
+            agent_Current.Post (AddMany cts)
+            agent_History.Post (History_AddMany (round,cts))
+        )
     member _.Get round ctid = 
         match round with
         | None -> agent_Current.PostAndReply (fun replyChannel -> Get (ctid,replyChannel))
-        | Some r -> agent_Current.PostAndReply (fun replyChannel -> Get (ctid,replyChannel)) // FIX
+        | Some r -> getHistory r ctid
         |> compMan.GetMany round
-    member _.GetIDs round ctid = 
+    member _.GetForSave =
+        agent_Current.PostAndReply GetMap
+        ,
+        _history
+    member _.GetMap (round:RoundNumber option) = 
         match round with
-        | None -> agent_Current.PostAndReply (fun replyChannel -> Get (ctid,replyChannel))
-        | Some r -> agent_Current.PostAndReply (fun replyChannel -> Get (ctid,replyChannel)) // FIX
+        | None -> 
+            agent_Current.PostAndReply GetMap
+            |> Map.map (fun _ cids -> cids |> Array.choose (compMan.Get round))
+        | Some _ -> 
+            _history
+            |> Map.map (fun _ a -> 
+                match (snd a.[0]) with
+                | None -> [||]
+                | Some cids ->
+                    cids |> Array.choose (compMan.Get round)
+                )
+    member _.Init currentMap historyMap =
+        Async.Parallel
+        (
+            agent_Current.Post (Init currentMap)
+            agent_History.Post (History_Init historyMap)
+        )
     member _.Remove (round:RoundNumber) (comp:Component) = 
-        agent_Current.Post (Remove comp)
-        // FIX history
+        Async.Parallel
+        (
+            agent_Current.Post (Remove comp)
+            agent_History.Post (History_Remove (round,comp))
+        )
     member _.RemoveMany (round:RoundNumber) (cts:Component[]) = 
-        agent_Current.Post (RemoveMany cts)
-        // FIX history
+        Async.Parallel
+        (
+            agent_Current.Post (RemoveMany cts)
+            agent_History.Post (History_RemoveMany (round,cts))
+        )
 
-    //member _.Add round ctid cid = agent_History.Post (AddHistory (round,ctid,cid))
+
+
+    //member _.GetIDs round ctid = 
+    //    match round with
+    //    | None -> agent_Current.PostAndReply (fun replyChannel -> Get (ctid,replyChannel))
+    //    | Some r -> agent_Current.PostAndReply (fun replyChannel -> Get (ctid,replyChannel)) // FIX    //member _.Add round ctid cid = agent_History.Post (AddHistory (round,ctid,cid))
     //member _.Get round ctid = agent_History.PostAndReply (fun replyChannel -> GetHistory (ctid,replyChannel)) |> searchArrayDataForRound round
     //member _.Remove round (comp:Component) = agent_History.Post (RemoveHistory (round,comp.ComponentTypeID,comp.ID))
 

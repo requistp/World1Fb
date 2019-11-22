@@ -27,7 +27,7 @@ type WorldMapRenderer() =
         Console.CursorVisible <- false
         Console.Title <- "World Map"
         
-        let allForms = enm.GetLocationMap round
+        let allForms = enm.GetLocationMap None
 
         let rangeY = 
             [|(snd _windowLocation)..(snd _windowLocation + viewSizeY - 1)|]
@@ -63,31 +63,32 @@ type WorldMapRenderer() =
         let centerX = 30
         let centerY = 10
 
-        //let v = (entityID |> enm.GetComponent VisionComponentID).ToVision
-        //let vf = (entityID |> enm.GetComponent FormComponentID).ToForm
+        let (Vision v) = enm.GetComponent None VisionComponentID entityID
+        let (Form f) = enm.GetComponent None FormComponentID entityID
 
-        //let addX = centerX - vf.Location.X
-        //let addY = centerY - vf.Location.Y
-        ()
-    //    v.ViewedMap
-    //    |> Map.iter (fun location round -> 
-    //        let drawX = location.X + addX
-    //        let drawY = location.Y + addY
-    //        match drawX >= 0 && drawY >= 0 with
-    //        | false -> ()
-    //        | true -> 
-    //            let drawCall = 
-    //                match v.ViewableMap |> Array.contains location with
-    //                | false -> ColoredConsole.Console.DrawDarkGray
-    //                | true -> ColoredConsole.Console.DrawWhite
-    //            let forms = 
-    //                let es = EntityExt.GetHistory_Entities enm (Some round) 
-    //                location
-    //                |> EntityExt.GetHistory_Locations enm (Some round)
-    //                |> Array.Parallel.map (fun e -> (e|>EntityExt.GetComponent2 es FormComponentID).ToForm)
-    //            System.Console.SetCursorPosition(drawX,drawY)
-    //            drawCall forms.[0].Symbol
-    //        )
+        let addX = centerX - f.Location.X
+        let addY = centerY - f.Location.Y
+        
+        v.ViewedMap
+        |> Map.iter (fun location round -> 
+            let drawX = location.X + addX
+            let drawY = location.Y + addY
+            match drawX >= 0 && drawY >= 0 with
+            | false -> ()
+            | true -> 
+                let drawCall = 
+                    match v.ViewableMap |> Array.contains location with
+                    | false -> ColoredConsole.Console.DrawDarkGray
+                    | true -> ColoredConsole.Console.DrawWhite
+                let forms = 
+                    //let es = enm.GetEntityMap (Some round) 
+                    location
+                    |> enm.GetFormsAtLocation (Some round)
+                    //|> EntityExt.GetHistory_Locations enm (Some round)
+                    //|> Array.Parallel.map (fun e -> (e|>EntityExt.GetComponent2 es FormComponentID).ToForm)
+                System.Console.SetCursorPosition(drawX,drawY)
+                drawCall forms.[0].Symbol
+            )
 
 
 

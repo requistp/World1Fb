@@ -8,7 +8,8 @@ open System
 let AwaitKeyboardInput (enm:EntityManager) (controller:ControllerComponent) (renderer:EntityManager->EntityID->unit) (round:RoundNumber) : ActionTypes * bool =
     let mutable _action = None
     
-    // Uncomment for Entity-view... renderer enm (controller.EntityID)
+    // Uncomment for Entity-view... 
+    //renderer enm (controller.EntityID)
 
     let handleKeyPressed (k:ConsoleKeyInfo) = 
         while Console.KeyAvailable do //Might help clear double movement keys entered in one turn
