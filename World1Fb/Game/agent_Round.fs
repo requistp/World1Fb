@@ -1,6 +1,7 @@
 ﻿module agent_Round
 open CommonGenericFunctions
 
+
 type private agent_RoundMsg =
     | GetRound of AsyncReplyChannel<RoundNumber>
     | IncrementRound of AsyncReplyChannel<RoundNumber>
@@ -20,7 +21,7 @@ type agent_Round() =
                         | GetRound replyChannel ->
                             replyChannel.Reply(_round)
                         | IncrementRound replyChannel ->
-                            _round <- RoundNumber(_round.ToUint32 + 1u)
+                            _round <- _round + 1u
                             replyChannel.Reply(_round)
                         | InitRound round ->
                             _round <- round

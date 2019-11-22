@@ -116,14 +116,14 @@ let ToForm (Form c) = c
 let ToMating (Mating c) = c
 let ToPlantGrowth (PlantGrowth c) = c
 
-let Copy (newEID:EntityID) (newCID:ComponentID) (c:Component) =
+let Copy (newEID:EntityID) (idGen:unit->ComponentID) (round:RoundNumber) (c:Component) =
     match c with
-    | Controller d -> Controller { d with ID = newCID; EntityID = newEID }
-    | Eating d -> Eating { d with ID = newCID; EntityID = newEID }
-    | Food d -> Food { d with ID = newCID; EntityID = newEID }
-    | Form d -> Form { d with ID = newCID; EntityID = newEID }
-    | Mating d -> Mating { d with ID = newCID; EntityID = newEID }
-    | Movement d -> Movement { d with ID = newCID; EntityID = newEID }
-    | PlantGrowth d -> PlantGrowth { d with ID = newCID; EntityID = newEID }
-    | Terrain d -> Terrain { d with ID = newCID; EntityID = newEID }
-    | Vision d -> Vision { d with ID = newCID; EntityID = newEID }
+    | Controller d -> Controller { d with ID = idGen(); EntityID = newEID }
+    | Eating d -> Eating { d with ID = idGen(); EntityID = newEID }
+    | Food d -> Food { d with ID = idGen(); EntityID = newEID }
+    | Form d -> Form { d with ID = idGen(); EntityID = newEID; Born = round }
+    | Mating d -> Mating { d with ID = idGen(); EntityID = newEID }
+    | Movement d -> Movement { d with ID = idGen(); EntityID = newEID }
+    | PlantGrowth d -> PlantGrowth { d with ID = idGen(); EntityID = newEID }
+    | Terrain d -> Terrain { d with ID = idGen(); EntityID = newEID }
+    | Vision d -> Vision { d with ID = idGen(); EntityID = newEID }

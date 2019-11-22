@@ -55,10 +55,10 @@ type EventManager(enm:EntityManager, log:agent_GameLog, getRound:unit->RoundNumb
                             let sed,ge = se.ToScheduleEvent
                             let interval = 
                                 match isNew && sed.Schedule = RepeatIndefinitely with
-                                | true -> uint32 (TimingOffset (int sed.Frequency))
+                                | true -> TimingOffset sed.Frequency //uint32 (TimingOffset (uint32 sed.Frequency))
                                 | false -> sed.Frequency                                
-                            _schedule <- Map_AppendValueToArrayNonUnique _schedule (RoundNumber(round.ToUint32+interval)) se
-                            log.Log round (sprintf "%-3s | %-20s -> %-30s #%7i : Frequency:%i" "-->" "Scheduled Event" (ge.GameEventType()) ge.EntityID.ToUint32 sed.Frequency)
+                            _schedule <- Map_AppendValueToArrayNonUnique _schedule (round+interval) se
+                            log.Log round (sprintf "%-3s | %-20s -> %-30s #%7i : Frequency:%i" "-->" "Scheduled Event" (ge.GameEventType()) ge.EntityID.ToUint32 sed.Frequency.ToUint32)
                         match msg with
                         | AddToSchedule (round,se) -> 
                             addToSchedule round se true

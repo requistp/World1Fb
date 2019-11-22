@@ -7,11 +7,11 @@ open LocationTypes
 
 module rec EntityExt = 
 
-    let CopyEntity (enm:EntityManager) (oldeid:EntityID) =
+    let CopyEntity (enm:EntityManager) (round:RoundNumber) (oldeid:EntityID) =
         let neweid = enm.NewEntityID()
         oldeid
         |> enm.GetComponents None
-        |> Array.Parallel.map (Component.Copy neweid (enm.NewComponentID()))
+        |> Array.Parallel.map (Component.Copy neweid enm.NewComponentID round)
 
     let FormImpassableAtLocation (enm:EntityManager) (round:RoundNumber option) (excludeEID:EntityID option) (location:LocationDataInt) =
         location

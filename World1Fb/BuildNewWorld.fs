@@ -63,7 +63,7 @@ let MakeRabbits (enm:EntityManager) n =
                 controller
                 Eating { ID = enm.NewComponentID(); EntityID = eid; Calories = 150; CaloriesPerDay = 300; Foods = [|Food_Carrot;Food_Grass|]; Quantity = 75; QuantityMax = 150; QuantityPerAction = 1 }
                 Form { ID = enm.NewComponentID(); EntityID = eid; Born = RoundNumber(0u); CanSeePast = true; IsPassable = true; Name = "rabbit"; Symbol = symbol; Location = location }
-                Mating { ID = enm.NewComponentID(); EntityID = eid; ChanceOfReproduction = 0.9; LastMatingAttempt = 0u; MatingStatus = matingStatus; Species = Rabbit }
+                Mating { ID = enm.NewComponentID(); EntityID = eid; ChanceOfReproduction = 0.9; LastMatingAttempt = RoundNumber(0u); MatingStatus = matingStatus; Species = Rabbit }
                 Movement { ID = enm.NewComponentID(); EntityID = eid; MovesPerTurn = 1 }
                 Vision { ID = enm.NewComponentID(); EntityID = eid; Range = visionRange; RangeTemplate = rangeTemplate; ViewedMap = viewedMap; ViewableMap = visionMap; VisionMap = visionMap }
             |]

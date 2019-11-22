@@ -53,7 +53,7 @@ type EatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
 
     member private me.onComponentAdded round (ge:GameEventTypes) =
         let e = ge.ToComponentAddedEating
-        evm.AddToSchedule (ScheduleEvent ({ Schedule=RepeatIndefinitely; Frequency=uint32 MetabolismFrequency }, Metabolize { EntityID=e.EntityID }))
+        evm.AddToSchedule (ScheduleEvent ({ Schedule = RepeatIndefinitely; Frequency = MetabolismFrequency }, Metabolize { EntityID = e.EntityID }))
         Ok (Some (sprintf "Queued Metabolize to schedule. EntityID:%i" e.EntityID.ToUint32))
         
     member private me.onMetabolize round (ge:GameEventTypes) =

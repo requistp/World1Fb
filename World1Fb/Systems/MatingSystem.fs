@@ -26,21 +26,6 @@ let MateActionEnabled (enm:EntityManager) (entityID:EntityID) (round:RoundNumber
 type MatingSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
     
-    let makeBaby momID round =
-        let adjustComponents (c:Component) =
-            match c with
-            | Mating d -> 
-                Mating { d with MatingStatus = if random.Next(2) = 0 then Male else Female }
-            | Form d -> 
-                Form { d with Born = round; Location = d.Location.Add { X=0; Y=0; Z=0 }} 
-            | _ -> c
-        let newcts = 
-            momID
-            |> EntityExt.CopyEntity enm
-            |> Array.Parallel.map adjustComponents
-        evm.RaiseEvent (CreateEntity { Components = newcts })
-        Ok (Some (sprintf "Born:%i" newcts.[0].EntityID))
-
     member me.onActionMate round (ge:GameEventTypes) =
         let (Mating mc) = enm.GetComponent None MatingComponentID ge.EntityID
         
@@ -78,8 +63,24 @@ type MatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
     member me.onBirth round (ge:GameEventTypes) =
         let (Birth e) = ge
         let (Mating m) = enm.GetComponent None MatingComponentID e.MomID
+
+        let makeBaby momID =
+            let adjustComponents (c:Component) =
+                match c with
+                | Mating d -> 
+                    Mating { d with MatingStatus = if random.Next(2) = 0 then Male else Female }
+                | Form d -> 
+                    Form { d with Location = d.Location.Add { X=0; Y=0; Z=0 }} 
+                | _ -> c
+            let newcts = 
+                momID
+                |> EntityExt.CopyEntity enm round
+                |> Array.Parallel.map adjustComponents
+            evm.RaiseEvent (CreateEntity { Components = newcts })
+            Ok (Some (sprintf "Born:%i" (newcts.[0].EntityID).ToUint32))
+
         enm.UpdateComponent round (Mating (m.Update None (Some Female) (Some (round + m.Species.MaxMatingFrequency)) None)) // Change Mom to Non-Pregnant Female and add some extra time to before she can mate again
-        makeBaby e.MomID round
+        makeBaby e.MomID
 
     override me.Initialize = 
         evm.RegisterListener me.Description Event_ActionMate_ID (me.TrackTask me.onActionMate)

@@ -10,40 +10,40 @@ type FrequencyTypes =
     | Year
 
 let secondsPerMinute = 60
-let minutesPerHour = 60  
-let hoursPerDay = 24     
-let daysPerMonth = 30    
-let monthsPerYear = 12   
+let minutesPerHour = 60
+let hoursPerDay = 24
+let daysPerMonth = 30
+let monthsPerYear = 12
 
 let roundInSeconds = 6
-let roundsPerMinute = secondsPerMinute / roundInSeconds //        10 rounds
-let roundsPerHour = roundsPerMinute * minutesPerHour    //       600 rounds
-let roundsPerDay = roundsPerHour * hoursPerDay          //    14,400 rounds
-let roundsPerMonth = roundsPerDay * daysPerMonth        //   432,000 rounds
-let roundsPerYear = roundsPerMonth * monthsPerYear      // 5,184,000 rounds
+let roundsPerMinute = RoundNumber(uint32 (secondsPerMinute / roundInSeconds))           //        10 rounds
+let roundsPerHour = RoundNumber(uint32 (int roundsPerMinute.ToUint32 * minutesPerHour)) //       600 rounds
+let roundsPerDay = RoundNumber(uint32 (int roundsPerHour.ToUint32 * hoursPerDay))       //    14,400 rounds
+let roundsPerMonth = RoundNumber(uint32 (int roundsPerDay.ToUint32 * daysPerMonth))     //   432,000 rounds
+let roundsPerYear = RoundNumber(uint32 (int roundsPerMonth.ToUint32 * monthsPerYear))   // 5,184,000 rounds
 
-let convertRounds (r:int) (toFreq:FrequencyTypes) = 
+let convertRounds (r:RoundNumber) (toFreq:FrequencyTypes) = 
     match toFreq with
-    | Minute -> (float r) / (float roundsPerMinute)
-    | Hour -> (float r) / (float roundsPerHour)
-    | Day -> (float r) / (float roundsPerDay)
-    | Month -> (float r) / (float roundsPerMonth)
-    | Year -> (float r) / (float roundsPerYear)
+    | Minute -> (float r.ToUint32) / (float roundsPerMinute.ToUint32)
+    | Hour -> (float r.ToUint32) / (float roundsPerHour.ToUint32)
+    | Day -> (float r.ToUint32) / (float roundsPerDay.ToUint32)
+    | Month -> (float r.ToUint32) / (float roundsPerMonth.ToUint32)
+    | Year -> (float r.ToUint32) / (float roundsPerYear.ToUint32)
 
-let convertAmountByFrequency (amountPerFreq:int) (frequencyOfAmount:FrequencyTypes) (perIntervals:int) = 
+let convertAmountByFrequency (amountPerFreq:int) (frequencyOfAmount:FrequencyTypes) (perIntervals:RoundNumber) = 
     int (Math.Round((float amountPerFreq) * convertRounds perIntervals frequencyOfAmount, 0))
    
-let ExecuteTiming (frequency:int) (offset:int) (round:int) = 
-    match frequency with
-    | 0 -> false
-    | _ -> (round % frequency = offset)
+let ExecuteTiming (frequency:RoundNumber) (offset:RoundNumber) (round:RoundNumber) = 
+    match frequency.ToUint32 with
+    | 0u -> false
+    | _ -> round.ToUint32 % frequency.ToUint32 = offset.ToUint32
 
-let TimingOffset (max:int) = random.Next(1,max) // Add 1 because the frequency timing is being done off the current round, but that round is really over. So a zero offset should be done next round
+let TimingOffset (max:RoundNumber) = RoundNumber(uint32 (random.Next(1,int max.ToUint32))) // Add 1 because the frequency timing is being done off the current round, but that round is really over. So a zero offset should be done next round
 
-let AllTimingAccelerator = 100
-let MetabolismFrequency = 7 //roundsPerHour * 2 / AllTimingAccelerator
-let PlantGrowthFrequency = 10 // roundsPerDay / AllTimingAccelerator // If I change this, I need to change the regrowRate because 100% of that is applied per this update
-let PlantReproductionFrequency = 10 //roundsPerMonth / AllTimingAccelerator // If I change this, I need to change the reproductionRate because 100% of that is applied per this update
+let AllTimingAccelerator = RoundNumber(100u)
+let MetabolismFrequency = RoundNumber(7u)         // roundsPerHour * 2 / AllTimingAccelerator
+let PlantGrowthFrequency = RoundNumber(10u)       // roundsPerDay / AllTimingAccelerator // If I change this, I need to change the regrowRate because 100% of that is applied per this update
+let PlantReproductionFrequency = RoundNumber(10u) // roundsPerMonth / AllTimingAccelerator // If I change this, I need to change the reproductionRate because 100% of that is applied per this update
 
 
 

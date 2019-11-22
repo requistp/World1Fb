@@ -75,12 +75,12 @@ type Species =
     | NotRabbit
     member me.MaxMatingFrequency =
         match me with
-        | Rabbit -> 10u
-        | NotRabbit -> 100u
+        | Rabbit -> RoundNumber(10u)
+        | NotRabbit -> RoundNumber(100u)
     member me.Gestation =
         match me with
-        | Rabbit -> 15u
-        | NotRabbit -> 200u
+        | Rabbit -> RoundNumber(15u)
+        | NotRabbit -> RoundNumber(200u)
 
 
 type TerrainType = 

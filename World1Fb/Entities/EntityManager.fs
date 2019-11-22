@@ -16,7 +16,7 @@ type EntityManager() =
     let agent_Locations = new agent_Locations(agent_Components)
     let agent_ComponentTypes = new agent_ComponentTypes(agent_Components)
     
-    member _.CreateEntity (round:RoundNumber) (cts:Component[]) = 
+    member  _.CreateEntity (round:RoundNumber) (cts:Component[]) = 
         Async.Parallel 
         (
             agent_Components.AddMany round cts

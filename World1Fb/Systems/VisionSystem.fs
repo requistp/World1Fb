@@ -16,10 +16,12 @@ type VisionSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
     inherit AbstractSystem(description,isActive) 
     
     let handleFOV (form:FormComponent) (vision:VisionComponent) (visionMap:LocationDataInt[]) =
+        //redo this so that I handle all entities visions at once during the round update
+        let allForms = enm.GetLocationMap None
         let forms = 
             visionMap 
             |> Array.fold (fun (m:Map<LocationDataInt,FormComponent[]>) location -> 
-                m.Add(location,enm.GetFormsAtLocation None location)
+                m.Add(location,allForms.Item(location))
                 ) Map.empty
         ComputeVisibility form.Location visionMap forms vision.Range
 

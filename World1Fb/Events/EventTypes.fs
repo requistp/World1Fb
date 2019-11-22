@@ -44,7 +44,7 @@ type Event_Metabolize = { EntityID:EntityID }
 type Event_Movement = { EntityID:EntityID; Direction:MovementDirection }
 type Event_PlantGrowth = { EntityID:EntityID }
 type Event_PlantReproduce = { EntityID:EntityID }
-type Event_ScheduleEvent = { Frequency:uint32; Schedule:ScheduleType }
+type Event_ScheduleEvent = { Frequency:RoundNumber; Schedule:ScheduleType }
 type Event_Starving = { EntityID:EntityID }
 
 
