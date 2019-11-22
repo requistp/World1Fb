@@ -1,16 +1,16 @@
 ﻿module agent_Round
-
+open CommonGenericFunctions
 
 type private agent_RoundMsg =
-    | GetRound of AsyncReplyChannel<uint32>
-    | IncrementRound of AsyncReplyChannel<uint32>
-    | InitRound of round:uint32
+    | GetRound of AsyncReplyChannel<RoundNumber>
+    | IncrementRound of AsyncReplyChannel<RoundNumber>
+    | InitRound of RoundNumber
 
 
 type agent_Round() =
 
     let agentRound =
-        let mutable _round = 0u
+        let mutable _round = RoundNumber(0u)
         MailboxProcessor<agent_RoundMsg>.Start(
             fun inbox ->
                 async { 
@@ -20,7 +20,7 @@ type agent_Round() =
                         | GetRound replyChannel ->
                             replyChannel.Reply(_round)
                         | IncrementRound replyChannel ->
-                            _round <- _round + 1u
+                            _round <- RoundNumber(_round.ToUint32 + 1u)
                             replyChannel.Reply(_round)
                         | InitRound round ->
                             _round <- round

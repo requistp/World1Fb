@@ -25,8 +25,7 @@ type Component =
 
     static member GetID (c:Component) =
         c.ID
-    static member GetComponentTypeID (c:Component) =
-        c.ComponentTypeID
+
     static member GetEntityID (c:Component) =
         c.EntityID
 
@@ -91,13 +90,26 @@ type Component =
         let (Vision d) = me
         d
 
-let EntityID (c:Component) =
-    match c with
-    | Controller d -> d.EntityID
-    | Form d -> d.EntityID
-    | Component.Movement d -> d.EntityID
-    | Terrain d -> d.EntityID
+//let xxxEntityID (c:Component) =
+//    match c with
+//    | Controller d -> d.EntityID
+//    | Form d -> d.EntityID
+//    | Component.Movement d -> d.EntityID
+//    | Terrain d -> d.EntityID
 
+let GetComponentTypeID (c:Component) =
+    match c with
+    | Controller _ -> ControllerComponentID
+    | Eating _ -> EatingComponentID
+    | Food _ -> FoodComponentID
+    | Form _ -> FormComponentID
+    | Mating _ -> MatingComponentID
+    | Movement _ -> MovementComponentID
+    | PlantGrowth _ -> PlantGrowthComponentID
+    | Terrain _ -> TerrainComponentID
+    | Vision _ -> VisionComponentID
+
+let ToController (Controller c) = c
 let ToEating (Eating c) = c
 let ToFood (Food c) = c
 let ToForm (Form c) = c

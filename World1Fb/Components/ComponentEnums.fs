@@ -2,16 +2,16 @@
 open CommonGenericFunctions
 open LocationTypes
 
-let ControllerComponentID = 1uy
-let EatingComponentID = ControllerComponentID + 1uy
-let FoodComponentID = EatingComponentID + 1uy
-let FormComponentID = FoodComponentID + 1uy
-let MatingComponentID = FormComponentID + 1uy
-let MemoryComponentID = MatingComponentID + 1uy
-let MovementComponentID = MemoryComponentID + 1uy
-let PlantGrowthComponentID = MovementComponentID + 1uy
-let TerrainComponentID = PlantGrowthComponentID + 1uy
-let VisionComponentID = TerrainComponentID + 1uy
+let ControllerComponentID = ComponentTypeID(1uy)
+let EatingComponentID = ComponentTypeID(ControllerComponentID.ToByte + 1uy)
+let FoodComponentID = ComponentTypeID(EatingComponentID.ToByte + 1uy)
+let FormComponentID = ComponentTypeID(FoodComponentID.ToByte + 1uy)
+let MatingComponentID = ComponentTypeID(FormComponentID.ToByte + 1uy)
+let MemoryComponentID = ComponentTypeID(MatingComponentID.ToByte + 1uy)
+let MovementComponentID = ComponentTypeID(MemoryComponentID.ToByte + 1uy)
+let PlantGrowthComponentID = ComponentTypeID(MovementComponentID.ToByte + 1uy)
+let TerrainComponentID = ComponentTypeID(PlantGrowthComponentID.ToByte + 1uy)
+let VisionComponentID = ComponentTypeID(TerrainComponentID.ToByte + 1uy)
 
 
 type FoodClassifications =

@@ -20,7 +20,7 @@ let MakeMap (enm:EntityManager) =
             
         let mutable baseTerrain =
             [| 
-                Form { ID = enm.NewComponentID(); EntityID = eid; Born = 0u; CanSeePast = canSeePast; IsPassable = t.IsPassable; Name = t.ToString(); Symbol = t.Symbol; Location = l }
+                Form { ID = enm.NewComponentID(); EntityID = eid; Born = RoundNumber(0u); CanSeePast = canSeePast; IsPassable = t.IsPassable; Name = t.ToString(); Symbol = t.Symbol; Location = l }
                 Terrain { ID = enm.NewComponentID(); EntityID = eid; Terrain = t }
             |] 
             // I left this mechanic in place because there will be some component that is appropriate to add to Terrain--like a burrow
@@ -36,7 +36,7 @@ let MakeGrasses (enm:EntityManager) n =
         let eid = enm.NewEntityID()
         [| 
             Food { ID = enm.NewComponentID(); EntityID = eid; FoodType = Food_Carrot; Quantity = 20; QuantityMax = 20 }
-            Form { ID = enm.NewComponentID(); EntityID = eid; Born = 0u; CanSeePast = true; IsPassable = true; Name = Food_Carrot.ToString(); Symbol = Food_Carrot.Symbol.Value; Location = {X=x;Y=y;Z=0} }
+            Form { ID = enm.NewComponentID(); EntityID = eid; Born = RoundNumber(0u); CanSeePast = true; IsPassable = true; Name = Food_Carrot.ToString(); Symbol = Food_Carrot.Symbol.Value; Location = {X=x;Y=y;Z=0} }
             PlantGrowth { ID = enm.NewComponentID(); EntityID = eid; GrowsInTerrain = [|Dirt|]; RegrowRate = 0.1; ReproductionRate = 0.25; ReproductionRange = 5; ReproductionRequiredFoodQuantity = 0.75 }
         |] 
     match n with 
@@ -57,12 +57,12 @@ let MakeRabbits (enm:EntityManager) n =
         let visionRange = 10
         let rangeTemplate = RangeTemplate2D visionRange
         let visionMap = LocationsWithinRange2D location (RangeTemplate2D visionRange)
-        let viewedMap = visionMap |> Array.fold (fun (v:Map<LocationDataInt,uint32>) l -> v.Add(l,0u)) Map.empty
+        let viewedMap = visionMap |> Array.fold (fun (v:Map<LocationDataInt,RoundNumber>) l -> v.Add(l,RoundNumber(0u))) Map.empty
         let baseBunny = 
             [|
                 controller
                 Eating { ID = enm.NewComponentID(); EntityID = eid; Calories = 150; CaloriesPerDay = 300; Foods = [|Food_Carrot;Food_Grass|]; Quantity = 75; QuantityMax = 150; QuantityPerAction = 1 }
-                Form { ID = enm.NewComponentID(); EntityID = eid; Born = 0u; CanSeePast = true; IsPassable = true; Name = "rabbit"; Symbol = symbol; Location = location }
+                Form { ID = enm.NewComponentID(); EntityID = eid; Born = RoundNumber(0u); CanSeePast = true; IsPassable = true; Name = "rabbit"; Symbol = symbol; Location = location }
                 Mating { ID = enm.NewComponentID(); EntityID = eid; ChanceOfReproduction = 0.9; LastMatingAttempt = 0u; MatingStatus = matingStatus; Species = Rabbit }
                 Movement { ID = enm.NewComponentID(); EntityID = eid; MovesPerTurn = 1 }
                 Vision { ID = enm.NewComponentID(); EntityID = eid; Range = visionRange; RangeTemplate = rangeTemplate; ViewedMap = viewedMap; ViewableMap = visionMap; VisionMap = visionMap }

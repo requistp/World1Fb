@@ -9,14 +9,14 @@ type VisionComponent =
         EntityID : EntityID
         Range : int
         RangeTemplate : LocationDataInt[]
-        ViewedMap : Map<LocationDataInt,uint32> // All locations that entity has ever seen
-        ViewableMap : LocationDataInt[]         // Locations that are visible taking into account occlusion, etc. (i.e. a subset of VisionMap)
-        VisionMap : LocationDataInt[]           // Locations within range--regardless of being blocked/visible/etc.
+        ViewedMap : Map<LocationDataInt,RoundNumber> // All locations that entity has ever seen, and when
+        ViewableMap : LocationDataInt[]              // Locations that are visible taking into account occlusion, etc. (i.e. a subset of VisionMap)
+        VisionMap : LocationDataInt[]                // Locations within range--regardless of being blocked/visible/etc.
     }
     member me.Update round (rangeUpdate:int option) (viewableMapUpdate:LocationDataInt[] option) (visionMapUpdate:LocationDataInt[] option) =
         let addViewableLocations (newLocations:LocationDataInt[]) =
             newLocations
-            |> Array.fold (fun (viewed:Map<LocationDataInt,uint32>) location -> 
+            |> Array.fold (fun (viewed:Map<LocationDataInt,RoundNumber>) location -> 
                 match viewed.ContainsKey location with
                 | true -> viewed.Remove(location).Add(location,round)
                 | false -> viewed.Add(location,round)

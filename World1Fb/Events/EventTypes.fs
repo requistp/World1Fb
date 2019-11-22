@@ -1,6 +1,8 @@
 ﻿module EventTypes
+open CommonGenericFunctions
 open Component
 open ComponentEnums
+open FormComponent
 
 let Event_ActionEat_ID = 1uy
 let Event_ActionMate_ID = Event_ActionEat_ID + 1uy
@@ -26,24 +28,24 @@ type ScheduleType =
     | RepeatIndefinitely
     | RunOnce
 
-type Event_ActionEat = { EntityID:uint32 }
-type Event_ActionMate = { EntityID:uint32 }
-type Event_ActionMovement = { EntityID:uint32; Direction:MovementDirection }
-type Event_Birth = { MomID:uint32; DadID:uint32 }
-type Event_ComponentAdded_Controller = { EntityID:uint32; Component:Component }
-type Event_ComponentAdded_Eating = { EntityID:uint32; Component:Component }
-type Event_ComponentAdded_PlantGrowth = { EntityID:uint32; Component:Component }
+type Event_ActionEat = { EntityID:EntityID }
+type Event_ActionMate = { EntityID:EntityID }
+type Event_ActionMovement = { EntityID:EntityID; Direction:MovementDirection }
+type Event_Birth = { MomID:EntityID; DadID:EntityID }
+type Event_ComponentAdded_Controller = { EntityID:EntityID; Component:Component }
+type Event_ComponentAdded_Eating = { EntityID:EntityID; Component:Component }
+type Event_ComponentAdded_PlantGrowth = { EntityID:EntityID; Component:Component }
 type Event_CreateEntity = { Components:Component[] }
-type Event_Eaten = { EaterID:uint32; EateeID:uint32; Quantity:int }
-type Event_FoodAllEaten = { EaterID:uint32; EateeID:uint32 }
-type Event_KillAllEaten = { EaterID:uint32; EateeID:uint32 }
-type Event_LocationChanged = { EntityID:uint32; Form:Component }
-type Event_Metabolize = { EntityID:uint32 }
-type Event_Movement = { EntityID:uint32; Direction:MovementDirection }
-type Event_PlantGrowth = { EntityID:uint32 }
-type Event_PlantReproduce = { EntityID:uint32 }
+type Event_Eaten = { EaterID:EntityID; EateeID:EntityID; Quantity:int }
+type Event_FoodAllEaten = { EaterID:EntityID; EateeID:EntityID }
+type Event_KillAllEaten = { EaterID:EntityID; EateeID:EntityID }
+type Event_LocationChanged = { EntityID:EntityID; Form:FormComponent }
+type Event_Metabolize = { EntityID:EntityID }
+type Event_Movement = { EntityID:EntityID; Direction:MovementDirection }
+type Event_PlantGrowth = { EntityID:EntityID }
+type Event_PlantReproduce = { EntityID:EntityID }
 type Event_ScheduleEvent = { Frequency:uint32; Schedule:ScheduleType }
-type Event_Starving = { EntityID:uint32 }
+type Event_Starving = { EntityID:EntityID }
 
 
 type GameEventTypes =
@@ -201,7 +203,9 @@ let EntityID (ge:GameEventTypes) =
     | ScheduleEvent (_,ge) -> ge.EntityID
     | Starving d -> d.EntityID
 
+let ToEvent_KillAllEaten (Kill_AllEaten ge) = ge
 
+//let ToController (Controller c) = c
 //let x = Action_Eat { EntityID = 0u }
 //let y = Terrain { ID = 0u; EntityID = 1u; Terrain = Dirt }
 

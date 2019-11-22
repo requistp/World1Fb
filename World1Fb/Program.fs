@@ -22,6 +22,7 @@ let startingEntities =
     MakeMap g.Entities
     |> Array.append (MakeGrasses g.Entities 5)
     |> Array.append (MakeRabbits g.Entities 3)
+    //MakeRabbits g.Entities 1
 
 let systems =
     [|

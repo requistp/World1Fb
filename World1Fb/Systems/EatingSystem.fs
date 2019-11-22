@@ -1,4 +1,5 @@
 ﻿module EatingSystem
+open CommonGenericFunctions
 open Component
 open ComponentEnums
 open CalendarTimings
@@ -15,18 +16,18 @@ let FoodsAtLocation (enm:EntityManager) (eat:EatingComponent) =
     eat.EntityID
     |> EntityExt.GetLocation enm None
     |> EntityExt.GetEntitiesAtLocationWithComponent enm None FoodComponentID (Some eat.EntityID)
+    |> Array.filter (fun (Food f) -> eat.CanEat f.FoodType && f.Quantity > 0) // Types I can eat & Food remaining
     |> Array.Parallel.map ToFood
-    |> Array.filter (fun f -> eat.CanEat f.FoodType && f.Quantity > 0) // Types I can eat & Food remaining
 
-let EatActionEnabled (enm:EntityManager) (entityID:uint32) =
-    let eat = ToEating (entityID|>enm.GetComponentByType None EatingComponentID).[0]
+let EatActionEnabled (enm:EntityManager) (entityID:EntityID) =
+    let (Eating eat) = enm.GetComponent None EatingComponentID entityID
     (eat.QuantityRemaining > 0) && ((FoodsAtLocation enm eat).Length > 0)
 
 type EatingSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
     
     member private me.onEat round (ge:GameEventTypes) =
-        let eat = ToEating (ge.EntityID|>enm.GetComponentByType None EatingComponentID).[0]
+        let (Eating eat) = ge.EntityID|>enm.GetComponent None EatingComponentID
 
         let selectFood =
             let foods =
@@ -44,7 +45,7 @@ type EatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
             | _ -> 
                 enm.UpdateComponent round (Eating (eat.Update (Some (eat.Quantity+quantity)) (Some (eat.Calories+calories))))
                 evm.RaiseEvent (Eaten { EaterID = eat.EntityID; EateeID = f.EntityID; Quantity = quantity })
-                Ok (Some (sprintf "EateeID: %i. Quantity: +%i=%i. Calories: +%i=%i" (f.EntityID) quantity (eat.Quantity+quantity) calories (eat.Calories+calories)))
+                Ok (Some (sprintf "EateeID: %i. Quantity: +%i=%i. Calories: +%i=%i" (f.EntityID.ToUint32) quantity (eat.Quantity+quantity) calories (eat.Calories+calories)))
         
         match selectFood with
         | None -> Error "No food at location"
@@ -53,17 +54,16 @@ type EatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
     member private me.onComponentAdded round (ge:GameEventTypes) =
         let e = ge.ToComponentAddedEating
         evm.AddToSchedule (ScheduleEvent ({ Schedule=RepeatIndefinitely; Frequency=uint32 MetabolismFrequency }, Metabolize { EntityID=e.EntityID }))
-        Ok (Some (sprintf "Queued Metabolize to schedule. EntityID:%i" e.EntityID))
+        Ok (Some (sprintf "Queued Metabolize to schedule. EntityID:%i" e.EntityID.ToUint32))
         
     member private me.onMetabolize round (ge:GameEventTypes) =
-        let e = ge.ToMetabolize
-        let ed = ToEating (enm.GetComponentByType None EatingComponentID e.EntityID).[0]
-        let newC = ed.Calories - ed.CaloriesPerMetabolize
-        let newQ = ed.Quantity - ed.QuantityPerMetabolize
+        let (Eating eat) = enm.GetComponent None EatingComponentID ge.EntityID
+        let newC = eat.Calories - eat.CaloriesPerMetabolize
+        let newQ = eat.Quantity - eat.QuantityPerMetabolize
         let starving = newC < 0
-        let result = sprintf "Quantity:-%i=%i. Calories:-%i=%i. Starving:%b" ed.QuantityPerMetabolize newQ ed.CaloriesPerMetabolize newC starving
-        if starving then evm.RaiseEvent (Starving { EntityID=e.EntityID })
-        enm.UpdateComponent round (Eating (ed.Update (Some newQ) (Some newC))) 
+        let result = sprintf "Quantity:-%i=%i. Calories:-%i=%i. Starving:%b" eat.QuantityPerMetabolize newQ eat.CaloriesPerMetabolize newC starving
+        if starving then evm.RaiseEvent (Starving { EntityID = eat.EntityID })
+        enm.UpdateComponent round (Eating (eat.Update (Some newQ) (Some newC))) 
         Ok (Some result)
 
     override me.Initialize = 

@@ -19,24 +19,18 @@ type VisionSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
         let forms = 
             visionMap 
             |> Array.fold (fun (m:Map<LocationDataInt,FormComponent[]>) location -> 
-                let cts = 
-                    location
-                    |> EntityExt.GetEntitiesAtLocationWithComponent enm None FormComponentID None
-                    |> Array.Parallel.map ToForm
-                m.Add(location,cts)
+                m.Add(location,enm.GetFormsAtLocation None location)
                 ) Map.empty
         ComputeVisibility form.Location visionMap forms vision.Range
 
     member private me.onLocationChanged round (ge:GameEventTypes) =
-        let lc = ge.ToLocationChanged
-        match lc.EntityID |> EntityExt.TryGetComponent enm None VisionComponentID with
+        let (LocationChanged lc) = ge
+        match EntityExt.TryGetComponent enm None VisionComponentID lc.EntityID with
         | None -> Ok (Some "No vision Component")
-        | Some v ->
-            let vision = v.ToVision
-            let form = lc.Form.ToForm
-            let visionMap = LocationsWithinRange2D form.Location vision.RangeTemplate
-            let viewableMap = handleFOV form vision visionMap
-            enm.UpdateComponent round (Vision (v.ToVision.Update round None (Some viewableMap) (Some visionMap)))
+        | Some (Vision vision) ->
+            let visionMap = LocationsWithinRange2D lc.Form.Location vision.RangeTemplate
+            let viewableMap = handleFOV lc.Form vision visionMap
+            enm.UpdateComponent round (Vision (vision.Update round None (Some viewableMap) (Some visionMap)))
             Ok None
 
     override me.Initialize = 
@@ -47,3 +41,18 @@ type VisionSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
         ()
 
 
+
+
+(*
+let handleFOV (form:FormComponent) (vision:VisionComponent) (visionMap:LocationDataInt[]) =
+    let forms = 
+        visionMap 
+        |> Array.fold (fun (m:Map<LocationDataInt,FormComponent[]>) location -> 
+            let cts = 
+                location
+                |> EntityExt.GetEntitiesAtLocationWithComponent enm None FormComponentID None
+                |> Array.Parallel.map ToForm
+            m.Add(location,cts)
+            ) Map.empty
+    ComputeVisibility form.Location visionMap forms vision.Range
+    *)

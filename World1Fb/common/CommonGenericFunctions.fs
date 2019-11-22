@@ -1,10 +1,26 @@
 ﻿module CommonGenericFunctions
 open System
 
-type ComponentID = uint32
-type ComponentTypeID = byte
-type EntityID = uint32
-type RoundNumber = uint32 
+type ComponentID = 
+    | ComponentID of uint32
+    member me.ToUint32 = 
+        let (ComponentID v) = me
+        v
+type ComponentTypeID = 
+    | ComponentTypeID of byte
+    member me.ToByte = 
+        let (ComponentTypeID v) = me
+        v
+type EntityID = 
+    | EntityID of uint32
+    member me.ToUint32 = 
+        let (EntityID v) = me
+        v
+type RoundNumber =  
+    | RoundNumber of uint32
+    member me.ToUint32 = 
+        let (RoundNumber v) = me
+        v
 
 let rec searchArrayDataForRound (round:RoundNumber option) (arrayToSearch:(RoundNumber*'a option)[]) =
     match arrayToSearch with

@@ -1,5 +1,6 @@
 ﻿module WorldMapRenderer
 open CommonGenericFunctions
+open Component
 open ComponentEnums
 open FormComponent
 open EntityManager
@@ -26,6 +27,8 @@ type WorldMapRenderer() =
         Console.CursorVisible <- false
         Console.Title <- "World Map"
         
+        let allForms = enm.GetLocationMap round
+
         let rangeY = 
             [|(snd _windowLocation)..(snd _windowLocation + viewSizeY - 1)|]
 
@@ -42,10 +45,8 @@ type WorldMapRenderer() =
                         | Some f -> f
                         | None ->
                             (fds |> Array.sortBy (fun c -> (EntityExt.TryGetComponent enm round TerrainComponentID c.EntityID).IsSome)).[0]
-                let fs = 
-                    { X = x; Y = y; Z = 0 }
-                    |> EntityExt.GetEntitiesAtLocationWithComponent enm round FormComponentID None
-                    |> Array.map (fun c -> c.ToForm)
+                
+                let fs = allForms.Item({ X = x; Y = y; Z = 0 })
 
                 match fs.Length with
                 | 0 -> ()

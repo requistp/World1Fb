@@ -41,7 +41,7 @@ type Game(wmrAll:EntityManager->RoundNumber option->unit, wmrEntity:EntityManage
         let handleEndOfRound loops = 
             [|1..loops|] |> Array.iter (fun x -> 
                 while (not systemMan.AllSystemsIdle || events.PendingUpdates) do 
-                    if (round > 0u && x > 1) then gameLog.Log round (sprintf "%-3s | %-20s -> %-30s #%7i : %s" "xld" "End of round" "Cancelled pending more events" x "Events") 
+                    if (round > RoundNumber(0u) && x > 1) then gameLog.Log round (sprintf "%-3s | %-20s -> %-30s #%7i : %s" "xld" "End of round" "Cancelled pending more events" x "Events") 
                     System.Threading.Thread.Sleep 1)
             gameLog.WriteLog
 
@@ -50,10 +50,10 @@ type Game(wmrAll:EntityManager->RoundNumber option->unit, wmrEntity:EntityManage
         handleEndOfRound 5
 
         // Uncomment for world-view: 
-        wmrAll entities None; printfn "Round#%i" round
+        wmrAll entities None; printfn "Round#%i" round.ToUint32
             
     member me.Start (ss:AbstractSystem[]) (initialForms:Component[][]) (filename:string) = 
-        let mutable _round = 0u
+        let mutable _round = RoundNumber(0u)
 
         systemMan.Init ss
 
@@ -66,9 +66,9 @@ type Game(wmrAll:EntityManager->RoundNumber option->unit, wmrEntity:EntityManage
             System.Threading.Thread.Sleep 1000
         
         // Uncomment for world-view: 
-        wmrAll entities None; printfn "Round#%i" _round
+        wmrAll entities None; printfn "Round#%i" _round.ToUint32
 
-        while  (ControllerSystem.GetInputForAllEntities entities gameLog _round wmrEntity) && (_round<500u) do
+        while  (ControllerSystem.GetInputForAllEntities entities gameLog _round wmrEntity) && (_round.ToUint32<500u) do
             me.gameLoop _round
             _round <- agentForRound.Increment
             

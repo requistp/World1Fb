@@ -1,9 +1,10 @@
 ﻿module agent_GameLog
+open CommonGenericFunctions
 open Logging
 
 
 type private agentLogMsg =
-| Log of uint32 * string // Typical Format: "%-3s | %-20s -> %-30s #%7i%s"
+| Log of RoundNumber * string // Typical Format: "%-3s | %-20s -> %-30s #%7i%s"
 | SetLogging of bool
 | WriteLog
 
@@ -11,7 +12,7 @@ type private agentLogMsg =
 type agent_GameLog() =
 
     let agent =
-        let mutable _log = Array.empty<uint32*string>
+        let mutable _log = Array.empty<RoundNumber*string>
         let mutable _logging = true
         MailboxProcessor<agentLogMsg>.Start(
             fun inbox ->
@@ -26,7 +27,7 @@ type agent_GameLog() =
                             _logging <- b
                         | WriteLog ->
                             if (_logging) then 
-                                _log |> Array.iter (fun (r,s) -> writeLog (sprintf "%7i | %s" r s))
+                                _log |> Array.iter (fun (r,s) -> writeLog (sprintf "%7i | %s" r.ToUint32 s))
                                 _log <- Array.empty
                 }
             )

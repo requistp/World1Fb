@@ -13,11 +13,11 @@ let private EligibleFemales (enm:EntityManager) (mating:MatingComponent) round =
     mating.EntityID 
     |> EntityExt.GetLocation enm None
     |> EntityExt.GetEntitiesAtLocationWithComponent enm None MatingComponentID (Some mating.EntityID)
-    |> Array.Parallel.map (fun c -> c.ToMating)
+    |> Array.Parallel.map ToMating
     |> Array.filter (fun m -> m.Species = mating.Species && m.MatingStatus = Female && m.CanMate round) // Same Species & Non-Pregnant Females & Can Retry
 
-let MateActionEnabled (enm:EntityManager) (entityID:uint32) (round:uint32) =
-    let m = ToMating (entityID|>enm.GetComponentByType None MatingComponentID).[0]
+let MateActionEnabled (enm:EntityManager) (entityID:EntityID) (round:RoundNumber) =
+    let (Mating m) = enm.GetComponent None MatingComponentID entityID
     match m.MatingStatus with
     | Male when m.CanMate round -> 
         (EligibleFemales enm m round).Length > 0
@@ -33,7 +33,7 @@ type MatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
                 Mating { d with MatingStatus = if random.Next(2) = 0 then Male else Female }
             | Form d -> 
                 Form { d with Born = round; Location = d.Location.Add { X=0; Y=0; Z=0 }} 
-            | _ -> c    
+            | _ -> c
         let newcts = 
             momID
             |> EntityExt.CopyEntity enm
@@ -42,7 +42,7 @@ type MatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
         Ok (Some (sprintf "Born:%i" newcts.[0].EntityID))
 
     member me.onActionMate round (ge:GameEventTypes) =
-        let mc = ToMating (ge.EntityID|>enm.GetComponentByType None MatingComponentID).[0]
+        let (Mating mc) = enm.GetComponent None MatingComponentID ge.EntityID
         
         let selectFemale = 
             let mates = 
@@ -76,8 +76,8 @@ type MatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
         |> Result.bind tryMating
 
     member me.onBirth round (ge:GameEventTypes) =
-        let e = ge.ToBirth
-        let m = ToMating (e.MomID|>enm.GetComponentByType None MatingComponentID).[0]
+        let (Birth e) = ge
+        let (Mating m) = enm.GetComponent None MatingComponentID e.MomID
         enm.UpdateComponent round (Mating (m.Update None (Some Female) (Some (round + m.Species.MaxMatingFrequency)) None)) // Change Mom to Non-Pregnant Female and add some extra time to before she can mate again
         makeBaby e.MomID round
 
