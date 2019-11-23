@@ -15,12 +15,12 @@ open EntityManager
 type PlantGrowthSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
     inherit AbstractSystem(description,isActive)
   
-    member private me.onComponentAdded round (ComponentAdded_PlantGrowth pgc:GameEventTypes) =
+    member private me.onComponentAdded round (ComponentAdded_PlantGrowth pgc:GameEventData) =
         if pgc.RegrowRate > 0.0 then evm.AddToSchedule (ScheduleEvent (PlantGrowthFrequency, RepeatIndefinitely, PlantRegrowth pgc))
         if pgc.ReproductionRate > 0.0 then evm.AddToSchedule (ScheduleEvent (PlantReproductionFrequency, RepeatIndefinitely, PlantReproduce pgc))
         Ok (Some (sprintf "Queued Regrow to Schedule:%b. Queued Repopulate to Schedule:%b" (pgc.RegrowRate > 0.0) (pgc.ReproductionRate > 0.0)))
   
-    member private me.onReproduce round (PlantReproduce pgc:GameEventTypes) =
+    member private me.onReproduce round (PlantReproduce pgc:GameEventData) =
         let makePlant (l:LocationDataInt) = 
             let adjustComponents (c:Component) =
                 match c with
@@ -34,7 +34,7 @@ type PlantGrowthSystem(description:string, isActive:bool, enm:EntityManager, evm
                 |> EntityExt.CopyEntity enm round
                 |> Array.Parallel.map adjustComponents
             evm.RaiseEvent (CreateEntity newcts)
-            Ok (Some (sprintf "New plant:%i. Location:%s" (newcts.[0].EntityID).ToUint32 (l.ToString())))
+            Ok (Some (sprintf "New plant:%i. Location:%s" (GetComponentEntityID newcts.[0]).ToUint32 (l.ToString())))
 
         let tryMakeNewPlant = 
             let r = random.NextDouble()
@@ -46,13 +46,13 @@ type PlantGrowthSystem(description:string, isActive:bool, enm:EntityManager, evm
                 | false -> Error (sprintf "Failed: location not on map:%s" (newLocation.ToString()))
                 | true -> 
                     let eids = enm.GetEntityIDsAtLocation None newLocation
-                    match (EntityExt.GetComponentForEntities enm None PlantGrowthComponentID eids).Length with 
+                    match (EntityExt.GetComponentForEntities enm None PlantGrowthComponent eids).Length with 
                     | x when x > 0 -> Error (sprintf "Failed: plant exists at location:%s" (newLocation.ToString()))
                     | _ -> 
-                        match pgc.GrowsInTerrain|>Array.contains (EntityExt.GetComponentForEntities enm None TerrainComponentID eids).[0].ToTerrain.Terrain with
+                        match pgc.GrowsInTerrain|>Array.contains (ToTerrain (EntityExt.GetComponentForEntities enm None TerrainComponent eids).[0]).Terrain with
                         | false -> Error "Failed: terrain is not suitable"
                         | true -> 
-                            match (EntityExt.TryGetComponent enm None FoodComponentID pgc.EntityID) with
+                            match (EntityExt.TryGetComponent enm None FoodComponent pgc.EntityID) with
                             | None -> Ok newLocation
                             | Some (Food fd) -> 
                                 let pct = float fd.Quantity / float fd.QuantityMax
@@ -64,8 +64,8 @@ type PlantGrowthSystem(description:string, isActive:bool, enm:EntityManager, evm
         | Ok l -> makePlant l 
 
     override me.Initialize = 
-        evm.RegisterListener me.Description Event_ComponentAdded_PlantGrowth_ID (me.TrackTask me.onComponentAdded)
-        evm.RegisterListener me.Description Event_PlantReproduce_ID             (me.TrackTask me.onReproduce)
+        evm.RegisterListener me.Description Event_ComponentAdded_PlantGrowth (me.TrackTask me.onComponentAdded)
+        evm.RegisterListener me.Description Event_PlantReproduce             (me.TrackTask me.onReproduce)
         base.SetToInitialized
 
     override me.Update round = 

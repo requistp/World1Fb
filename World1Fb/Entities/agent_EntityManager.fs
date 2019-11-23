@@ -39,12 +39,13 @@ type agent_EntityManager(useHistory:bool, compMan:agent_Components) =
                 async { 
                     while true do
                         let! msg = inbox.Receive()
-                        let toIDs (cts:Component[]) = cts |> Array.map (fun c -> c.ID)
+                        let toIDs (cts:Component[]) = cts |> Array.map GetComponentID
                         let add (cts:Component[]) =
+                            let eid = GetComponentEntityID cts.[0]
                             _map <-
-                                match _map.ContainsKey cts.[0].EntityID with
-                                | true -> _map.Remove(cts.[0].EntityID).Add(cts.[0].EntityID,toIDs cts)
-                                | false -> _map.Add(cts.[0].EntityID,toIDs cts)
+                                match _map.ContainsKey eid with
+                                | true -> _map.Remove(eid).Add(eid,toIDs cts)
+                                | false -> _map.Add(eid,toIDs cts)
                         let get eid =
                             match _map.ContainsKey eid with
                             | false -> Array.empty
@@ -68,9 +69,9 @@ type agent_EntityManager(useHistory:bool, compMan:agent_Components) =
                 async { 
                     while true do
                         let! msg = inbox.Receive()
-                        let ctsToIDs (cts:Component[]) = cts |> Array.map (fun c -> c.ID)
+                        let ctsToIDs (cts:Component[]) = cts |> Array.map GetComponentID
                         let add round (cts:Component[]) = 
-                            let eid = cts.[0].EntityID
+                            let eid = GetComponentEntityID cts.[0]
                             _history <- 
                                 match _history.ContainsKey eid with
                                 | false -> _history.Add(eid,[|round,Some (ctsToIDs cts)|])
@@ -79,7 +80,7 @@ type agent_EntityManager(useHistory:bool, compMan:agent_Components) =
                                     let newArray = 
                                         match (fst h.[0] = round) with
                                         | false -> Array.append [|round,Some (ctsToIDs cts)|] t
-                                        | true -> Array.append [|round,Some (ctsToIDs cts)|] (_history.Item cts.[0].EntityID)
+                                        | true -> Array.append [|round,Some (ctsToIDs cts)|] (_history.Item(GetComponentEntityID cts.[0]))
                                     _history.Remove(eid).Add(eid,newArray)
                         match msg with
                         | History_Add (round,cts) -> add round cts

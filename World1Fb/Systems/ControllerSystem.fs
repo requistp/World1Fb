@@ -46,7 +46,7 @@ let GetInputForAllEntities (enm:EntityManager) (log:agent_GameLog) (round:RoundN
             | _ -> Idle // Should raise an error
         if (newAction <> controller.CurrentAction) then
             enm.UpdateComponent round (Controller (controller.Update None (Some newAction) None None))
-            log.Log round (sprintf "%-3s | %-20s -> %-30s #%7i : %A" "Ok" "Controller System" "Current action:" controller.EntityID.ToUint32 newAction)
+            log.Log round (sprintf "%-3s | %-20s -> %-30s #%7i : %A" "Ok" "Controller System" "Current action" controller.EntityID.ToUint32 newAction)
 
     let getKeyboardInputForEntity (controller:ControllerComponent) =
         let newAction,cont =
@@ -59,7 +59,7 @@ let GetInputForAllEntities (enm:EntityManager) (log:agent_GameLog) (round:RoundN
         | true -> 
             if (newAction <> controller.CurrentAction) then
                 enm.UpdateComponent round (Controller (controller.Update None (Some newAction) None None))
-                log.Log round (sprintf "%-3s | %-20s -> %-30s #%7i.%i : %A" "Ok" "Controller System" "Current action:" controller.EntityID.ToUint32 controller.ID.ToUint32 newAction)
+                log.Log round (sprintf "%-3s | %-20s -> %-30s #%7i.%i : %A" "Ok" "Controller System" "Current action" controller.EntityID.ToUint32 controller.ID.ToUint32 newAction)
             true
 
     let handleSplitInputTypes (keyboard:ControllerComponent[],ai:ControllerComponent[]) =
@@ -72,7 +72,7 @@ let GetInputForAllEntities (enm:EntityManager) (log:agent_GameLog) (round:RoundN
         |> Array.map getKeyboardInputForEntity
         |> Array.forall (fun b -> b)
 
-    ControllerComponentID
+    ControllerComponent
     |> enm.GetComponentsOfType None
     |> Array.Parallel.map (fun (Controller c) -> setCurrentActions c)
     |> Array.Parallel.partition (fun c -> c.ControllerType = Keyboard)
@@ -87,18 +87,17 @@ type ControllerSystem(description:string, isActive:bool, enm:EntityManager, evm:
         | _ -> 
             evm.RaiseEvent (
                 match controller.CurrentAction with 
-                | Eat  -> Action_Eat (ToEating (enm.GetComponent None EatingComponentID controller.EntityID))
-                | Mate -> Action_Mate (ToMating (enm.GetComponent None MatingComponentID controller.EntityID))
-                | Move_North -> Action_Movement ((ToForm (enm.GetComponent None FormComponentID controller.EntityID)), North)
-                | Move_East  -> Action_Movement ((ToForm (enm.GetComponent None FormComponentID controller.EntityID)), East)
-                | Move_South -> Action_Movement ((ToForm (enm.GetComponent None FormComponentID controller.EntityID)), South)
-                | Move_West  -> Action_Movement ((ToForm (enm.GetComponent None FormComponentID controller.EntityID)), West)
+                | Eat  -> Action_Eat (ToEating (enm.GetComponent None EatingComponent controller.EntityID))
+                | Mate -> Action_Mate (ToMating (enm.GetComponent None MatingComponent controller.EntityID))
+                | Move_North -> Action_Movement ((ToForm (enm.GetComponent None FormComponent controller.EntityID)), North)
+                | Move_East  -> Action_Movement ((ToForm (enm.GetComponent None FormComponent controller.EntityID)), East)
+                | Move_South -> Action_Movement ((ToForm (enm.GetComponent None FormComponent controller.EntityID)), South)
+                | Move_West  -> Action_Movement ((ToForm (enm.GetComponent None FormComponent controller.EntityID)), West)
                 )
 
-    member private me.onSetPotentialActions (round:RoundNumber) (ge:GameEventTypes) =
-        let (ComponentAdded_Controller c) = ge //.ToComponentAddedController.Component
+    member private me.onSetPotentialActions (round:RoundNumber) (ComponentAdded_Controller c:GameEventData) =
         let potential = 
-            let ects = EntityExt.GetComponentTypeIDs enm None c.EntityID
+            let ects = EntityExt.GetComponentTypes enm None c.EntityID
             ActionTypes.AsArray 
             |> Array.Parallel.choose (fun a -> if a.RequiredComponents |> Array.forall (fun ct -> ects |> Array.contains ct) then Some a else None)
         
@@ -110,12 +109,12 @@ type ControllerSystem(description:string, isActive:bool, enm:EntityManager, evm:
             Ok (Some (sprintf "Actions:%A. Current:%A" potential current))
 
     member private me.handleAllActions =
-        ControllerComponentID
+        ControllerComponent
         |> enm.GetComponentsOfType None
         |> Array.Parallel.iter handleAction
 
     override me.Initialize = 
-        evm.RegisterListener me.Description Event_ComponentAdded_Controller_ID (me.TrackTask me.onSetPotentialActions)
+        evm.RegisterListener me.Description Event_ComponentAdded_Controller (me.TrackTask me.onSetPotentialActions)
         // Add Component
         // Remove Component
         base.SetToInitialized

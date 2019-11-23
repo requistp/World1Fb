@@ -1,7 +1,7 @@
 ﻿module LoadAndSave
 open CommonGenericFunctions
 open Component
-open EntityManager
+open ComponentEnums
 open EventTypes
 open LocationTypes
 open MBrace.FsPickler
@@ -13,13 +13,13 @@ type SaveGameData =
         Entities : 
             (Map<ComponentID,Component> * Map<ComponentID,(RoundNumber*Component option)[]>)
             *
-            (Map<ComponentTypeID,ComponentID[]> * Map<ComponentTypeID,(RoundNumber*ComponentID[] option)[]>)
+            (Map<ComponentType,ComponentID[]> * Map<ComponentType,(RoundNumber*ComponentID[] option)[]>)
             *
             (Map<EntityID,ComponentID[]> * Map<EntityID,(RoundNumber*ComponentID[] option)[]>)
             *
             (Map<LocationDataInt,ComponentID[]> * Map<LocationDataInt,(RoundNumber*ComponentID[] option)[]>)
         Round : RoundNumber
-        ScheduledEvents : Map<RoundNumber,GameEventTypes[]>
+        ScheduledEvents : Map<RoundNumber,GameEventData[]>
     }
     
 type SaveGameFormats =

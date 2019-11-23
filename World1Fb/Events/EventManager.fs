@@ -5,21 +5,21 @@ open CommonGenericFunctions
 open EntityManager
 open EventTypes
 
-type GameEventCallback = RoundNumber -> GameEventTypes -> Result<string option,string>
+type GameEventCallback = RoundNumber -> GameEventData -> Result<string option,string>
 
 type private agent_ScheduleMsg =
-    | AddToSchedule of RoundNumber * GameEventTypes
+    | AddToSchedule of RoundNumber * GameEventData
     | ExecuteScheduled of RoundNumber 
-    | Init of Map<RoundNumber,GameEventTypes[]>
-    | Get  of AsyncReplyChannel<Map<RoundNumber,GameEventTypes[]> >
+    | Init of Map<RoundNumber,GameEventData[]>
+    | Get  of AsyncReplyChannel<Map<RoundNumber,GameEventData[]> >
 
 type private agentListenersMsg =
-    | Execute of RoundNumber * gameEvent:GameEventTypes 
-    | Register of listener:string * gameEventID:byte * GameEventCallback
+    | Execute of RoundNumber * GameEventData 
+    | Register of listener:string * GameEventTypes * GameEventCallback
 
 type EventManager(enm:EntityManager, log:agent_GameLog, getRound:unit->RoundNumber) =
     let agentListeners =
-        let mutable _listeners = Map.empty:Map<byte,(string*GameEventCallback)[]>
+        let mutable _listeners = Map.empty:Map<GameEventTypes,(string*GameEventCallback)[]>
         MailboxProcessor<agentListenersMsg>.Start(
             fun inbox ->
                 async { 
@@ -27,37 +27,37 @@ type EventManager(enm:EntityManager, log:agent_GameLog, getRound:unit->RoundNumb
                         let! msg = inbox.Receive()
                         match msg with 
                         | Execute (round,gameEvent) ->
-                            match _listeners.ContainsKey gameEvent.GameEventID with
+                            match _listeners.ContainsKey(GetGameEvent gameEvent) with
                             | false -> 
-                                log.Log round (sprintf "%-3s | %-20s -> %-30s #%7i" " * " "<none>" (gameEvent.GameEventType()) gameEvent.EntityID.ToUint32)
+                                log.Log round (sprintf "%-3s | %-20s -> %-30s #%7i" " * " "<none>" ((GetGameEvent gameEvent).ToString()) (GetGameEvent_EntityID gameEvent).ToUint32)
                             | true ->
-                                _listeners.Item gameEvent.GameEventID
+                                _listeners.Item(GetGameEvent gameEvent)
                                 |> Array.Parallel.iter (fun (listener,callback) -> 
                                     let result = callback round gameEvent
                                     let res_ToStrings =
                                         match result with
                                         | Error x -> ("Err", " : " + x)
                                         | Ok s -> ("Ok", if s.IsSome then " : " + s.Value else "")
-                                    log.Log round (sprintf "%-3s | %-20s -> %-30s #%7i%s" (fst res_ToStrings) listener (gameEvent.GameEventType()) gameEvent.EntityID.ToUint32 (snd res_ToStrings)))
+                                    log.Log round (sprintf "%-3s | %-20s -> %-30s #%7i%s" (fst res_ToStrings) listener ((GetGameEvent gameEvent).ToString()) (GetGameEvent_EntityID gameEvent).ToUint32 (snd res_ToStrings)))
                         | Register (listener,eventType,callback) -> 
                             _listeners <- Map_AppendValueToArrayNonUnique _listeners eventType (listener,callback)
                             log.Log (RoundNumber(0u)) (sprintf "%-3s | %-20s -> %-30s" "Ok " "Registered System" listener)
                 }
             )
     let agentSchedule =
-        let mutable _schedule = Map.empty<RoundNumber,GameEventTypes[]>
+        let mutable _schedule = Map.empty<RoundNumber,GameEventData[]>
         MailboxProcessor<agent_ScheduleMsg>.Start(
             fun inbox ->
                 async { 
                     while true do
                         let! msg = inbox.Receive()
-                        let addToSchedule (round:RoundNumber) (ScheduleEvent (frequency,scheduleType,ge):GameEventTypes) isNew =
+                        let addToSchedule (round:RoundNumber) (ScheduleEvent (frequency,scheduleType,ge):GameEventData) isNew =
                             let interval = 
                                 match isNew && scheduleType = RepeatIndefinitely with
                                 | true -> TimingOffset frequency
                                 | false -> frequency
                             _schedule <- Map_AppendValueToArrayNonUnique _schedule (round+interval) ge
-                            log.Log round (sprintf "%-3s | %-20s -> %-30s #%7i : Frequency:%i" "-->" "Scheduled Event" (ge.GameEventType()) ge.EntityID.ToUint32 frequency.ToUint32)
+                            log.Log round (sprintf "%-3s | %-20s -> %-30s #%7i : Frequency:%i" "-->" "Scheduled Event" ((GetGameEvent ge).ToString()) (GetGameEvent_EntityID ge).ToUint32 frequency.ToUint32)
                         match msg with
                         | AddToSchedule (round,se) -> 
                             addToSchedule round se true

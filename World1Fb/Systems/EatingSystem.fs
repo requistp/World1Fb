@@ -15,18 +15,18 @@ open EntityManager
 let FoodsAtLocation (enm:EntityManager) (eat:EatingComponent) =
     eat.EntityID
     |> EntityExt.GetLocation enm None
-    |> EntityExt.GetEntitiesAtLocationWithComponent enm None FoodComponentID (Some eat.EntityID)
+    |> EntityExt.GetEntitiesAtLocationWithComponent enm None FoodComponent (Some eat.EntityID)
     |> Array.filter (fun (Food f) -> eat.CanEat f.FoodType && f.Quantity > 0) // Types I can eat & Food remaining
     |> Array.Parallel.map ToFood
 
 let EatActionEnabled (enm:EntityManager) (entityID:EntityID) =
-    let (Eating eat) = enm.GetComponent None EatingComponentID entityID
+    let (Eating eat) = enm.GetComponent None EatingComponent entityID
     (eat.QuantityRemaining > 0) && ((FoodsAtLocation enm eat).Length > 0)
 
 type EatingSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
     
-    member private me.onEat round (Action_Eat eat:GameEventTypes) =
+    member private me.onEat round (Action_Eat eat:GameEventData) =
         let selectFood =
             let foods =
                 FoodsAtLocation enm eat
@@ -49,11 +49,11 @@ type EatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
         | None -> Error "No food at location"
         | Some foodEaten -> eatFood foodEaten
 
-    member private me.onComponentAdded round (ComponentAdded_Eating eat:GameEventTypes) =
+    member private me.onComponentAdded round (ComponentAdded_Eating eat:GameEventData) =
         evm.AddToSchedule (ScheduleEvent (MetabolismFrequency, RepeatIndefinitely, Metabolize eat))
         Ok (Some (sprintf "Queued Metabolize to schedule. EntityID:%i" eat.EntityID.ToUint32))
         
-    member private me.onMetabolize round (Metabolize eat:GameEventTypes) =
+    member private me.onMetabolize round (Metabolize eat:GameEventData) =
         let newC = eat.Calories - eat.CaloriesPerMetabolize
         let newQ = eat.Quantity - eat.QuantityPerMetabolize
         let starving = newC < 0
@@ -63,9 +63,9 @@ type EatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
         Ok (Some result)
 
     override me.Initialize = 
-        evm.RegisterListener me.Description Event_ActionEat_ID             (me.TrackTask me.onEat)
-        evm.RegisterListener me.Description Event_ComponentAdded_Eating_ID (me.TrackTask me.onComponentAdded)
-        evm.RegisterListener me.Description Event_Metabolize_ID            (me.TrackTask me.onMetabolize)
+        evm.RegisterListener me.Description Event_ActionEat             (me.TrackTask me.onEat)
+        evm.RegisterListener me.Description Event_ComponentAdded_Eating (me.TrackTask me.onComponentAdded)
+        evm.RegisterListener me.Description Event_Metabolize            (me.TrackTask me.onMetabolize)
         base.SetToInitialized
 
     override me.Update round = 

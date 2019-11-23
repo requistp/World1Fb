@@ -41,16 +41,16 @@ type agent_Components(useHistory:bool) =
                         let! msg = inbox.Receive()
                         let add (comp:Component) = 
                             _map <-
-                                match _map.ContainsKey comp.ID with
-                                | false -> _map.Add(comp.ID,comp)
-                                | true -> _map.Remove(comp.ID).Add(comp.ID,comp)
+                                match _map.ContainsKey(GetComponentID comp) with
+                                | false -> _map.Add(GetComponentID comp,comp)
+                                | true -> _map.Remove((GetComponentID comp)).Add((GetComponentID comp),comp)
                         let get cid =
                             match _map.ContainsKey cid with
                             | false -> None
                             | true -> Some (_map.Item cid)
                         let remove (comp:Component) =
-                            if (_map.ContainsKey comp.ID) then
-                                _map <- _map.Remove(comp.ID)
+                            if (_map.ContainsKey(GetComponentID comp)) then
+                                _map <- _map.Remove(GetComponentID comp)
                         match msg with
                         | Add comp -> add comp
                         | AddMany cts -> cts |> Array.iter add
@@ -63,9 +63,9 @@ type agent_Components(useHistory:bool) =
                         | RemoveMany cts -> cts |> Array.iter remove
                         | Update comp ->
                             _map <-
-                                match _map.ContainsKey(comp.ID) with
-                                | false -> _map.Add(comp.ID,comp)
-                                | true -> _map.Remove(comp.ID).Add(comp.ID,comp)
+                                match _map.ContainsKey(GetComponentID comp) with
+                                | false -> _map.Add(GetComponentID comp,comp)
+                                | true -> _map.Remove(GetComponentID comp).Add(GetComponentID comp,comp)
                 }
             )
 
@@ -77,18 +77,18 @@ type agent_Components(useHistory:bool) =
                         let! msg = inbox.Receive()
                         let add round (comp:Component) =
                             _history <- 
-                                match _history.ContainsKey comp.ID with
-                                | false -> _history.Add(comp.ID,[|round,Some comp|])
+                                match _history.ContainsKey(GetComponentID comp) with
+                                | false -> _history.Add(GetComponentID comp,[|round,Some comp|])
                                 | true -> 
-                                    let h,t = _history.Item(comp.ID) |> Array.splitAt 1
+                                    let h,t = _history.Item(GetComponentID comp) |> Array.splitAt 1
                                     let newArray = 
                                         match ((fst h.[0]) = round) with
                                         | false -> Array.append [|round,Some comp|] t
-                                        | true -> Array.append [|round,Some comp|] (_history.Item(comp.ID))
-                                    _history.Remove(comp.ID).Add(comp.ID,newArray)
+                                        | true -> Array.append [|round,Some comp|] (_history.Item(GetComponentID comp))
+                                    _history.Remove(GetComponentID comp).Add(GetComponentID comp,newArray)
                         let remove round (c:Component) =
-                            if (_history.ContainsKey c.ID) then
-                                _history <- _history.Add(c.ID,[|round,None|])
+                            if (_history.ContainsKey(GetComponentID c)) then
+                                _history <- _history.Add(GetComponentID c,[|round,None|])
                         match msg with
                         | History_Add (round,comp) -> add round comp
                         | History_AddMany (round,comps) -> comps |> Array.iter (add round)

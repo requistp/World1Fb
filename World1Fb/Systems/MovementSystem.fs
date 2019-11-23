@@ -11,7 +11,7 @@ open EntityManager
 
 let MovementActionsAllowed (enm:EntityManager) (entityID:EntityID) =
     let mutable _allowed = Array.empty<ActionTypes>
-    let (Component.Movement move) = enm.GetComponent None MovementComponentID entityID
+    let (Component.Movement move) = enm.GetComponent None MovementComponent entityID
     let location = EntityExt.GetLocation enm None entityID
     let testOnMap (direction:MovementDirection) = (direction.AddToLocation location).IsOnMap
     let formImpassableAtLocation (direction:MovementDirection) =
@@ -31,7 +31,7 @@ let MovementActionsAllowed (enm:EntityManager) (entityID:EntityID) =
 type MovementSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
     inherit AbstractSystem(description,isActive)
   
-    member private me.onMovementKeyPressed (round:RoundNumber) (Action_Movement (f,d):GameEventTypes) =
+    member private me.onMovementKeyPressed (round:RoundNumber) (Action_Movement (f,d):GameEventData) =
         let destination = d.AddToLocation f.Location
             
         match not destination.IsOnMap || EntityExt.FormImpassableAtLocation enm None (Some f.EntityID) destination with
@@ -43,7 +43,7 @@ type MovementSystem(description:string, isActive:bool, enm:EntityManager, evm:Ev
             Ok (Some (sprintf "Location %s" (destination.ToString())))
         
     override me.Initialize = 
-        evm.RegisterListener me.Description Event_ActionMovement_ID (me.TrackTask me.onMovementKeyPressed)
+        evm.RegisterListener me.Description Event_ActionMovement (me.TrackTask me.onMovementKeyPressed)
         base.SetToInitialized
 
     override me.Update round = 

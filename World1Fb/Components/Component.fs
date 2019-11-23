@@ -6,7 +6,6 @@ open EatingComponent
 open FoodComponent
 open FormComponent
 open MatingComponent
-open MemoryComponent
 open MovementComponent
 open PlantGrowthComponent
 open TerrainComponent
@@ -23,98 +22,15 @@ type Component =
     | Terrain of TerrainComponent
     | Vision of VisionComponent
 
-    static member GetID (c:Component) =
-        c.ID
-
-    static member GetEntityID (c:Component) =
-        c.EntityID
-
-    member me.ID = 
-        match me with 
-        | Controller d -> d.ID
-        | Eating d -> d.ID
-        | Food d -> d.ID
-        | Form d -> d.ID
-        | Mating d -> d.ID
-        | Movement d -> d.ID
-        | PlantGrowth d -> d.ID
-        | Terrain d -> d.ID
-        | Vision d -> d.ID
-    member me.ComponentTypeID =
-        match me with
-        | Controller _ -> ControllerComponentID
-        | Eating _ -> EatingComponentID
-        | Food _ -> FoodComponentID
-        | Form _ -> FormComponentID
-        | Mating _ -> MatingComponentID
-        | Movement _ -> MovementComponentID
-        | PlantGrowth _ -> PlantGrowthComponentID
-        | Terrain _ -> TerrainComponentID
-        | Vision _ -> VisionComponentID
-    member me.EntityID =
-        match me with
-        | Controller d -> d.EntityID
-        | Eating d -> d.EntityID
-        | Food d -> d.EntityID
-        | Form d -> d.EntityID
-        | Mating d -> d.EntityID
-        | Movement d -> d.EntityID
-        | PlantGrowth d -> d.EntityID
-        | Terrain d -> d.EntityID
-        | Vision d -> d.EntityID
-    member me.ToController = 
-        let (Controller d) = me
-        d
-    member me.ToEating = 
-        let (Eating d) = me
-        d
-    member me.ToFood = 
-        let (Food d) = me
-        d
-    member me.ToForm = 
-        let (Form d) = me
-        d
-    member me.ToMating =
-        let (Mating d) = me
-        d
-    member me.ToMovement = 
-        let (Movement d) = me
-        d
-    member me.ToPlantGrowth = 
-        let (PlantGrowth d) = me
-        d
-    member me.ToTerrain = 
-        let (Terrain d) = me
-        d
-    member me.ToVision = 
-        let (Vision d) = me
-        d
-
-//let xxxEntityID (c:Component) =
-//    match c with
-//    | Controller d -> d.EntityID
-//    | Form d -> d.EntityID
-//    | Component.Movement d -> d.EntityID
-//    | Terrain d -> d.EntityID
-
-let GetComponentTypeID (c:Component) =
-    match c with
-    | Controller _ -> ControllerComponentID
-    | Eating _ -> EatingComponentID
-    | Food _ -> FoodComponentID
-    | Form _ -> FormComponentID
-    | Mating _ -> MatingComponentID
-    | Movement _ -> MovementComponentID
-    | PlantGrowth _ -> PlantGrowthComponentID
-    | Terrain _ -> TerrainComponentID
-    | Vision _ -> VisionComponentID
-
 let ToController (Controller c) = c
 let ToEating (Eating c) = c
 let ToFood (Food c) = c
 let ToForm (Form c) = c
 let ToMating (Mating c) = c
+let ToMovement (Movement c) = c
 let ToPlantGrowth (PlantGrowth c) = c
+let ToTerrain (Terrain c) = c
+let ToVision (Vision c) = c
 
 let Copy (newEID:EntityID) (idGen:unit->ComponentID) (round:RoundNumber) (c:Component) =
     match c with
@@ -127,3 +43,41 @@ let Copy (newEID:EntityID) (idGen:unit->ComponentID) (round:RoundNumber) (c:Comp
     | PlantGrowth d -> PlantGrowth { d with ID = idGen(); EntityID = newEID }
     | Terrain d -> Terrain { d with ID = idGen(); EntityID = newEID }
     | Vision d -> Vision { d with ID = idGen(); EntityID = newEID }
+
+let GetComponentID (c:Component) =
+    match c with 
+    | Controller d -> d.ID
+    | Eating d -> d.ID
+    | Food d -> d.ID
+    | Form d -> d.ID
+    | Mating d -> d.ID
+    | Movement d -> d.ID
+    | PlantGrowth d -> d.ID
+    | Terrain d -> d.ID
+    | Vision d -> d.ID
+
+let GetComponentType (c:Component) =
+    match c with
+    | Controller _ -> ControllerComponent
+    | Eating _ -> EatingComponent
+    | Food _ -> FoodComponent
+    | Form _ -> FormComponent
+    | Mating _ -> MatingComponent
+    | Movement _ -> MovementComponent
+    | PlantGrowth _ -> PlantGrowthComponent
+    | Terrain _ -> TerrainComponent
+    | Vision _ -> VisionComponent
+
+let GetComponentEntityID (c:Component) =
+    match c with
+    | Controller d -> d.EntityID
+    | Eating d -> d.EntityID
+    | Food d -> d.EntityID
+    | Form d -> d.EntityID
+    | Mating d -> d.EntityID
+    | Movement d -> d.EntityID
+    | PlantGrowth d -> d.EntityID
+    | Terrain d -> d.EntityID
+    | Vision d -> d.EntityID
+
+

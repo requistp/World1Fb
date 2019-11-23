@@ -2,26 +2,27 @@
 open agent_Components
 open CommonGenericFunctions
 open Component
+open ComponentEnums
 
 
 type private agent_CurrentMsg = 
     | Add of Component
     | AddMany of Component[]
-    | Get of ComponentTypeID * AsyncReplyChannel<ComponentID[]>
-    | GetMap of AsyncReplyChannel<Map<ComponentTypeID,ComponentID[]> >
-    | Init of Map<ComponentTypeID,ComponentID[]>
+    | Get of ComponentType * AsyncReplyChannel<ComponentID[]>
+    | GetMap of AsyncReplyChannel<Map<ComponentType,ComponentID[]> >
+    | Init of Map<ComponentType,ComponentID[]>
     | Remove of Component
     | RemoveMany of Component[]
         
 type private agent_HistoryMsg = 
     | History_Add of RoundNumber * Component
     | History_AddMany of RoundNumber * Component[]
-    | History_Init of Map<ComponentTypeID,(RoundNumber*ComponentID[] option)[]>
+    | History_Init of Map<ComponentType,(RoundNumber*ComponentID[] option)[]>
     | History_Remove of RoundNumber * Component
     | History_RemoveMany of RoundNumber * Component[]
         
 type agent_ComponentTypes(useHistory:bool, compMan:agent_Components) = 
-    let mutable _history = Map.empty<ComponentTypeID,(RoundNumber*ComponentID[] option)[]>
+    let mutable _history = Map.empty<ComponentType,(RoundNumber*ComponentID[] option)[]>
 
     let getHistory round ctid = 
         match (_history.ContainsKey ctid) with
@@ -32,7 +33,7 @@ type agent_ComponentTypes(useHistory:bool, compMan:agent_Components) =
             | Some a -> a
 
     let agent_Current =
-        let mutable _map = Map.empty<ComponentTypeID,ComponentID[]>
+        let mutable _map = Map.empty<ComponentType,ComponentID[]>
         MailboxProcessor<agent_CurrentMsg>.Start(
             fun inbox ->
                 async { 
@@ -40,15 +41,15 @@ type agent_ComponentTypes(useHistory:bool, compMan:agent_Components) =
                         let! msg = inbox.Receive()
                         let add (comp:Component) = 
                             _map <- 
-                                match _map.ContainsKey comp.ComponentTypeID with
-                                | false -> _map.Add(comp.ComponentTypeID,[|comp.ID|])
+                                match _map.ContainsKey(GetComponentType comp) with
+                                | false -> _map.Add(GetComponentType comp,[|GetComponentID comp|])
                                 | true -> 
-                                    let others = _map.Item(comp.ComponentTypeID) |> Array.filter (fun c -> c <> comp.ID) // In case component was already here
-                                    _map.Remove(comp.ComponentTypeID).Add(comp.ComponentTypeID,Array.append others [|comp.ID|]) 
+                                    let others = _map.Item(GetComponentType comp) |> Array.filter (fun c -> c <> GetComponentID comp) // In case component was already here
+                                    _map.Remove(GetComponentType comp).Add(GetComponentType comp,Array.append others [|GetComponentID comp|]) 
                         let remove (comp:Component) =
-                            if (_map.ContainsKey comp.ComponentTypeID) then
-                                let others = _map.Item(comp.ComponentTypeID) |> Array.filter (fun c -> c <> comp.ID)
-                                _map <- _map.Remove(comp.ComponentTypeID).Add(comp.ComponentTypeID,others) 
+                            if (_map.ContainsKey(GetComponentType comp)) then
+                                let others = _map.Item(GetComponentType comp) |> Array.filter (fun c -> c <> GetComponentID comp)
+                                _map <- _map.Remove(GetComponentType comp).Add(GetComponentType comp,others) 
                         match msg with
                         | Add comp -> add comp
                         | AddMany cts -> cts |> Array.iter add
@@ -72,25 +73,25 @@ type agent_ComponentTypes(useHistory:bool, compMan:agent_Components) =
                         let! msg = inbox.Receive()
                         let add round (c:Component) = 
                             _history <- 
-                                match _history.ContainsKey c.ComponentTypeID with
-                                | false -> _history.Add(c.ComponentTypeID,[|round,Some [|c.ID|]|])
+                                match _history.ContainsKey(GetComponentType c) with
+                                | false -> _history.Add(GetComponentType c,[|round,Some [|GetComponentID c|]|])
                                 | true -> 
-                                    let h,t = _history.Item(c.ComponentTypeID) |> Array.splitAt 1
+                                    let h,t = _history.Item(GetComponentType c) |> Array.splitAt 1
                                     let newArray = 
                                         match ((fst h.[0]) = round) with
-                                        | false -> Array.append [|round,Some [|c.ID|]|] t
-                                        | true -> Array.append [|round,Some [|c.ID|]|] (_history.Item c.ComponentTypeID)
-                                    _history.Remove(c.ComponentTypeID).Add(c.ComponentTypeID,newArray)
+                                        | false -> Array.append [|round,Some [|GetComponentID c|]|] t
+                                        | true -> Array.append [|round,Some [|GetComponentID c|]|] (_history.Item(GetComponentType c))
+                                    _history.Remove(GetComponentType c).Add(GetComponentType c,newArray)
                         let remove round (c:Component) =
-                            if (_history.ContainsKey c.ComponentTypeID) then
-                                match snd (_history.Item c.ComponentTypeID).[0] with
+                            if (_history.ContainsKey(GetComponentType c)) then
+                                match snd (_history.Item(GetComponentType c)).[0] with
                                 | None -> ()
                                 | Some a ->
-                                    if a |> Array.contains c.ID then
+                                    if a |> Array.contains(GetComponentID c) then
                                         _history <-
-                                            match a |> Array.filter (fun id -> id <> c.ID) with
-                                            | [||] -> _history.Add(c.ComponentTypeID,[|round,None|])
-                                            | n -> _history.Add(c.ComponentTypeID,[|round,Some n|])
+                                            match a |> Array.filter (fun id -> id <> GetComponentID c) with
+                                            | [||] -> _history.Add(GetComponentType c,[|round,None|])
+                                            | n -> _history.Add(GetComponentType c,[|round,Some n|])
                         match msg with
                         | History_Add (round,c) -> add round c
                         | History_AddMany (round,cs) -> cs |> Array.iter (add round)

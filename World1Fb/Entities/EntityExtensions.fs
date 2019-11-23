@@ -15,20 +15,20 @@ module rec EntityExt =
 
     let FormImpassableAtLocation (enm:EntityManager) (round:RoundNumber option) (excludeEID:EntityID option) (location:LocationDataInt) =
         location
-        |> GetEntitiesAtLocationWithComponent enm round FormComponentID excludeEID
+        |> GetEntitiesAtLocationWithComponent enm round FormComponent excludeEID
         |> Array.exists (fun (Form f) -> not f.IsPassable)
 
-    let GetComponentForEntities (enm:EntityManager) (round:RoundNumber option) (ctid:ComponentTypeID) (eids:EntityID[]) = 
+    let GetComponentForEntities (enm:EntityManager) (round:RoundNumber option) (ctid:ComponentType) (eids:EntityID[]) = 
         ctid
         |> enm.GetComponentsOfType round
-        |> Array.filter (fun (c:Component) -> eids |> Array.contains c.EntityID)
+        |> Array.filter (fun (c:Component) -> eids |> Array.contains (GetComponentEntityID c))
 
-    let GetComponentTypeIDs (enm:EntityManager) (round:RoundNumber option) (eid:EntityID) =
+    let GetComponentTypes (enm:EntityManager) (round:RoundNumber option) (eid:EntityID) =
         eid
         |> enm.GetComponents round
-        |> Array.Parallel.map GetComponentTypeID
+        |> Array.Parallel.map GetComponentType
 
-    let GetEntitiesAtLocationWithComponent (enm:EntityManager) (round:RoundNumber option) (ctid:ComponentTypeID) (excludeEID:EntityID option) (location:LocationDataInt) = 
+    let GetEntitiesAtLocationWithComponent (enm:EntityManager) (round:RoundNumber option) (ctid:ComponentType) (excludeEID:EntityID option) (location:LocationDataInt) = 
         location
         |> enm.GetEntityIDsAtLocation round
         |> Array.filter (fun eid -> excludeEID.IsNone || eid <> excludeEID.Value) // Not excluded or not me
@@ -36,10 +36,10 @@ module rec EntityExt =
 
     
     let GetLocation (enm:EntityManager) (round:RoundNumber option) (eid:EntityID) = 
-        (ToForm (eid |> enm.GetComponent round FormComponentID)).Location
+        (ToForm (eid |> enm.GetComponent round FormComponent)).Location
 
-    let TryGetComponent (enm:EntityManager) (round:RoundNumber option) (ctid:ComponentTypeID) (eid:EntityID) : Option<Component> = 
-        match (enm.GetComponents round eid) |> Array.filter (fun c -> c.ComponentTypeID = ctid) with
+    let TryGetComponent (enm:EntityManager) (round:RoundNumber option) (ctid:ComponentType) (eid:EntityID) : Option<Component> = 
+        match (enm.GetComponents round eid) |> Array.filter (fun c -> GetComponentType c = ctid) with
         | [||] -> None
         | cts -> Some cts.[0]
 

@@ -41,10 +41,10 @@ type WorldMapRenderer() =
                     match fds.Length with
                     | 1 -> fds.[0]
                     | _ ->
-                        match fds |> Array.tryFind (fun c -> (EntityExt.TryGetComponent enm round ControllerComponentID c.EntityID).IsSome) with
+                        match fds |> Array.tryFind (fun c -> (EntityExt.TryGetComponent enm round ControllerComponent c.EntityID).IsSome) with
                         | Some f -> f
                         | None ->
-                            (fds |> Array.sortBy (fun c -> (EntityExt.TryGetComponent enm round TerrainComponentID c.EntityID).IsSome)).[0]
+                            (fds |> Array.sortBy (fun c -> (EntityExt.TryGetComponent enm round TerrainComponent c.EntityID).IsSome)).[0]
                 
                 let fs = allForms.Item({ X = x; Y = y; Z = 0 })
 
@@ -63,8 +63,8 @@ type WorldMapRenderer() =
         let centerX = 30
         let centerY = 10
 
-        let (Vision v) = enm.GetComponent None VisionComponentID entityID
-        let (Form f) = enm.GetComponent None FormComponentID entityID
+        let (Vision v) = enm.GetComponent None VisionComponent entityID
+        let (Form f) = enm.GetComponent None FormComponent entityID
 
         let addX = centerX - f.Location.X
         let addY = centerY - f.Location.Y

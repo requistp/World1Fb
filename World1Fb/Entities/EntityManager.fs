@@ -23,7 +23,7 @@ type EntityManager(useHistory:bool) =
 
             agent_ComponentTypes.AddMany round cts
 
-            cts |> Array.iter (fun c -> if c.ComponentTypeID = FormComponentID then agent_Locations.Add round (ToForm c))
+            cts |> Array.iter (fun c -> if GetComponentType c = FormComponent then agent_Locations.Add round (ToForm c))
 
             agent_Entities.Add round cts       
         ) 
@@ -35,7 +35,7 @@ type EntityManager(useHistory:bool) =
 
             ctss |> Array.iter (agent_ComponentTypes.AddMany round)
 
-            ctss |> Array.iter (fun cts -> cts |> Array.iter (fun c -> if c.ComponentTypeID = FormComponentID then agent_Locations.Add round (ToForm c)))
+            ctss |> Array.iter (fun cts -> cts |> Array.iter (fun c -> if GetComponentType c = FormComponent then agent_Locations.Add round (ToForm c)))
 
             ctss |> Array.iter (agent_Entities.Add round)
         ) 
@@ -47,7 +47,7 @@ type EntityManager(useHistory:bool) =
     member me.GetComponent round ctid eid = 
         eid
         |> me.GetComponents round
-        |> Array.find (fun (c:Component) -> c.ComponentTypeID = ctid)
+        |> Array.find (fun (c:Component) -> GetComponentType c = ctid)
     member  _.GetComponents round eid = agent_Entities.Get round eid
     member  _.GetComponentsOfType round ctid = agent_ComponentTypes.Get round ctid
     member  _.GetFormsAtLocation round location = agent_Locations.Get round location
@@ -79,7 +79,7 @@ type EntityManager(useHistory:bool) =
 
             agent_ComponentTypes.RemoveMany round cts
 
-            cts |> Array.iter (fun c -> if c.ComponentTypeID = FormComponentID then agent_Locations.Remove round (ToForm c))
+            cts |> Array.iter (fun c -> if GetComponentType c = FormComponent then agent_Locations.Remove round (ToForm c))
 
             agent_Entities.Remove round eid
         )
@@ -87,7 +87,7 @@ type EntityManager(useHistory:bool) =
     member me.UpdateComponent round comp = 
         match comp with
         | Form f -> 
-            let oldForm = ToForm (f.EntityID |> me.GetComponent None FormComponentID)
+            let oldForm = ToForm (f.EntityID |> me.GetComponent None FormComponent)
             if (oldForm.Location <> f.Location) then
                 agent_Locations.Move round oldForm f
         | _ -> ()

@@ -25,8 +25,8 @@ type VisionSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
                 ) Map.empty
         ComputeVisibility form.Location visionMap forms vision.Range
 
-    member private me.onLocationChanged round (LocationChanged form:GameEventTypes) =
-        match EntityExt.TryGetComponent enm None VisionComponentID form.EntityID with
+    member private me.onLocationChanged round (LocationChanged form:GameEventData) =
+        match EntityExt.TryGetComponent enm None VisionComponent form.EntityID with
         | None -> Ok (Some "No vision Component")
         | Some (Vision vision) ->
             let visionMap = LocationsWithinRange2D form.Location vision.RangeTemplate
@@ -35,7 +35,7 @@ type VisionSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
             Ok None
 
     override me.Initialize = 
-        evm.RegisterListener me.Description Event_LocationChanged_ID (me.TrackTask me.onLocationChanged)
+        evm.RegisterListener me.Description Event_LocationChanged (me.TrackTask me.onLocationChanged)
         base.SetToInitialized
 
     override me.Update round = 

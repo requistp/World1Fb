@@ -6,11 +6,6 @@ type ComponentID =
     member me.ToUint32 = 
         let (ComponentID v) = me
         v
-type ComponentTypeID = 
-    | ComponentTypeID of byte
-    member me.ToByte = 
-        let (ComponentTypeID v) = me
-        v
 type EntityID = 
     | EntityID of uint32
     member me.ToUint32 = 

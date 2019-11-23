@@ -33,7 +33,7 @@ type AbstractSystem(description:string, isActive:bool) =
     member _.IsIdle = agentWork.PostAndReply IsIdle
     member _.IsInitialized = _isInitialized
     member _.SetToInitialized = _isInitialized <- true
-    member _.TrackTask (task:RoundNumber->GameEventTypes->Result<string option,string>) (round:RoundNumber) (ge:GameEventTypes) = 
+    member _.TrackTask (task:RoundNumber->GameEventData->Result<string option,string>) (round:RoundNumber) (ge:GameEventData) = 
         agentWork.Post Increment
         let result = task round ge
         agentWork.Post Decrement

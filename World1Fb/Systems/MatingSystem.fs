@@ -12,12 +12,12 @@ open EntityManager
 let private EligibleFemales (enm:EntityManager) (mating:MatingComponent) round = 
     mating.EntityID 
     |> EntityExt.GetLocation enm None
-    |> EntityExt.GetEntitiesAtLocationWithComponent enm None MatingComponentID (Some mating.EntityID)
+    |> EntityExt.GetEntitiesAtLocationWithComponent enm None MatingComponent (Some mating.EntityID)
     |> Array.Parallel.map ToMating
     |> Array.filter (fun m -> m.Species = mating.Species && m.MatingStatus = Female && m.CanMate round) // Same Species & Non-Pregnant Females & Can Retry
 
 let MateActionEnabled (enm:EntityManager) (entityID:EntityID) (round:RoundNumber) =
-    let (Mating m) = enm.GetComponent None MatingComponentID entityID
+    let (Mating m) = enm.GetComponent None MatingComponent entityID
     match m.MatingStatus with
     | Male when m.CanMate round -> 
         (EligibleFemales enm m round).Length > 0
@@ -26,7 +26,7 @@ let MateActionEnabled (enm:EntityManager) (entityID:EntityID) (round:RoundNumber
 type MatingSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
     
-    member me.onActionMate round (Action_Mate mc:GameEventTypes) =
+    member me.onActionMate round (Action_Mate mc:GameEventData) =
         let selectFemale = 
             let mates = 
                 EligibleFemales enm mc round
@@ -58,7 +58,7 @@ type MatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
         |> Result.bind getEligiblesDecision
         |> Result.bind tryMating
 
-    member me.onBirth round (Birth (mom,dad):GameEventTypes) =
+    member me.onBirth round (Birth (mom,dad):GameEventData) =
         enm.UpdateComponent round (Mating (mom.Update None (Some Female) (Some (round + mom.Species.MaxMatingFrequency)) None)) // Change Mom to Non-Pregnant Female and add some extra time to before she can mate again
         let adjustComponents (c:Component) =
             match c with
@@ -72,11 +72,11 @@ type MatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
             |> EntityExt.CopyEntity enm round
             |> Array.Parallel.map adjustComponents
         evm.RaiseEvent (CreateEntity newcts)
-        Ok (Some (sprintf "Born:%i" (newcts.[0].EntityID).ToUint32))
+        Ok (Some (sprintf "Born:%i" (GetComponentEntityID newcts.[0]).ToUint32))
 
     override me.Initialize = 
-        evm.RegisterListener me.Description Event_ActionMate_ID (me.TrackTask me.onActionMate)
-        evm.RegisterListener me.Description Event_Birth_ID      (me.TrackTask me.onBirth)
+        evm.RegisterListener me.Description Event_ActionMate (me.TrackTask me.onActionMate)
+        evm.RegisterListener me.Description Event_Birth      (me.TrackTask me.onBirth)
         base.SetToInitialized
 
     override me.Update round = 

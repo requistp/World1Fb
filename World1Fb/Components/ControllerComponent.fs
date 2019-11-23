@@ -23,13 +23,13 @@ type ActionTypes =
         |]
     member me.RequiredComponents =
         match me with
-        | Eat -> [| EatingComponentID |]
+        | Eat -> [| EatingComponent |]
         | Idle -> [||]
-        | Mate -> [| MatingComponentID |]
-        | Move_East -> [| FormComponentID; MovementComponentID |]
-        | Move_North -> [| FormComponentID; MovementComponentID |]
-        | Move_South -> [| FormComponentID; MovementComponentID |]
-        | Move_West -> [| FormComponentID; MovementComponentID |]
+        | Mate -> [| MatingComponent |]
+        | Move_East -> [| FormComponent; MovementComponent |]
+        | Move_North -> [| FormComponent; MovementComponent |]
+        | Move_South -> [| FormComponent; MovementComponent |]
+        | Move_West -> [| FormComponent; MovementComponent |]
 
 
 type ControllerTypes = 
