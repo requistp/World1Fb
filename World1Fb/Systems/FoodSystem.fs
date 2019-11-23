@@ -13,25 +13,17 @@ open EntityManager
 type FoodSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
     
-    member private me.onAllEaten round (ge:GameEventTypes) =
-        let (Food_AllEaten e) = ge
-        match (ToFood (enm.GetComponent None FoodComponentID e.EateeID)).FoodType.KillOnAllEaten with
-        | false -> Ok None
-        | true -> 
-            evm.RaiseEvent (Kill_AllEaten { EaterID = e.EaterID; EateeID = e.EateeID })
-            Ok None
+    member private me.onAllEaten round (Food_AllEaten (eat,food):GameEventTypes) =
+        if (food.FoodType.KillOnAllEaten) then
+            evm.RaiseEvent (Kill_AllEaten (eat,food))
+        Ok None
 
-    member private me.onEaten round (ge:GameEventTypes) =
-        let (Eaten e) = ge
-        match EntityExt.TryGetComponent enm None FoodComponentID e.EateeID with
-        | None -> Error "Something else ate it first"
-        | Some c -> 
-            let (Food f) = c
-            let newQ = Math.Clamp(f.Quantity - e.Quantity, 0, f.QuantityMax)
+    member private me.onEaten round (Eaten (eat,food):GameEventTypes) =
+            let newQ = Math.Clamp(food.Quantity - eat.Quantity, 0, food.QuantityMax)
             let allEaten = newQ <= 0
-            if allEaten then evm.RaiseEvent (Food_AllEaten { EaterID = e.EaterID; EateeID = e.EateeID })
-            enm.UpdateComponent round (Food (f.Update None (Some newQ) None))
-            Ok (Some (sprintf "Quantity:-%i=%i. All eaten:%b" e.Quantity newQ allEaten))
+            if allEaten then evm.RaiseEvent (Food_AllEaten (eat,food))
+            enm.UpdateComponent round (Food (food.Update None (Some newQ) None))
+            Ok (Some (sprintf "Quantity:-%i=%i. All eaten:%b" eat.Quantity newQ allEaten))
 
     member private me.onRegrowth round (ge:GameEventTypes) =
         let (PlantRegrowth e) = ge

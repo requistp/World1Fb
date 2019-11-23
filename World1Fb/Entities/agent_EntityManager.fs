@@ -19,7 +19,7 @@ type private agent_HistoryMsg =
     | History_Init of Map<EntityID,(RoundNumber*ComponentID[] option)[]>
     | History_Remove of RoundNumber * EntityID
 
-type agent_EntityManager(compMan:agent_Components) =
+type agent_EntityManager(useHistory:bool, compMan:agent_Components) =
     let mutable _history = Map.empty<EntityID,(RoundNumber*ComponentID[] option)[]>
     
     let getHistory round eid = 
@@ -97,27 +97,27 @@ type agent_EntityManager(compMan:agent_Components) =
         Async.Parallel
         (
             agent_Current.Post (Add cts)
-            agent_History.Post (History_Add (round,cts))
+            if useHistory then agent_History.Post (History_Add (round,cts))
         )
     member _.AddMany (round:RoundNumber) ctss = 
         Async.Parallel
         (
             agent_Current.Post (AddMany ctss)
-            agent_History.Post (History_AddMany (round,ctss))
+            if useHistory then agent_History.Post (History_AddMany (round,ctss))
         )
     member _.Get (round:RoundNumber option) eid = 
-        match round with
-        | None -> agent_Current.PostAndReply (fun replyChannel -> Get (eid,replyChannel))
-        | Some r -> getHistory r eid
+        match round,useHistory with
+        | None,_ | Some _,false -> agent_Current.PostAndReply (fun replyChannel -> Get (eid,replyChannel))
+        | Some r,true -> getHistory r eid
         |> compMan.GetMany round
     member _.GetForSave =
         agent_Current.PostAndReply GetMap
         ,
         _history
     member _.GetMany (round:RoundNumber option) eids = 
-        match round with
-        | None -> agent_Current.PostAndReply (fun replyChannel -> GetMany (eids,replyChannel))
-        | Some r -> eids |> Array.map (getHistory r)
+        match round,useHistory with
+        | None,_ | Some _,false -> agent_Current.PostAndReply (fun replyChannel -> GetMany (eids,replyChannel))
+        | Some r,true -> eids |> Array.map (getHistory r)
         |> Array.map (compMan.GetMany round)
     member _.Init currentMap historyMap =
         Async.Parallel
@@ -130,7 +130,7 @@ type agent_EntityManager(compMan:agent_Components) =
         Async.Parallel
         (
             agent_Current.Post (Remove eid)
-            agent_History.Post (History_Remove (round,eid))
+            if useHistory then agent_History.Post (History_Remove (round,eid))
         )
 
 

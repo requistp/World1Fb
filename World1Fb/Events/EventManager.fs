@@ -51,35 +51,36 @@ type EventManager(enm:EntityManager, log:agent_GameLog, getRound:unit->RoundNumb
                 async { 
                     while true do
                         let! msg = inbox.Receive()
-                        let addToSchedule (round:RoundNumber) (se:GameEventTypes) isNew =
-                            let sed,ge = se.ToScheduleEvent
+                        let addToSchedule (round:RoundNumber) (ScheduleEvent (frequency,scheduleType,ge):GameEventTypes) isNew =
                             let interval = 
-                                match isNew && sed.Schedule = RepeatIndefinitely with
-                                | true -> TimingOffset sed.Frequency //uint32 (TimingOffset (uint32 sed.Frequency))
-                                | false -> sed.Frequency                                
-                            _schedule <- Map_AppendValueToArrayNonUnique _schedule (round+interval) se
-                            log.Log round (sprintf "%-3s | %-20s -> %-30s #%7i : Frequency:%i" "-->" "Scheduled Event" (ge.GameEventType()) ge.EntityID.ToUint32 sed.Frequency.ToUint32)
+                                match isNew && scheduleType = RepeatIndefinitely with
+                                | true -> TimingOffset frequency
+                                | false -> frequency
+                            _schedule <- Map_AppendValueToArrayNonUnique _schedule (round+interval) ge
+                            log.Log round (sprintf "%-3s | %-20s -> %-30s #%7i : Frequency:%i" "-->" "Scheduled Event" (ge.GameEventType()) ge.EntityID.ToUint32 frequency.ToUint32)
                         match msg with
                         | AddToSchedule (round,se) -> 
                             addToSchedule round se true
                         | ExecuteScheduled round ->
-                            let reschedule (se:GameEventTypes) =
-                                let sed,ge = se.ToScheduleEvent
-                                match sed.Schedule with
-                                | RunOnce -> ()
-                                | RepeatIndefinitely -> addToSchedule round se false 
-                                | RepeatFinite x -> 
-                                    match x with
-                                    | 1u -> () // Done, that 1 is the last one
-                                    | _ -> addToSchedule round (ScheduleEvent ({ sed with Schedule = RepeatFinite (x - 1u) }, ge)) false                                 
-                            let executeAndReschedule (se:GameEventTypes) =
-                                let _,ge = se.ToScheduleEvent
-                                if (enm.EntityExists None ge.EntityID) then
-                                    agentListeners.Post (Execute (round,ge))
-                                    reschedule se
-                            if (_schedule.ContainsKey round) then
-                                _schedule.Item(round) |> Array.Parallel.iter (fun se -> executeAndReschedule se)
-                                _schedule <- _schedule.Remove(round)
+                            ()
+                            //let reschedule (ScheduleEvent (frequency,scheduleType,ge):GameEventTypes) =
+                            //    match scheduleType with
+                            //    | RunOnce -> ()
+                            //    | RepeatIndefinitely -> addToSchedule round (ScheduleEvent(frequency,scheduleType,ge)) false 
+                            //    | RepeatFinite remaining -> 
+                            //        match remaining with
+                            //        | RoundNumber(1u) -> () // Done, that 1 is the last one
+                            //        | _ -> addToSchedule round (ScheduleEvent (frequency,RepeatFinite (remaining-1u),ge)) false
+                            //let executeAndReschedule (ScheduleEvent (frequency,scheduleType,ge):GameEventTypes) =
+                            //    ()
+                            //    //if (enm.EntityExists None ge.EntityID) then
+                            //    //    //FIX... agentListeners.Post (Execute (round,ge))
+                            //    //    //FIX... 
+                            //    //    //reschedule (ScheduleEvent (frequency,scheduleType,ge))
+                            //    //    ()
+                            //if (_schedule.ContainsKey round) then
+                            //    _schedule.Item(round) |> Array.Parallel.iter executeAndReschedule
+                            //    _schedule <- _schedule.Remove(round)
                         | Get replyChannel ->
                             replyChannel.Reply(_schedule)
                         | Init map ->

@@ -22,7 +22,7 @@ type private agent_HistoryMsg =
     | History_Remove of RoundNumber * Component
     | History_RemoveMany of RoundNumber * Component[]
     
-type agent_Components() =
+type agent_Components(useHistory:bool) =
     let mutable _history = Map.empty<ComponentID,(RoundNumber*Component option)[]>
 
     let getHistory round cid = 
@@ -102,26 +102,26 @@ type agent_Components() =
         Async.Parallel
         (
             agent_Current.Post (Add comp)
-            agent_History.Post (History_Add (round,comp))
+            if useHistory then agent_History.Post (History_Add (round,comp))
         )
     member _.AddMany (round:RoundNumber) comps = 
         Async.Parallel
         (
             agent_Current.Post (AddMany comps)
-            agent_History.Post (History_AddMany (round,comps))
+            if useHistory then agent_History.Post (History_AddMany (round,comps))
         )
     member _.Get (round:RoundNumber option) cid = 
-        match round with
-        | None -> agent_Current.PostAndReply (fun replyChannel -> Get (cid,replyChannel))
-        | Some r -> getHistory r cid
+        match round,useHistory with
+        | None,_ | Some _,false -> agent_Current.PostAndReply (fun replyChannel -> Get (cid,replyChannel))
+        | Some r,true -> getHistory r cid
     member _.GetForSave =
         agent_Current.PostAndReply GetMap
         ,
         _history
     member _.GetMany (round:RoundNumber option) cids = 
-        match round with
-        | None -> agent_Current.PostAndReply (fun replyChannel -> GetMany (cids,replyChannel))
-        | Some r -> cids |> Array.choose (getHistory r)
+        match round,useHistory with
+        | None,_ | Some _,false -> agent_Current.PostAndReply (fun replyChannel -> GetMany (cids,replyChannel))
+        | Some r,true -> cids |> Array.choose (getHistory r)
     member _.NewComponentID() = ComponentID(idMan.GetNewID())
     member _.Init (currentMap:Map<ComponentID,Component>) historyMap =
         Async.Parallel
@@ -134,19 +134,19 @@ type agent_Components() =
         Async.Parallel
         (
             agent_Current.Post (Remove c)
-            agent_History.Post (History_Remove (round,c))
+            if useHistory then agent_History.Post (History_Remove (round,c))
         )
     member _.RemoveMany (round:RoundNumber) cts = 
         Async.Parallel
         (
             agent_Current.Post (RemoveMany cts)
-            agent_History.Post (History_RemoveMany (round,cts))
+            if useHistory then agent_History.Post (History_RemoveMany (round,cts))
         )
     member _.Update (round:RoundNumber) comp = 
         Async.Parallel
         (
             agent_Current.Post (Update comp)
-            agent_History.Post (History_Add (round,comp))
+            if useHistory then agent_History.Post (History_Add (round,comp))
         )
 
 

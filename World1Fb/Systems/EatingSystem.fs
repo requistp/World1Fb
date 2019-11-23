@@ -26,9 +26,7 @@ let EatActionEnabled (enm:EntityManager) (entityID:EntityID) =
 type EatingSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
     
-    member private me.onEat round (ge:GameEventTypes) =
-        let (Eating eat) = ge.EntityID|>enm.GetComponent None EatingComponentID
-
+    member private me.onEat round (Action_Eat eat:GameEventTypes) =
         let selectFood =
             let foods =
                 FoodsAtLocation enm eat
@@ -37,32 +35,30 @@ type EatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
             | [||] -> None
             | fs -> Some fs.[0]
             
-        let eatFood (f:FoodComponent) =
-            let quantity = Math.Clamp(eat.QuantityPerAction, 0, Math.Min(f.Quantity,eat.QuantityRemaining)) // Clamp by how much food is left and how much stomach space is left
-            let calories = quantity * f.FoodType.Calories
+        let eatFood (food:FoodComponent) =
+            let quantity = Math.Clamp(eat.QuantityPerAction, 0, Math.Min(food.Quantity,eat.QuantityRemaining)) // Clamp by how much food is left and how much stomach space is left
+            let calories = quantity * food.FoodType.Calories
             match quantity with
             | 0 -> Error "Stomach is full"
             | _ -> 
                 enm.UpdateComponent round (Eating (eat.Update (Some (eat.Quantity+quantity)) (Some (eat.Calories+calories))))
-                evm.RaiseEvent (Eaten { EaterID = eat.EntityID; EateeID = f.EntityID; Quantity = quantity })
-                Ok (Some (sprintf "EateeID: %i. Quantity: +%i=%i. Calories: +%i=%i" (f.EntityID.ToUint32) quantity (eat.Quantity+quantity) calories (eat.Calories+calories)))
+                evm.RaiseEvent (Eaten (eat,food))
+                Ok (Some (sprintf "EateeID: %i. Quantity: +%i=%i. Calories: +%i=%i" (food.EntityID.ToUint32) quantity (eat.Quantity+quantity) calories (eat.Calories+calories)))
         
         match selectFood with
         | None -> Error "No food at location"
         | Some foodEaten -> eatFood foodEaten
 
-    member private me.onComponentAdded round (ge:GameEventTypes) =
-        let e = ge.ToComponentAddedEating
-        evm.AddToSchedule (ScheduleEvent ({ Schedule = RepeatIndefinitely; Frequency = MetabolismFrequency }, Metabolize { EntityID = e.EntityID }))
-        Ok (Some (sprintf "Queued Metabolize to schedule. EntityID:%i" e.EntityID.ToUint32))
+    member private me.onComponentAdded round (ComponentAdded_Eating eat:GameEventTypes) =
+        evm.AddToSchedule (ScheduleEvent (MetabolismFrequency, RepeatIndefinitely, Metabolize eat))
+        Ok (Some (sprintf "Queued Metabolize to schedule. EntityID:%i" eat.EntityID.ToUint32))
         
-    member private me.onMetabolize round (ge:GameEventTypes) =
-        let (Eating eat) = enm.GetComponent None EatingComponentID ge.EntityID
+    member private me.onMetabolize round (Metabolize eat:GameEventTypes) =
         let newC = eat.Calories - eat.CaloriesPerMetabolize
         let newQ = eat.Quantity - eat.QuantityPerMetabolize
         let starving = newC < 0
         let result = sprintf "Quantity:-%i=%i. Calories:-%i=%i. Starving:%b" eat.QuantityPerMetabolize newQ eat.CaloriesPerMetabolize newC starving
-        if starving then evm.RaiseEvent (Starving { EntityID = eat.EntityID })
+        if starving then evm.RaiseEvent (Starving eat) 
         enm.UpdateComponent round (Eating (eat.Update (Some newQ) (Some newC))) 
         Ok (Some result)
 

@@ -87,16 +87,16 @@ type ControllerSystem(description:string, isActive:bool, enm:EntityManager, evm:
         | _ -> 
             evm.RaiseEvent (
                 match controller.CurrentAction with 
-                | Eat -> Action_Eat { EntityID = controller.EntityID }
-                | Mate -> Action_Mate { EntityID = controller.EntityID }
-                | Move_North -> Action_Movement { EntityID = controller.EntityID; Direction = North }
-                | Move_East -> Action_Movement { EntityID = controller.EntityID; Direction = East }
-                | Move_South -> Action_Movement { EntityID = controller.EntityID; Direction = South }
-                | Move_West -> Action_Movement { EntityID = controller.EntityID; Direction = West }
+                | Eat  -> Action_Eat (ToEating (enm.GetComponent None EatingComponentID controller.EntityID))
+                | Mate -> Action_Mate (ToMating (enm.GetComponent None MatingComponentID controller.EntityID))
+                | Move_North -> Action_Movement ((ToForm (enm.GetComponent None FormComponentID controller.EntityID)), North)
+                | Move_East  -> Action_Movement ((ToForm (enm.GetComponent None FormComponentID controller.EntityID)), East)
+                | Move_South -> Action_Movement ((ToForm (enm.GetComponent None FormComponentID controller.EntityID)), South)
+                | Move_West  -> Action_Movement ((ToForm (enm.GetComponent None FormComponentID controller.EntityID)), West)
                 )
 
     member private me.onSetPotentialActions (round:RoundNumber) (ge:GameEventTypes) =
-        let (Controller c) = ge.ToComponentAddedController.Component
+        let (ComponentAdded_Controller c) = ge //.ToComponentAddedController.Component
         let potential = 
             let ects = EntityExt.GetComponentTypeIDs enm None c.EntityID
             ActionTypes.AsArray 

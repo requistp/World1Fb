@@ -12,11 +12,13 @@ open VisionSystem
 open WorldMapRenderer
 
 
-let format = LoadAndSave.SaveGameFormats.XML
+let format = LoadAndSave.SaveGameFormats.Binary
 
 let wmr = new WorldMapRenderer()
 
-let g = new Game(wmr.Update, wmr.UpdateEntity, format)
+let useHistory = true
+
+let g = new Game(wmr.Update, wmr.UpdateEntity, format, useHistory)
 
 let startingEntities = 
     MakeMap g.Entities
@@ -25,15 +27,16 @@ let startingEntities =
 
 let systems =
     [|
+        EntitySystem("Entity System", true, g.Entities, g.Events).Abstract
+        
         ControllerSystem("Controller System", true, g.Entities, g.Events).Abstract
         EatingSystem("Eating System", true, g.Entities, g.Events).Abstract
-        EntitySystem("Entity System", true, g.Entities, g.Events).Abstract
         FoodSystem("Food System", true, g.Entities, g.Events).Abstract
         KillSystem("Kill System", true, g.Entities, g.Events).Abstract
         MatingSystem("Mating System", true, g.Entities, g.Events).Abstract
         MovementSystem("Movement System", true, g.Entities, g.Events).Abstract
         PlantGrowthSystem("Plant Growth System", true, g.Entities, g.Events).Abstract
-        VisionSystem("Vision System", true, g.Entities, g.Events).Abstract
+        VisionSystem("Vision System", true, g.Entities, g.Events).Abstract // 60s
     |]
 
 g.Start systems startingEntities ""

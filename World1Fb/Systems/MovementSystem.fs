@@ -31,17 +31,15 @@ let MovementActionsAllowed (enm:EntityManager) (entityID:EntityID) =
 type MovementSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
     inherit AbstractSystem(description,isActive)
   
-    member private me.onMovementKeyPressed (round:RoundNumber) (ge:GameEventTypes) =
-        let e = ge.ToAction_Movement
-        let (Form form) = enm.GetComponent None FormComponentID e.EntityID
-        let destination = e.Direction.AddToLocation form.Location
+    member private me.onMovementKeyPressed (round:RoundNumber) (Action_Movement (f,d):GameEventTypes) =
+        let destination = d.AddToLocation f.Location
             
-        match not destination.IsOnMap || EntityExt.FormImpassableAtLocation enm None (Some e.EntityID) destination with
+        match not destination.IsOnMap || EntityExt.FormImpassableAtLocation enm None (Some f.EntityID) destination with
         | true -> Error (sprintf "Off map or form at location %s" (destination.ToString()))
         | false -> 
-            let f = form.Update None None None (Some destination)
-            enm.UpdateComponent round (Form f)
-            evm.RaiseEvent (LocationChanged { EntityID = e.EntityID; Form = f })
+            let newForm = f.Update None None None (Some destination)
+            enm.UpdateComponent round (Form newForm)
+            evm.RaiseEvent (LocationChanged newForm)
             Ok (Some (sprintf "Location %s" (destination.ToString())))
         
     override me.Initialize = 

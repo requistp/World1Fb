@@ -10,10 +10,10 @@ open EventTypes
 open LoadAndSave
 open SystemManager
 
-type Game(wmrAll:EntityManager->RoundNumber option->unit, wmrEntity:EntityManager->EntityID->unit, format:SaveGameFormats) =
+type Game(wmrAll:EntityManager->RoundNumber option->unit, wmrEntity:EntityManager->EntityID->unit, format:SaveGameFormats, useHistory:bool) =
     let agentForRound = new agent_Round()
     let gameLog = new agent_GameLog()
-    let entities = new EntityManager()
+    let entities = new EntityManager(useHistory)
     let events = new EventManager(entities, gameLog, agentForRound.Get)
     let systemMan = new SystemManager()
  
@@ -61,13 +61,13 @@ type Game(wmrAll:EntityManager->RoundNumber option->unit, wmrEntity:EntityManage
             _round <- me.loadGame filename
         | _ -> 
             initialForms 
-            |> Array.Parallel.iter (fun cts -> if (cts.Length > 0) then events.RaiseEvent (CreateEntity { Components = cts }))
+            |> Array.Parallel.iter (fun cts -> if (cts.Length > 0) then events.RaiseEvent (CreateEntity cts))
             System.Threading.Thread.Sleep 1000
         
         // Uncomment for world-view: 
         wmrAll entities None; printfn "Round#%i" _round.ToUint32
 
-        while  (ControllerSystem.GetInputForAllEntities entities gameLog _round wmrEntity) && (_round.ToUint32<1000u) do
+        while  (ControllerSystem.GetInputForAllEntities entities gameLog _round wmrEntity) && (_round.ToUint32<500u) do
             me.gameLoop _round
             _round <- agentForRound.Increment
             

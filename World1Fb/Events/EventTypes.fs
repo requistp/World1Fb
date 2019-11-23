@@ -2,7 +2,32 @@
 open CommonGenericFunctions
 open Component
 open ComponentEnums
+open ControllerComponent
+open EatingComponent
+open FoodComponent
 open FormComponent
+open MatingComponent
+open PlantGrowthComponent
+
+type GameEventTypeIDs = 
+    | Event_ActionEat
+    | Event_ActionMate
+    | Event_ActionMovement
+    | Event_Birth
+    | Event_ComponentAdded_Controller
+    | Event_ComponentAdded_Eating
+    | Event_ComponentAdded_PlantGrowth
+    | Event_CreateEntity
+    | Event_Eaten
+    | Event_FoodAllEaten
+    | Event_KillAllEaten
+    | Event_LocationChanged
+    | Event_Metabolize
+    | Event_Movement
+    | Event_PlantGrowth
+    | Event_PlantReproduce
+    | Event_ScheduleEvent
+    | Event_Starving
 
 let Event_ActionEat_ID = 1uy
 let Event_ActionMate_ID = Event_ActionEat_ID + 1uy
@@ -24,68 +49,46 @@ let Event_ScheduleEvent_ID = Event_PlantReproduce_ID + 1uy
 let Event_Starving_ID = Event_ScheduleEvent_ID + 1uy
 
 type ScheduleType =
-    | RepeatFinite of uint32
+    | RepeatFinite of RoundNumber
     | RepeatIndefinitely
     | RunOnce
 
-type Event_ActionEat = { EntityID:EntityID }
-type Event_ActionMate = { EntityID:EntityID }
-type Event_ActionMovement = { EntityID:EntityID; Direction:MovementDirection }
-type Event_Birth = { MomID:EntityID; DadID:EntityID }
-type Event_ComponentAdded_Controller = { EntityID:EntityID; Component:Component }
-type Event_ComponentAdded_Eating = { EntityID:EntityID; Component:Component }
-type Event_ComponentAdded_PlantGrowth = { EntityID:EntityID; Component:Component }
-type Event_CreateEntity = { Components:Component[] }
-type Event_Eaten = { EaterID:EntityID; EateeID:EntityID; Quantity:int }
-type Event_FoodAllEaten = { EaterID:EntityID; EateeID:EntityID }
-type Event_KillAllEaten = { EaterID:EntityID; EateeID:EntityID }
-type Event_LocationChanged = { EntityID:EntityID; Form:FormComponent }
-type Event_Metabolize = { EntityID:EntityID }
-type Event_Movement = { EntityID:EntityID; Direction:MovementDirection }
-type Event_PlantGrowth = { EntityID:EntityID }
-type Event_PlantReproduce = { EntityID:EntityID }
-type Event_ScheduleEvent = { Frequency:RoundNumber; Schedule:ScheduleType }
-type Event_Starving = { EntityID:EntityID }
-
-
 type GameEventTypes =
-    | Action_Eat of Event_ActionEat
-    | Action_Mate of Event_ActionMate
-    | Action_Movement of Event_ActionMovement
-    | Birth of Event_Birth
-    | ComponentAdded_Controller of Event_ComponentAdded_Controller
-    | ComponentAdded_Eating of Event_ComponentAdded_Eating
-    | ComponentAdded_PlantGrowth of Event_ComponentAdded_PlantGrowth
-    | CreateEntity of Event_CreateEntity
-    | Eaten of Event_Eaten
-    | Food_AllEaten of Event_FoodAllEaten
-    | Kill_AllEaten of Event_KillAllEaten
-    | LocationChanged of Event_LocationChanged
-    | Metabolize of Event_Metabolize
-    | Movement of Event_Movement
-    | PlantRegrowth of Event_PlantGrowth
-    | PlantReproduce of Event_PlantReproduce
-    | ScheduleEvent of Event_ScheduleEvent * GameEventTypes
-    | Starving of Event_Starving
+    | Action_Eat of EatingComponent
+    | Action_Mate of MatingComponent
+    | Action_Movement of FormComponent * MovementDirection
+    | Birth of mom:MatingComponent * dad:MatingComponent
+    | ComponentAdded_Controller of ControllerComponent
+    | ComponentAdded_Eating of EatingComponent
+    | ComponentAdded_PlantGrowth of PlantGrowthComponent
+    | CreateEntity of Component[]
+    | Eaten of EatingComponent * FoodComponent
+    | Food_AllEaten of EatingComponent * FoodComponent
+    | Kill_AllEaten of EatingComponent * FoodComponent
+    | LocationChanged of FormComponent
+    | Metabolize of EatingComponent
+    | PlantRegrowth of PlantGrowthComponent
+    | PlantReproduce of PlantGrowthComponent
+    | ScheduleEvent of RoundNumber * ScheduleType * GameEventTypes
+    | Starving of EatingComponent
     member me.EntityID =
         match me with
         | Action_Eat d -> d.EntityID
         | Action_Mate d -> d.EntityID
-        | Action_Movement d -> d.EntityID
-        | Birth d -> d.MomID
+        | Action_Movement (f,_) -> f.EntityID
+        | Birth (m,_) -> m.EntityID
         | ComponentAdded_Controller d -> d.EntityID
         | ComponentAdded_Eating d -> d.EntityID
         | ComponentAdded_PlantGrowth d -> d.EntityID
-        | CreateEntity d -> d.Components.[0].EntityID
-        | Eaten d -> d.EaterID
-        | Food_AllEaten d -> d.EateeID
-        | Kill_AllEaten d -> d.EateeID
+        | CreateEntity d -> d.[0].EntityID
+        | Eaten (eat,_) -> eat.EntityID
+        | Food_AllEaten (eat,_) -> eat.EntityID
+        | Kill_AllEaten (eat,_) -> eat.EntityID
         | LocationChanged d -> d.EntityID
         | Metabolize d -> d.EntityID
-        | Movement d -> d.EntityID
         | PlantRegrowth d -> d.EntityID
         | PlantReproduce d -> d.EntityID
-        | ScheduleEvent (_,ge) -> ge.EntityID
+        | ScheduleEvent (_,_,ge) -> ge.EntityID
         | Starving d -> d.EntityID
     member me.GameEventID = 
         match me with
@@ -102,7 +105,6 @@ type GameEventTypes =
         | Kill_AllEaten _ -> Event_KillAllEaten_ID
         | LocationChanged _ -> Event_LocationChanged_ID
         | Metabolize _ -> Event_Metabolize_ID
-        | Movement _ -> Event_Movement_ID
         | PlantRegrowth _ -> Event_PlantGrowth_ID
         | PlantReproduce _ -> Event_PlantReproduce_ID
         | ScheduleEvent _ -> Event_ScheduleEvent_ID
@@ -122,94 +124,10 @@ type GameEventTypes =
         | Kill_AllEaten _ -> "Kill_AllEaten"
         | LocationChanged _ -> "LocationChanged"
         | Metabolize _ -> "Metabolize"
-        | Movement _ -> "Movement"
         | PlantRegrowth _ -> "PlantRegrowth"
         | PlantReproduce _ -> "PlantReproduce"
         | ScheduleEvent _ -> "ScheduleEvent"
         | Starving _ -> "Starving"
-    member me.ToActionEat = 
-        let (Action_Eat d) = me
-        d
-    member me.ToActionMate = 
-        let (Action_Mate d) = me
-        d
-    member me.ToAction_Movement = 
-        let (Action_Movement d) = me
-        d
-    member me.ToBirth = 
-        let (Birth d) = me
-        d
-    member me.ToComponentAddedController =
-        let (ComponentAdded_Controller d) = me
-        d
-    member me.ToComponentAddedEating =
-        let (ComponentAdded_Eating d) = me
-        d
-    member me.ToComponentAddedPlantGrowth =
-        let (ComponentAdded_PlantGrowth d) = me
-        d
-    member me.ToCreateEntity = 
-        let (CreateEntity d) = me
-        d
-    member me.ToEaten = 
-        let (Eaten d) = me
-        d
-    member me.ToFoodAllEaten = 
-        let (Food_AllEaten d) = me
-        d
-    member me.ToKillAllEaten = 
-        let (Kill_AllEaten d) = me
-        d
-    member me.ToLocationChanged =
-        let (LocationChanged d) = me
-        d
-    member me.ToMetabolize = 
-        let (Metabolize d) = me
-        d
-    member me.ToMovement = 
-        let (Movement d) = me
-        d
-    member me.ToPlantRegrowth = 
-        let (PlantRegrowth d) = me
-        d
-    member me.ToPlantReproduce = 
-        let (PlantReproduce d) = me
-        d
-    member me.ToScheduleEvent = 
-        let (ScheduleEvent (sed,ge)) = me
-        (sed,ge)
-    member me.ToStarving = 
-        let (Starving d) = me
-        d
 
-let EntityID (ge:GameEventTypes) = 
-    match ge with
-    | Action_Eat d -> d.EntityID
-    | Action_Mate d -> d.EntityID
-    | Action_Movement d -> d.EntityID
-    | Birth d -> d.MomID
-    | ComponentAdded_Controller d -> d.EntityID
-    | ComponentAdded_Eating d -> d.EntityID
-    | ComponentAdded_PlantGrowth d -> d.EntityID
-    | CreateEntity d -> d.Components.[0].EntityID
-    | Eaten d -> d.EaterID
-    | Food_AllEaten d -> d.EateeID
-    | Kill_AllEaten d -> d.EateeID
-    | LocationChanged d -> d.EntityID
-    | Metabolize d -> d.EntityID
-    | Movement d -> d.EntityID
-    | PlantRegrowth d -> d.EntityID
-    | PlantReproduce d -> d.EntityID
-    | ScheduleEvent (_,ge) -> ge.EntityID
-    | Starving d -> d.EntityID
-
-let ToEvent_KillAllEaten (Kill_AllEaten ge) = ge
-
-//let ToController (Controller c) = c
-//let x = Action_Eat { EntityID = 0u }
-//let y = Terrain { ID = 0u; EntityID = 1u; Terrain = Dirt }
-
-//let a = EntityID x
-//let b = Component.EntityID y
 
 

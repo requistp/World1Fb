@@ -10,11 +10,11 @@ open FormComponent
 open LocationTypes
 
 
-type EntityManager() = 
-    let agent_Components = new agent_Components()
-    let agent_Entities = new agent_EntityManager(agent_Components)
-    let agent_Locations = new agent_Locations(agent_Components)
-    let agent_ComponentTypes = new agent_ComponentTypes(agent_Components)
+type EntityManager(useHistory:bool) = 
+    let agent_Components = new agent_Components(useHistory)
+    let agent_Entities = new agent_EntityManager(useHistory, agent_Components)
+    let agent_Locations = new agent_Locations(useHistory, agent_Components)
+    let agent_ComponentTypes = new agent_ComponentTypes(useHistory, agent_Components)
     
     member  _.CreateEntity (round:RoundNumber) (cts:Component[]) = 
         Async.Parallel 

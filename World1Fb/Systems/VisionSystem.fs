@@ -25,13 +25,12 @@ type VisionSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
                 ) Map.empty
         ComputeVisibility form.Location visionMap forms vision.Range
 
-    member private me.onLocationChanged round (ge:GameEventTypes) =
-        let (LocationChanged lc) = ge
-        match EntityExt.TryGetComponent enm None VisionComponentID lc.EntityID with
+    member private me.onLocationChanged round (LocationChanged form:GameEventTypes) =
+        match EntityExt.TryGetComponent enm None VisionComponentID form.EntityID with
         | None -> Ok (Some "No vision Component")
         | Some (Vision vision) ->
-            let visionMap = LocationsWithinRange2D lc.Form.Location vision.RangeTemplate
-            let viewableMap = handleFOV lc.Form vision visionMap
+            let visionMap = LocationsWithinRange2D form.Location vision.RangeTemplate
+            let viewableMap = handleFOV form vision visionMap
             enm.UpdateComponent round (Vision (vision.Update round None (Some viewableMap) (Some visionMap)))
             Ok None
 

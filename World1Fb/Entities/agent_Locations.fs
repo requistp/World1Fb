@@ -19,7 +19,7 @@ type private agent_HistoryMsg =
     | History_Move of RoundNumber * oldForm:FormComponent * newForm:FormComponent
     | History_Remove of RoundNumber * FormComponent
 
-type agent_Locations(compMan:agent_Components) = 
+type agent_Locations(useHistory:bool, compMan:agent_Components) = 
     let mutable _history = Map.empty<LocationDataInt,(RoundNumber*ComponentID[] option)[]>
 
     let getHistory round location = 
@@ -104,12 +104,12 @@ type agent_Locations(compMan:agent_Components) =
         Async.Parallel
         (
             agent_Current.Post (Add form)
-            agent_History.Post (History_Add (round,form))
+            if useHistory then agent_History.Post (History_Add (round,form))
         )
     member _.Get (round:RoundNumber option) location = 
-        match round with
-        | None -> agent_Current.PostAndReply (fun replyChannel -> Get (location,replyChannel))
-        | Some r -> getHistory r location
+        match round,useHistory with
+        | None,_ | Some _,false -> agent_Current.PostAndReply (fun replyChannel -> Get (location,replyChannel))
+        | Some r,true -> getHistory r location
         |> compMan.GetMany round
         |> Array.Parallel.map ToForm
     member _.GetForSave =
@@ -117,11 +117,11 @@ type agent_Locations(compMan:agent_Components) =
         ,
         _history
     member _.GetMap (round:RoundNumber option) = 
-        match round with
-        | None -> 
+        match round,useHistory with
+        | None,_ | Some _,false -> 
             agent_Current.PostAndReply GetMap
             |> Map.map (fun _ cids -> cids |> Array.choose (compMan.Get round) |> Array.map ToForm)
-        | Some _ -> 
+        | Some _,true -> 
             _history
             |> Map.map (fun _ a -> 
                 match (snd a.[0]) with
@@ -139,13 +139,13 @@ type agent_Locations(compMan:agent_Components) =
         Async.Parallel
         (
             agent_Current.Post (Move (oldForm,newForm))
-            agent_History.Post (History_Move (round,oldForm,newForm))
+            if useHistory then agent_History.Post (History_Move (round,oldForm,newForm))
         )
     member _.Remove (round:RoundNumber) (form:FormComponent) = 
         Async.Parallel
         (
             agent_Current.Post (Remove form)
-            agent_History.Post (History_Remove (round,form))
+            if useHistory then agent_History.Post (History_Remove (round,form))
         )
 
 
