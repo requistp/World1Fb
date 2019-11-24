@@ -19,7 +19,7 @@ type SaveGameData =
             *
             (Map<LocationDataInt,ComponentID[]> * Map<LocationDataInt,(RoundNumber*ComponentID[] option)[]>)
         Round : RoundNumber
-        ScheduledEvents : Map<RoundNumber,GameEventData[]>
+        ScheduledEvents : Map<RoundNumber,ScheduledEventData[]>
     }
     
 type SaveGameFormats =

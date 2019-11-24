@@ -14,12 +14,12 @@ let private EligibleFemales (enm:EntityManager) (mating:MatingComponent) round =
     |> EntityExt.GetLocation enm None
     |> EntityExt.GetEntitiesAtLocationWithComponent enm None MatingComponent (Some mating.EntityID)
     |> Array.Parallel.map ToMating
-    |> Array.filter (fun m -> m.Species = mating.Species && m.MatingStatus = Female && m.CanMate round) // Same Species & Non-Pregnant Females & Can Retry
+    |> Array.filter (fun m -> m.Species = mating.Species && m.MatingStatus = Female && CanMate m round) // Same Species & Non-Pregnant Females & Can Retry
 
 let MateActionEnabled (enm:EntityManager) (entityID:EntityID) (round:RoundNumber) =
     let (Mating m) = enm.GetComponent None MatingComponent entityID
     match m.MatingStatus with
-    | Male when m.CanMate round -> 
+    | Male when CanMate m round -> 
         (EligibleFemales enm m round).Length > 0
     | _ -> false
 
@@ -44,22 +44,22 @@ type MatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
         let tryMating (mc2:MatingComponent) =
             let chance = mc.ChanceOfReproduction * mc2.ChanceOfReproduction
             let rnd = random.NextDouble()
-            enm.UpdateComponent round (Mating (mc.Update None None (Some round) None)) 
+            enm.UpdateComponent round (Mating (UpdateMating mc None None (Some round) None)) 
             match chance >= rnd with
             | false -> 
-                enm.UpdateComponent round (Mating (mc2.Update None None (Some round) None))
+                enm.UpdateComponent round (Mating (UpdateMating mc2 None None (Some round) None))
                 Error (sprintf "Reproduction failed (%f<%f)" chance rnd)
             | true ->
-                evm.AddToSchedule (ScheduleEvent (mc2.Species.Gestation, RunOnce, Birth (mc2,mc)))
-                enm.UpdateComponent round (Mating (mc2.Update None (Some Female_Pregnant) (Some round) None)) 
+                evm.AddToSchedule (mc2.Species.Gestation, RunOnce, Birth (mc2,mc))
+                enm.UpdateComponent round (Mating (UpdateMating mc2 None (Some Female_Pregnant) (Some round) None)) 
                 Ok (Some (sprintf "Reproduction succeeded (%f >= %f)" chance rnd))
 
         selectFemale
         |> Result.bind getEligiblesDecision
         |> Result.bind tryMating
 
-    member me.onBirth round (Birth (mom,dad):GameEventData) =
-        enm.UpdateComponent round (Mating (mom.Update None (Some Female) (Some (round + mom.Species.MaxMatingFrequency)) None)) // Change Mom to Non-Pregnant Female and add some extra time to before she can mate again
+    member me.onBirth round (Birth (mom,_):GameEventData) =
+        enm.UpdateComponent round (Mating (UpdateMating mom None (Some Female) (Some (round + mom.Species.MaxMatingFrequency)) None)) // Change Mom to Non-Pregnant Female and add some extra time to before she can mate again
         let adjustComponents (c:Component) =
             match c with
             | Mating d -> 

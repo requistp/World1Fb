@@ -6,6 +6,8 @@ open CalendarTimings
 open EntityExtensions
 open EventManager
 open EventTypes
+open FoodComponent
+open FormComponent
 open LocationTypes
 open PlantGrowthComponent
 open SystemManager
@@ -16,8 +18,8 @@ type PlantGrowthSystem(description:string, isActive:bool, enm:EntityManager, evm
     inherit AbstractSystem(description,isActive)
   
     member private me.onComponentAdded round (ComponentAdded_PlantGrowth pgc:GameEventData) =
-        if pgc.RegrowRate > 0.0 then evm.AddToSchedule (ScheduleEvent (PlantGrowthFrequency, RepeatIndefinitely, PlantRegrowth pgc))
-        if pgc.ReproductionRate > 0.0 then evm.AddToSchedule (ScheduleEvent (PlantReproductionFrequency, RepeatIndefinitely, PlantReproduce pgc))
+        if pgc.RegrowRate > 0.0 then evm.AddToSchedule (PlantGrowthFrequency, RepeatIndefinitely, PlantRegrowth pgc)
+        if pgc.ReproductionRate > 0.0 then evm.AddToSchedule (PlantReproductionFrequency, RepeatIndefinitely, PlantReproduce pgc)
         Ok (Some (sprintf "Queued Regrow to Schedule:%b. Queued Repopulate to Schedule:%b" (pgc.RegrowRate > 0.0) (pgc.ReproductionRate > 0.0)))
   
     member private me.onReproduce round (PlantReproduce pgc:GameEventData) =
@@ -25,9 +27,9 @@ type PlantGrowthSystem(description:string, isActive:bool, enm:EntityManager, evm
             let adjustComponents (c:Component) =
                 match c with
                 | Food d -> 
-                    Food (d.Update None (Some 1) None)
+                    Food (UpdateFood d None (Some 1) None)
                 | Form d -> 
-                    Form (d.Update None None None (Some l))
+                    Form (UpdateForm d None None None (Some l))
                 | _ -> c          
             let newcts = 
                 pgc.EntityID

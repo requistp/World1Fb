@@ -1,4 +1,4 @@
-﻿module EventTypes
+﻿module rec EventTypes
 open CommonGenericFunctions
 open Component
 open ComponentEnums
@@ -30,9 +30,11 @@ type GameEventTypes =
     | Event_Starving
 
 type ScheduleType =
-    | RepeatFinite of RoundNumber
+    | RepeatFinite of int
     | RepeatIndefinitely
     | RunOnce
+
+type ScheduledEventData = RoundNumber * ScheduleType * GameEventData
 
 type GameEventData =
     | Action_Eat of EatingComponent
@@ -50,7 +52,7 @@ type GameEventData =
     | Metabolize of EatingComponent
     | PlantRegrowth of PlantGrowthComponent
     | PlantReproduce of PlantGrowthComponent
-    | ScheduleEvent of RoundNumber * ScheduleType * GameEventData
+    | ScheduleEvent of ScheduledEventData
     | Starving of EatingComponent
 
 let GetGameEvent (ge:GameEventData) =

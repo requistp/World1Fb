@@ -2,6 +2,9 @@
 open CommonGenericFunctions
 open ComponentEnums
 
+type ControllerTypes = 
+    | AI_Random
+    | Keyboard
 
 type ActionTypes = 
     | Eat
@@ -31,12 +34,6 @@ type ActionTypes =
         | Move_South -> [| FormComponent; MovementComponent |]
         | Move_West -> [| FormComponent; MovementComponent |]
 
-
-type ControllerTypes = 
-    | AI_Random
-    | Keyboard
-
-
 type ControllerComponent = 
     { 
         ID : ComponentID
@@ -46,14 +43,16 @@ type ControllerComponent =
         CurrentActions : ActionTypes[]   // Actions that can be done this turn
         PotentialActions : ActionTypes[] // Actions that can be done by entities components
     }
-    member me.ActionAllowed (action:ActionTypes) = me.CurrentActions |> Array.contains action
 
-    member me.Update (controllerTypeUpdate:ControllerTypes option) (currentActionUpdate:ActionTypes option) (currentActionsUpdate:ActionTypes[] option) (potentialActionsUpdate:ActionTypes[] option) =
-        {
-            me with
-                ControllerType = if controllerTypeUpdate.IsSome then controllerTypeUpdate.Value else me.ControllerType
-                CurrentAction = if currentActionUpdate.IsSome then currentActionUpdate.Value else me.CurrentAction
-                CurrentActions = if currentActionsUpdate.IsSome then currentActionsUpdate.Value else me.CurrentActions
-                PotentialActions = if potentialActionsUpdate.IsSome then potentialActionsUpdate.Value else me.PotentialActions
-        }
+let ActionIsAllowed (cc:ControllerComponent) (action:ActionTypes) = cc.CurrentActions |> Array.contains action
+
+let UpdateController (cc:ControllerComponent) (controllerTypeUpdate:ControllerTypes option) (currentActionUpdate:ActionTypes option) (currentActionsUpdate:ActionTypes[] option) (potentialActionsUpdate:ActionTypes[] option) =
+    {
+        cc with
+            ControllerType = if controllerTypeUpdate.IsSome then controllerTypeUpdate.Value else cc.ControllerType
+            CurrentAction = if currentActionUpdate.IsSome then currentActionUpdate.Value else cc.CurrentAction
+            CurrentActions = if currentActionsUpdate.IsSome then currentActionsUpdate.Value else cc.CurrentActions
+            PotentialActions = if potentialActionsUpdate.IsSome then potentialActionsUpdate.Value else cc.PotentialActions
+    }
+
 

@@ -8,10 +8,10 @@ open EventTypes
 type GameEventCallback = RoundNumber -> GameEventData -> Result<string option,string>
 
 type private agent_ScheduleMsg =
-    | AddToSchedule of RoundNumber * GameEventData
+    | AddToSchedule of RoundNumber * ScheduledEventData
     | ExecuteScheduled of RoundNumber 
-    | Init of Map<RoundNumber,GameEventData[]>
-    | Get  of AsyncReplyChannel<Map<RoundNumber,GameEventData[]> >
+    | Init of Map<RoundNumber,ScheduledEventData[]>
+    | Get  of AsyncReplyChannel<Map<RoundNumber,ScheduledEventData[]> >
 
 type private agentListenersMsg =
     | Execute of RoundNumber * GameEventData 
@@ -44,43 +44,37 @@ type EventManager(enm:EntityManager, log:agent_GameLog, getRound:unit->RoundNumb
                             log.Log (RoundNumber(0u)) (sprintf "%-3s | %-20s -> %-30s" "Ok " "Registered System" listener)
                 }
             )
+    
     let agentSchedule =
-        let mutable _schedule = Map.empty<RoundNumber,GameEventData[]>
+        let mutable _schedule = Map.empty<RoundNumber,ScheduledEventData[]>
         MailboxProcessor<agent_ScheduleMsg>.Start(
             fun inbox ->
                 async { 
                     while true do
                         let! msg = inbox.Receive()
-                        let addToSchedule (round:RoundNumber) (ScheduleEvent (frequency,scheduleType,ge):GameEventData) isNew =
+                        let addToSchedule (round:RoundNumber) ((frequency,scheduleType,ge):ScheduledEventData) isNew =
                             let interval = 
                                 match isNew && scheduleType = RepeatIndefinitely with
                                 | true -> TimingOffset frequency
                                 | false -> frequency
-                            _schedule <- Map_AppendValueToArrayNonUnique _schedule (round+interval) ge
+                            _schedule <- Map_AppendValueToArrayNonUnique _schedule (round+interval) (frequency,scheduleType,ge)
                             log.Log round (sprintf "%-3s | %-20s -> %-30s #%7i : Frequency:%i" "-->" "Scheduled Event" ((GetGameEvent ge).ToString()) (GetGameEvent_EntityID ge).ToUint32 frequency.ToUint32)
                         match msg with
                         | AddToSchedule (round,se) -> 
                             addToSchedule round se true
                         | ExecuteScheduled round ->
-                            ()
-                            //let reschedule (ScheduleEvent (frequency,scheduleType,ge):GameEventTypes) =
-                            //    match scheduleType with
-                            //    | RunOnce -> ()
-                            //    | RepeatIndefinitely -> addToSchedule round (ScheduleEvent(frequency,scheduleType,ge)) false 
-                            //    | RepeatFinite remaining -> 
-                            //        match remaining with
-                            //        | RoundNumber(1u) -> () // Done, that 1 is the last one
-                            //        | _ -> addToSchedule round (ScheduleEvent (frequency,RepeatFinite (remaining-1u),ge)) false
-                            //let executeAndReschedule (ScheduleEvent (frequency,scheduleType,ge):GameEventTypes) =
-                            //    ()
-                            //    //if (enm.EntityExists None ge.EntityID) then
-                            //    //    //FIX... agentListeners.Post (Execute (round,ge))
-                            //    //    //FIX... 
-                            //    //    //reschedule (ScheduleEvent (frequency,scheduleType,ge))
-                            //    //    ()
-                            //if (_schedule.ContainsKey round) then
-                            //    _schedule.Item(round) |> Array.Parallel.iter executeAndReschedule
-                            //    _schedule <- _schedule.Remove(round)
+                            let reschedule ((frequency,scheduleType,ge):ScheduledEventData) =
+                                match scheduleType with
+                                | RunOnce -> ()
+                                | RepeatIndefinitely -> addToSchedule round (frequency,scheduleType,ge) false 
+                                | RepeatFinite remaining -> if (remaining > 1) then addToSchedule round (frequency,RepeatFinite (remaining-1),ge) false
+                            let executeAndReschedule ((frequency,scheduleType,ge):ScheduledEventData) =
+                                if (enm.EntityExists None (GetGameEvent_EntityID ge)) then
+                                    agentListeners.Post (Execute (round,ge))
+                                    reschedule (frequency,scheduleType,ge)
+                            if (_schedule.ContainsKey round) then
+                                _schedule.Item(round) |> Array.Parallel.iter executeAndReschedule
+                                _schedule <- _schedule.Remove(round)
                         | Get replyChannel ->
                             replyChannel.Reply(_schedule)
                         | Init map ->

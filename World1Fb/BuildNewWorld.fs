@@ -28,7 +28,7 @@ let MakeMap (enm:EntityManager) =
             //| false -> ()
             //| true -> baseTerrain <- Array.append baseTerrain [|food.Value:>AbstractComponent|]
         baseTerrain
-    MapLocations |> Array.Parallel.map (fun l -> AddTerrain l)
+    MapLocations |> Array.Parallel.map AddTerrain
 
 
 let MakeGrasses (enm:EntityManager) n =
@@ -70,5 +70,5 @@ let MakeRabbits (enm:EntityManager) n =
         baseBunny
     match n with 
     | 0 -> Array.empty<Component[]>
-    | _ -> [|1..n|] |> Array.Parallel.map (fun i -> MakeRabbit (random.Next(0,MapWidth)) (random.Next(0,MapHeight)) (random.Next(0,2)) i) 
+    | _ -> [|1..n|] |> Array.Parallel.map (MakeRabbit (random.Next(0,MapWidth)) (random.Next(0,MapHeight)) (random.Next(0,2))) 
     

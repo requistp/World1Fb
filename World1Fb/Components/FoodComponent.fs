@@ -11,11 +11,11 @@ type FoodComponent =
         Quantity : int
         QuantityMax : int 
     }
-    member me.Update (foodTypeUpdate:FoodTypes option) (quantityUpdate:int option) (quantityMaxUpdate:int option) =
-        {
-            me with
-                FoodType = if foodTypeUpdate.IsSome then foodTypeUpdate.Value else me.FoodType
-                Quantity = if quantityUpdate.IsSome then quantityUpdate.Value else me.Quantity
-                QuantityMax = if quantityMaxUpdate.IsSome then quantityMaxUpdate.Value else me.QuantityMax
-        }
-    
+  
+let UpdateFood (food:FoodComponent) (foodTypeUpdate:FoodTypes option) (quantityUpdate:int option) (quantityMaxUpdate:int option) =
+       {
+           food with
+               FoodType = if foodTypeUpdate.IsSome then foodTypeUpdate.Value else food.FoodType
+               Quantity = if quantityUpdate.IsSome then quantityUpdate.Value else food.Quantity
+               QuantityMax = if quantityMaxUpdate.IsSome then quantityMaxUpdate.Value else food.QuantityMax
+       }

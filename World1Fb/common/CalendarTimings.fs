@@ -36,14 +36,14 @@ let convertAmountByFrequency (amountPerFreq:int) (frequencyOfAmount:FrequencyTyp
 let ExecuteTiming (frequency:RoundNumber) (offset:RoundNumber) (round:RoundNumber) = 
     match frequency.ToUint32 with
     | 0u -> false
-    | _ -> round.ToUint32 % frequency.ToUint32 = offset.ToUint32
+    | _ -> round % frequency = offset
 
 let TimingOffset (max:RoundNumber) = RoundNumber(uint32 (random.Next(1,int max.ToUint32))) // Add 1 because the frequency timing is being done off the current round, but that round is really over. So a zero offset should be done next round
 
 let AllTimingAccelerator = RoundNumber(1u)
-let MetabolismFrequency = (*RoundNumber(7u)*) roundsPerHour * 2u / AllTimingAccelerator
-let PlantGrowthFrequency = (*RoundNumber(10u)*) roundsPerDay / AllTimingAccelerator // If I change this, I need to change the regrowRate because 100% of that is applied per this update
-let PlantReproductionFrequency = (*RoundNumber(10u)*) roundsPerMonth / AllTimingAccelerator // If I change this, I need to change the reproductionRate because 100% of that is applied per this update
+let MetabolismFrequency = RoundNumber(7u) // roundsPerHour * 2u / AllTimingAccelerator
+let PlantGrowthFrequency = RoundNumber(10u) // roundsPerDay / AllTimingAccelerator // If I change this, I need to change the regrowRate because 100% of that is applied per this update
+let PlantReproductionFrequency = RoundNumber(10u) // roundsPerMonth / AllTimingAccelerator // If I change this, I need to change the reproductionRate because 100% of that is applied per this update
 
 
 

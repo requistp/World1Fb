@@ -50,7 +50,7 @@ type Game(wmrAll:EntityManager->RoundNumber option->unit, wmrEntity:EntityManage
 
         // Uncomment for world-view: 
         wmrAll entities None; printfn "Round#%i" round.ToUint32
-            
+
     member me.Start (ss:AbstractSystem[]) (initialForms:Component[][]) (filename:string) = 
         let mutable _round = RoundNumber(0u)
 

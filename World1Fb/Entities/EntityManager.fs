@@ -87,7 +87,7 @@ type EntityManager(useHistory:bool) =
     member me.UpdateComponent round comp = 
         match comp with
         | Form f -> 
-            let oldForm = ToForm (f.EntityID |> me.GetComponent None FormComponent)
+            let oldForm = ToForm (me.GetComponent None FormComponent f.EntityID)
             if (oldForm.Location <> f.Location) then
                 agent_Locations.Move round oldForm f
         | _ -> ()

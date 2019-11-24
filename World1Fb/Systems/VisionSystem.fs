@@ -31,7 +31,7 @@ type VisionSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
         | Some (Vision vision) ->
             let visionMap = LocationsWithinRange2D form.Location vision.RangeTemplate
             let viewableMap = handleFOV form vision visionMap
-            enm.UpdateComponent round (Vision (vision.Update round None (Some viewableMap) (Some visionMap)))
+            enm.UpdateComponent round (Vision (UpdateVision vision round None (Some viewableMap) (Some visionMap)))
             Ok None
 
     override me.Initialize = 

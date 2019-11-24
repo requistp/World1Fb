@@ -17,17 +17,15 @@ type EatingComponent =
         QuantityPerAction : int 
     } 
     member me.CaloriesPerMetabolize = Math.Clamp(convertAmountByFrequency me.CaloriesPerDay Day MetabolismFrequency,1,me.CaloriesPerDay)
-    
-    member me.CanEat (fd:FoodTypes) = me.Foods |> Array.contains fd    
-    
     member me.QuantityPerMetabolize = Math.Clamp(convertAmountByFrequency me.QuantityMax Day MetabolismFrequency,1,me.QuantityMax)
-    
     member me.QuantityRemaining = me.QuantityMax - me.Quantity
     
-    member me.Update (quantityUpdate:int option) (caloriesUpdate:int option) = 
-        {
-            me with
-                Quantity = if quantityUpdate.IsSome then quantityUpdate.Value else me.Quantity
-                Calories = if caloriesUpdate.IsSome then caloriesUpdate.Value else me.Calories
-        }
+let CanEat (eat:EatingComponent) (fd:FoodTypes) = eat.Foods |> Array.contains fd    
+
+let UpdateEating (eat:EatingComponent) (quantityUpdate:int option) (caloriesUpdate:int option) = 
+       {
+           eat with
+               Quantity = if quantityUpdate.IsSome then quantityUpdate.Value else eat.Quantity
+               Calories = if caloriesUpdate.IsSome then caloriesUpdate.Value else eat.Calories
+       }
 

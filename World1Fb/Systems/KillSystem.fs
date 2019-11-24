@@ -8,7 +8,7 @@ open EntityManager
 type KillSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
     inherit AbstractSystem(description,isActive) 
 
-    member private me.onKillAllEaten round (Kill_AllEaten (eat,food):GameEventData) =
+    member private me.onKillAllEaten round (Kill_AllEaten (_,food):GameEventData) =
         enm.RemoveEntity round food.EntityID
 
     override me.Initialize = 

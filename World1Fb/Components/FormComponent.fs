@@ -14,11 +14,12 @@ type FormComponent =
         Name : string
         Symbol : char 
     }
-    member me.Update (isPassableUpdate:bool option) (nameUpdate:string option) (symbolUpdate:char option) (locationUpdate:LocationDataInt option) =
-        {
-            me with
-                IsPassable = if isPassableUpdate.IsSome then isPassableUpdate.Value else me.IsPassable
-                Location = if locationUpdate.IsSome then locationUpdate.Value else me.Location
-                Name = if nameUpdate.IsSome then nameUpdate.Value else me.Name
-                Symbol = if symbolUpdate.IsSome then symbolUpdate.Value else me.Symbol
-        }
+    
+let UpdateForm (f:FormComponent) (isPassableUpdate:bool option) (nameUpdate:string option) (symbolUpdate:char option) (locationUpdate:LocationDataInt option) =
+    {
+        f with
+            IsPassable = if isPassableUpdate.IsSome then isPassableUpdate.Value else f.IsPassable
+            Location = if locationUpdate.IsSome then locationUpdate.Value else f.Location
+            Name = if nameUpdate.IsSome then nameUpdate.Value else f.Name
+            Symbol = if symbolUpdate.IsSome then symbolUpdate.Value else f.Symbol
+    }

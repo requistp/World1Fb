@@ -6,6 +6,7 @@ open ControllerComponent
 open EntityExtensions
 open EventManager
 open EventTypes
+open FormComponent
 open SystemManager
 open EntityManager
 
@@ -37,7 +38,7 @@ type MovementSystem(description:string, isActive:bool, enm:EntityManager, evm:Ev
         match not destination.IsOnMap || EntityExt.FormImpassableAtLocation enm None (Some f.EntityID) destination with
         | true -> Error (sprintf "Off map or form at location %s" (destination.ToString()))
         | false -> 
-            let newForm = f.Update None None None (Some destination)
+            let newForm = UpdateForm f None None None (Some destination)
             enm.UpdateComponent round (Form newForm)
             evm.RaiseEvent (LocationChanged newForm)
             Ok (Some (sprintf "Location %s" (destination.ToString())))

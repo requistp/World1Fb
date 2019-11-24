@@ -22,22 +22,20 @@ type FoodSystem(description:string, isActive:bool, enm:EntityManager, evm:EventM
             let newQ = Math.Clamp(food.Quantity - eat.Quantity, 0, food.QuantityMax)
             let allEaten = newQ <= 0
             if allEaten then evm.RaiseEvent (Food_AllEaten (eat,food))
-            enm.UpdateComponent round (Food (food.Update None (Some newQ) None))
+            enm.UpdateComponent round (Food (UpdateFood food None (Some newQ) None))
             Ok (Some (sprintf "Quantity:-%i=%i. All eaten:%b" eat.Quantity newQ allEaten))
 
-    member private me.onRegrowth round (ge:GameEventData) =
-        let (PlantRegrowth e) = ge
+    member private me.onRegrowth round (PlantRegrowth pg:GameEventData) =
         let tryRegrowFood (f:FoodComponent) = 
-            let (PlantGrowth pg) = enm.GetComponent None PlantGrowthComponent e.EntityID
             let missing = f.QuantityMax - f.Quantity
             match (missing, pg.RegrowRate) with
             | (0,_) -> Ok (Some "Already maxed")
             | (_,0.0) -> Ok (Some "Zero regrow rate")
             | (_,_) -> 
                 let quantity = Math.Clamp((int (Math.Round(pg.RegrowRate * (float f.QuantityMax),0))), 1, missing)
-                enm.UpdateComponent round (Food (f.Update None (Some (f.Quantity+quantity)) None)) 
-                Ok (Some (sprintf "EntityID:%i. Regrown quantity:%i" e.EntityID.ToUint32 quantity))
-        match (EntityExt.TryGetComponent enm None FoodComponent e.EntityID) with
+                enm.UpdateComponent round (Food (UpdateFood f None (Some (f.Quantity+quantity)) None)) 
+                Ok (Some (sprintf "EntityID:%i. Regrown quantity:%i" pg.EntityID.ToUint32 quantity))
+        match (EntityExt.TryGetComponent enm None FoodComponent pg.EntityID) with
         | None -> Ok None
         | Some (Food c) -> tryRegrowFood c
         | Some _ -> Error "Should not happen"

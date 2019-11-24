@@ -17,13 +17,13 @@ let AwaitKeyboardInput (enm:EntityManager) (controller:ControllerComponent) (ren
 
         match k.Key with 
         | ConsoleKey.Escape -> Some (Idle,false)
-        | ConsoleKey.E -> if true || controller.ActionAllowed Eat then Some (Eat,true) else None
         | ConsoleKey.Spacebar -> Some (Idle,true)
-        | ConsoleKey.M -> if true || controller.ActionAllowed Mate then Some (Mate,true) else None
-        | ConsoleKey.RightArrow -> if true || controller.ActionAllowed Move_East then Some (Move_East,true) else None
-        | ConsoleKey.UpArrow -> if true || controller.ActionAllowed Move_North then Some (Move_North,true) else None
-        | ConsoleKey.DownArrow -> if true || controller.ActionAllowed Move_South then Some (Move_South,true) else None
-        | ConsoleKey.LeftArrow -> if true || controller.ActionAllowed Move_West then Some (Move_West,true) else None
+        | ConsoleKey.E -> if ActionIsAllowed controller Eat  then Some (Eat,true) else None
+        | ConsoleKey.M -> if ActionIsAllowed controller Mate then Some (Mate,true) else None
+        | ConsoleKey.RightArrow -> if ActionIsAllowed controller Move_East  then Some (Move_East,true) else None
+        | ConsoleKey.UpArrow    -> if ActionIsAllowed controller Move_North then Some (Move_North,true) else None
+        | ConsoleKey.DownArrow  -> if ActionIsAllowed controller Move_South then Some (Move_South,true) else None
+        | ConsoleKey.LeftArrow  -> if ActionIsAllowed controller Move_West  then Some (Move_West,true) else None
         | _ -> None
 
     while _action.IsNone do

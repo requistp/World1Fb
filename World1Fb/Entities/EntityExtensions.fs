@@ -18,8 +18,8 @@ module rec EntityExt =
         |> GetEntitiesAtLocationWithComponent enm round FormComponent excludeEID
         |> Array.exists (fun (Form f) -> not f.IsPassable)
 
-    let GetComponentForEntities (enm:EntityManager) (round:RoundNumber option) (ctid:ComponentType) (eids:EntityID[]) = 
-        ctid
+    let GetComponentForEntities (enm:EntityManager) (round:RoundNumber option) (ct:ComponentType) (eids:EntityID[]) = 
+        ct
         |> enm.GetComponentsOfType round
         |> Array.filter (fun (c:Component) -> eids |> Array.contains (GetComponentEntityID c))
 
@@ -28,20 +28,21 @@ module rec EntityExt =
         |> enm.GetComponents round
         |> Array.Parallel.map GetComponentType
 
-    let GetEntitiesAtLocationWithComponent (enm:EntityManager) (round:RoundNumber option) (ctid:ComponentType) (excludeEID:EntityID option) (location:LocationDataInt) = 
+    let GetEntitiesAtLocationWithComponent (enm:EntityManager) (round:RoundNumber option) (ct:ComponentType) (excludeEID:EntityID option) (location:LocationDataInt) = 
         location
         |> enm.GetEntityIDsAtLocation round
         |> Array.filter (fun eid -> excludeEID.IsNone || eid <> excludeEID.Value) // Not excluded or not me
-        |> Array.Parallel.choose (TryGetComponent enm round ctid)
-
+        |> Array.Parallel.choose (TryGetComponent enm round ct)
     
     let GetLocation (enm:EntityManager) (round:RoundNumber option) (eid:EntityID) = 
-        (ToForm (eid |> enm.GetComponent round FormComponent)).Location
+        (ToForm (enm.GetComponent round FormComponent eid)).Location
 
-    let TryGetComponent (enm:EntityManager) (round:RoundNumber option) (ctid:ComponentType) (eid:EntityID) : Option<Component> = 
-        match (enm.GetComponents round eid) |> Array.filter (fun c -> GetComponentType c = ctid) with
+    let TryGetComponent (enm:EntityManager) (round:RoundNumber option) (ct:ComponentType) (eid:EntityID) : Option<Component> = 
+        match (enm.GetComponents round eid) |> Array.filter (fun c -> GetComponentType c = ct) with
         | [||] -> None
         | cts -> Some cts.[0]
+
+
 
 
         //let GetHistory_Entities (entities:EntityManager) (round:uint32 option) = 
