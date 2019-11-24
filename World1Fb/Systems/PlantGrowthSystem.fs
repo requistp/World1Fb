@@ -43,8 +43,8 @@ type PlantGrowthSystem(description:string, isActive:bool, enm:EntityManager, evm
             match pgc.ReproductionRate >= r with
             | false -> Error (sprintf "Failed: reproduction rate (%f<%f)" pgc.ReproductionRate r)
             | true -> 
-                let newLocation = (EntityExt.GetLocation enm None pgc.EntityID).AddOffset pgc.ReproductionRange pgc.ReproductionRange 0 false true
-                match newLocation.IsOnMap with
+                let newLocation = AddOffset (EntityExt.GetLocation enm None pgc.EntityID) pgc.ReproductionRange pgc.ReproductionRange 0 false true
+                match IsOnMap2D newLocation with
                 | false -> Error (sprintf "Failed: location not on map:%s" (newLocation.ToString()))
                 | true -> 
                     let eids = enm.GetEntityIDsAtLocation None newLocation

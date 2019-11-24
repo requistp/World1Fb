@@ -5,6 +5,7 @@ open ComponentEnums
 open EntityExtensions
 open EventManager
 open EventTypes
+open LocationTypes
 open MatingComponent
 open SystemManager
 open EntityManager
@@ -65,7 +66,7 @@ type MatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
             | Mating d -> 
                 Mating { d with MatingStatus = if random.Next(2) = 0 then Male else Female }
             | Form d -> 
-                Form { d with Location = d.Location.Add { X=0; Y=0; Z=0 }} 
+                Form { d with Location = d.Location + { X = 0; Y = 0; Z = 0 }} 
             | _ -> c
         let newcts = 
             mom.EntityID

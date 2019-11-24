@@ -3,11 +3,11 @@ open CommonGenericFunctions
 open System
 
 [<Literal>]
-let MapWidth = 20
+let MapWidth = 50
 
 
 [<Literal>]
-let MapHeight = 20
+let MapHeight = 50
 
 
 type LocationDataInt = 
@@ -16,6 +16,8 @@ type LocationDataInt =
         Y : int
         Z : int
     } 
+    static member (+) (l1:LocationDataInt,l2:LocationDataInt) = { X = l1.X + l2.X; Y = l1.Y + l2.Y; Z = l1.Z + l2.Z }
+    static member (-) (l1:LocationDataInt,l2:LocationDataInt) = { X = l1.X - l2.X; Y = l1.Y - l2.Y; Z = l1.Z - l2.Z }
     static member empty = { X = 0; Y = 0; Z = 0 }
     static member Is000 l = (l = LocationDataInt.empty)
     static member Offset (rangeX:int) (rangeY:int) (rangeZ:int) (allow000:bool) (doubleRandom:bool) =
@@ -38,12 +40,13 @@ type LocationDataInt =
         while (not allow000 && LocationDataInt.Is000 l) do
             l <- newLocation random.Next
         l
-    member me.Add (l:LocationDataInt) = { X = me.X + l.X; Y = me.Y + l.Y; Z = me.Z + l.Z }
-    member me.AddOffset (rangeX:int) (rangeY:int) (rangeZ:int) (allow000:bool) (doubleRandom:bool) =
-        me.Add (LocationDataInt.Offset rangeX rangeY rangeZ allow000 doubleRandom)
-    member me.IsOnMap = IsOnMap2D me
-    member me.Subtract (l:LocationDataInt) = { X = me.X - l.X; Y = me.Y - l.Y; Z = me.Z - l.Z }
     override me.ToString() = sprintf "{X=%i, Y=%i, Z=%i}" me.X me.Y me.Z
+
+let AddLocations (l1:LocationDataInt) (l2:LocationDataInt) = l1 + l2
+let SubtractLocations (l1:LocationDataInt) (l2:LocationDataInt) = l1 - l2
+
+let AddOffset (l:LocationDataInt) (rangeX:int) (rangeY:int) (rangeZ:int) (allow000:bool) (doubleRandom:bool) =
+    l + (LocationDataInt.Offset rangeX rangeY rangeZ allow000 doubleRandom)
 
 let IsOnMap2D (l:LocationDataInt) = 
     l.X >= 0 && l.X <= MapWidth-1 && l.Y >=0 && l.Y <= MapHeight-1
@@ -61,7 +64,7 @@ let RangeTemplate2D (range:int) =
 
 let LocationsWithinRange2D (location:LocationDataInt) (rangeTemplate:LocationDataInt[]) = 
     rangeTemplate 
-    |> Array.Parallel.map (location.Add)
+    |> Array.Parallel.map (AddLocations location)
     |> Array.filter IsOnMap2D
 
 let MapLocations =
