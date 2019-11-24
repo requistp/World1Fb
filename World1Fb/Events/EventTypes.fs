@@ -29,12 +29,17 @@ type GameEventTypes =
     | Event_ScheduleEvent
     | Event_Starving
 
-type ScheduleType =
+type ScheduleTypes =
     | RepeatFinite of int
     | RepeatIndefinitely
     | RunOnce
 
-type ScheduledEventData = RoundNumber * ScheduleType * GameEventData
+type ScheduledEventData = 
+    {
+        ScheduleType : ScheduleTypes
+        Frequency : RoundNumber
+        GameEvent : GameEventData
+    }
 
 type GameEventData =
     | Action_Eat of EatingComponent
@@ -46,8 +51,8 @@ type GameEventData =
     | ComponentAdded_PlantGrowth of PlantGrowthComponent
     | CreateEntity of Component[]
     | Eaten of EatingComponent * FoodComponent
-    | Food_AllEaten of EatingComponent * FoodComponent
-    | Kill_AllEaten of EatingComponent * FoodComponent
+    | Food_AllEaten of eater:EatingComponent * eaten:FoodComponent
+    | Kill_AllEaten of eater:EatingComponent * eaten:FoodComponent
     | LocationChanged of FormComponent
     | Metabolize of EatingComponent
     | PlantRegrowth of PlantGrowthComponent
@@ -92,7 +97,7 @@ let rec GetGameEvent_EntityID (ge:GameEventData) =
     | Metabolize d -> d.EntityID
     | PlantRegrowth d -> d.EntityID
     | PlantReproduce d -> d.EntityID
-    | ScheduleEvent (_,_,ge) -> GetGameEvent_EntityID ge
+    | ScheduleEvent ge -> GetGameEvent_EntityID ge.GameEvent
     | Starving d -> d.EntityID
 
 

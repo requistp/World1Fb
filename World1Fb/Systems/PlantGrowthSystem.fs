@@ -18,8 +18,8 @@ type PlantGrowthSystem(description:string, isActive:bool, enm:EntityManager, evm
     inherit AbstractSystem(description,isActive)
   
     member private me.onComponentAdded round (ComponentAdded_PlantGrowth pgc:GameEventData) =
-        if pgc.RegrowRate > 0.0 then evm.AddToSchedule (PlantGrowthFrequency, RepeatIndefinitely, PlantRegrowth pgc)
-        if pgc.ReproductionRate > 0.0 then evm.AddToSchedule (PlantReproductionFrequency, RepeatIndefinitely, PlantReproduce pgc)
+        if pgc.RegrowRate > 0.0 then evm.AddToSchedule { ScheduleType = RepeatIndefinitely; Frequency = PlantGrowthFrequency; GameEvent = PlantRegrowth pgc }
+        if pgc.ReproductionRate > 0.0 then evm.AddToSchedule { ScheduleType = RepeatIndefinitely; Frequency = PlantReproductionFrequency; GameEvent = PlantReproduce pgc }
         Ok (Some (sprintf "Queued Regrow to Schedule:%b. Queued Repopulate to Schedule:%b" (pgc.RegrowRate > 0.0) (pgc.ReproductionRate > 0.0)))
   
     member private me.onReproduce round (PlantReproduce pgc:GameEventData) =

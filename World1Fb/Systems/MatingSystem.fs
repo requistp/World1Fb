@@ -50,7 +50,7 @@ type MatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
                 enm.UpdateComponent round (Mating (UpdateMating mc2 None None (Some round) None))
                 Error (sprintf "Reproduction failed (%f<%f)" chance rnd)
             | true ->
-                evm.AddToSchedule (mc2.Species.Gestation, RunOnce, Birth (mc2,mc))
+                evm.AddToSchedule { ScheduleType = RunOnce; Frequency = mc2.Species.Gestation; GameEvent = Birth (mc2,mc) }
                 enm.UpdateComponent round (Mating (UpdateMating mc2 None (Some Female_Pregnant) (Some round) None)) 
                 Ok (Some (sprintf "Reproduction succeeded (%f >= %f)" chance rnd))
 

@@ -50,7 +50,7 @@ type EatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
         | Some foodEaten -> eatFood foodEaten
 
     member private me.onComponentAdded round (ComponentAdded_Eating eat:GameEventData) =
-        evm.AddToSchedule (MetabolismFrequency, RepeatIndefinitely, Metabolize eat)
+        evm.AddToSchedule { ScheduleType = RepeatIndefinitely; Frequency = MetabolismFrequency; GameEvent = Metabolize eat }
         Ok (Some (sprintf "Queued Metabolize to schedule. EntityID:%i" eat.EntityID.ToUint32))
         
     member private me.onMetabolize round (Metabolize eat:GameEventData) =
