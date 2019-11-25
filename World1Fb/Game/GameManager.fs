@@ -13,43 +13,47 @@ open SystemManager
 type Game(wmrAll:EntityManager->RoundNumber option->unit, wmrEntity:EntityManager->EntityID->unit, format:SaveGameFormats, useHistory:bool) =
     let agentForRound = new agent_Round()
     let gameLog = new agent_GameLog()
-    let entities = new EntityManager(useHistory)
-    let events = new EventManager(entities, gameLog, agentForRound.Get)
+    let enm = new EntityManager(useHistory)
+    let evm = new EventManager(enm, gameLog, agentForRound.Get)
     let systemMan = new SystemManager()
  
-    member _.Events = events
-    member _.Entities = entities
+    member _.Events = evm
+    member _.Entities = enm
 
     member private me.loadGame filename =
         let sgd = LoadAndSave.LoadGame format filename 
         agentForRound.Init sgd.Round
-        entities.Init sgd.Entities
+        enm.Init sgd.Components sgd.ComponentTypes sgd.Entities sgd.Locations
         sgd.Round
 
     member private me.saveGame =
         System.Threading.Thread.Sleep 100
-        LoadAndSave.SaveGame 
-            format
+        let sgd = 
             { 
-                Entities = entities.GetForSave
+                Components = enm.GetForSave_Components
+                ComponentTypes = enm.GetForSave_ComponentTypes
+                Entities = enm.GetForSave_Entities
+                Locations = enm.GetForSave_Locations
                 Round = agentForRound.Get() - 1u
-                ScheduledEvents = events.GetSchedule
+                ScheduledEvents = evm.GetSchedule
             }
+        LoadAndSave.SaveGame format sgd (agentForRound.Get())
 
     member private me.gameLoop (round:RoundNumber) =
         let handleEndOfRound loops = 
             [|1..loops|] |> Array.iter (fun x -> 
-                while (not systemMan.AllSystemsIdle || events.PendingUpdates) do 
+                while (not systemMan.AllSystemsIdle || evm.PendingUpdates) do 
                     if (round > RoundNumber(0u) && x > 1) then gameLog.Log round (sprintf "%-3s | %-20s -> %-30s #%7i : %s" "xld" "End of round" "Cancelled pending more events" x "Events") 
                     System.Threading.Thread.Sleep 1)
             gameLog.WriteLog
 
-        events.ExecuteScheduledEvents round
+        evm.ExecuteScheduledEvents round
         systemMan.UpdateSystems round
         handleEndOfRound 5
+        //me.saveGame
 
         // Uncomment for world-view: 
-        wmrAll entities None; printfn "Round#%i" round.ToUint32
+        //wmrAll enm None; printfn "Round#%i" round.ToUint32
 
     member me.Start (ss:AbstractSystem[]) (initialForms:Component[][]) (filename:string) = 
         let mutable _round = RoundNumber(0u)
@@ -61,16 +65,18 @@ type Game(wmrAll:EntityManager->RoundNumber option->unit, wmrEntity:EntityManage
             _round <- me.loadGame filename
         | _ -> 
             initialForms 
-            |> Array.Parallel.iter (fun cts -> if (cts.Length > 0) then events.RaiseEvent (CreateEntity cts))
+            |> Array.Parallel.iter (fun cts -> if (cts.Length > 0) then evm.RaiseEvent (CreateEntity cts))
             System.Threading.Thread.Sleep 1000
+            VisionSystem.UpdateViewableForAll enm (RoundNumber(0u))
         
         // Uncomment for world-view: 
-        wmrAll entities None; printfn "Round#%i" _round.ToUint32
+        //wmrAll enm None; printfn "Round#%i" _round.ToUint32
 
-        while  (ControllerSystem.GetInputForAllEntities entities gameLog _round wmrEntity) && (_round.ToUint32<500u) do
+        while  (ControllerSystem.GetInputForAllEntities enm gameLog _round wmrEntity) && (_round.ToUint32<500u) do
             me.gameLoop _round
             _round <- agentForRound.Increment
-            
-        me.saveGame // Exiting Game
+            VisionSystem.UpdateViewableForAll enm _round
+
+        //me.saveGame // Exiting Game
     
 

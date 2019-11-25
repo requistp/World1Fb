@@ -4,6 +4,12 @@ open agent_IDManager
 open CommonGenericFunctions
 open Component
 
+type Save_Entities = 
+    {
+        Entities_Current : Map<EntityID,ComponentID[]>
+        Entities_History : Map<EntityID,(RoundNumber*ComponentID[] option)[]>
+    }
+
 type private agent_CurrentMsg = 
     | Add of Component[]
     | AddMany of Component[][]
@@ -76,21 +82,20 @@ type agent_EntityManager(useHistory:bool, compMan:agent_Components) =
                                 match _history.ContainsKey eid with
                                 | false -> _history.Add(eid,[|round,Some (ctsToIDs cts)|])
                                 | true -> 
-                                    let h,t = _history.Item(eid) |> Array.splitAt 1
-                                    let newArray = 
-                                        match (fst h.[0] = round) with
-                                        | false -> Array.append [|round,Some (ctsToIDs cts)|] t
-                                        | true -> Array.append [|round,Some (ctsToIDs cts)|] (_history.Item(GetComponentEntityID cts.[0]))
+                                    let newArray = Array.append [|round,Some (ctsToIDs cts)|] (_history.Item eid)
+                                    _history.Remove(eid).Add(eid,newArray)
+                        let remove round eid = 
+                            _history <-
+                                match _history.ContainsKey eid with
+                                | false -> _history.Add(eid,[|round,None|])
+                                | true -> 
+                                    let newArray = Array.append [|round,None|] (_history.Item eid)
                                     _history.Remove(eid).Add(eid,newArray)
                         match msg with
                         | History_Add (round,cts) -> add round cts
                         | History_AddMany (round,ctss) -> ctss |> Array.iter (add round)
                         | History_Init startMap -> _history <- startMap
-                        | History_Remove (round,eid) ->
-                            if (_history.ContainsKey eid) then
-                                match snd (_history.Item eid).[0] with
-                                | None -> ()
-                                | Some _ -> _history <- _history.Add(eid,[|round,None|])
+                        | History_Remove (round,eid) -> remove round eid
                 }
             )
 
@@ -112,19 +117,20 @@ type agent_EntityManager(useHistory:bool, compMan:agent_Components) =
         | Some r,true -> getHistory r eid
         |> compMan.GetMany round
     member _.GetForSave =
-        agent_Current.PostAndReply GetMap
-        ,
-        _history
+        {
+            Entities_Current = agent_Current.PostAndReply GetMap
+            Entities_History = _history
+        }
     member _.GetMany (round:RoundNumber option) eids = 
         match round,useHistory with
         | None,_ | Some _,false -> agent_Current.PostAndReply (fun replyChannel -> GetMany (eids,replyChannel))
         | Some r,true -> eids |> Array.map (getHistory r)
         |> Array.map (compMan.GetMany round)
-    member _.Init currentMap historyMap =
+    member _.Init (save:Save_Entities) =
         Async.Parallel
         (
-            agent_Current.Post (Init currentMap)
-            agent_History.Post (History_Init historyMap)
+            agent_Current.Post (Init save.Entities_Current)
+            agent_History.Post (History_Init save.Entities_History)
         )
     member _.NewEntityID() = EntityID(idMan.GetNewID())
     member _.Remove (round:RoundNumber) eid = 

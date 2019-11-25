@@ -3,6 +3,11 @@ open agent_IDManager
 open CommonGenericFunctions
 open Component
 
+type Save_Components = 
+    {
+        Components_Current : Map<ComponentID,Component>
+        Components_History : Map<ComponentID,(RoundNumber*Component option)[]>
+    }
 
 type private agent_CurrentMsg = 
     | Add of Component
@@ -75,20 +80,22 @@ type agent_Components(useHistory:bool) =
                 async { 
                     while true do
                         let! msg = inbox.Receive()
-                        let add round (comp:Component) =
+                        let add round (c:Component) =
+                            let cid = GetComponentID c
                             _history <- 
-                                match _history.ContainsKey(GetComponentID comp) with
-                                | false -> _history.Add(GetComponentID comp,[|round,Some comp|])
+                                match (_history.ContainsKey cid) with
+                                | false -> _history.Add(cid,[|round,Some c|])
                                 | true -> 
-                                    let h,t = _history.Item(GetComponentID comp) |> Array.splitAt 1
-                                    let newArray = 
-                                        match ((fst h.[0]) = round) with
-                                        | false -> Array.append [|round,Some comp|] t
-                                        | true -> Array.append [|round,Some comp|] (_history.Item(GetComponentID comp))
-                                    _history.Remove(GetComponentID comp).Add(GetComponentID comp,newArray)
+                                    let newArray = Array.append [|round,Some c|] (_history.Item cid)
+                                    _history.Remove(cid).Add(cid,newArray)
                         let remove round (c:Component) =
-                            if (_history.ContainsKey(GetComponentID c)) then
-                                _history <- _history.Add(GetComponentID c,[|round,None|])
+                            let cid = GetComponentID c
+                            _history <- 
+                                match (_history.ContainsKey cid) with
+                                | false -> _history.Add(cid,[|round,None|]) // I track this because it might help detect if something was not added (which should have happened before this)
+                                | true ->
+                                    let newArray = Array.append [|round,None|] (_history.Item cid)
+                                    _history.Add(cid,newArray)
                         match msg with
                         | History_Add (round,comp) -> add round comp
                         | History_AddMany (round,comps) -> comps |> Array.iter (add round)
@@ -115,20 +122,21 @@ type agent_Components(useHistory:bool) =
         | None,_ | Some _,false -> agent_Current.PostAndReply (fun replyChannel -> Get (cid,replyChannel))
         | Some r,true -> getHistory r cid
     member _.GetForSave =
-        agent_Current.PostAndReply GetMap
-        ,
-        _history
+        {
+            Components_Current = agent_Current.PostAndReply GetMap
+            Components_History = _history
+        }
     member _.GetMany (round:RoundNumber option) cids = 
         match round,useHistory with
         | None,_ | Some _,false -> agent_Current.PostAndReply (fun replyChannel -> GetMany (cids,replyChannel))
         | Some r,true -> cids |> Array.choose (getHistory r)
     member _.NewComponentID() = ComponentID(idMan.GetNewID())
-    member _.Init (currentMap:Map<ComponentID,Component>) historyMap =
+    member _.Init (save:Save_Components) =
         Async.Parallel
         (
-            agent_Current.Post (Init currentMap)
-            idMan.Init (MapKeys currentMap |> Seq.map (fun k -> k.ToUint32) |> Seq.max)
-            agent_History.Post (History_Init historyMap)
+            agent_Current.Post (Init save.Components_Current)
+            idMan.Init (MapKeys save.Components_Current |> Seq.map (fun k -> k.ToUint32) |> Seq.max)
+            agent_History.Post (History_Init save.Components_History)
         )
     member _.Remove (round:RoundNumber) c = 
         Async.Parallel

@@ -49,7 +49,7 @@ let MakeRabbits (enm:EntityManager) n =
         let eid = enm.NewEntityID()
         let controller = 
             match n with
-            | 1 -> Controller { ID = enm.NewComponentID(); EntityID = eid; ControllerType = AI_Random; CurrentAction = Idle; CurrentActions = [|Idle|]; PotentialActions = [|Idle|] }
+            | 1 -> Controller { ID = enm.NewComponentID(); EntityID = eid; ControllerType = Keyboard; CurrentAction = Idle; CurrentActions = [|Idle|]; PotentialActions = [|Idle|] }
             | _ -> Controller { ID = enm.NewComponentID(); EntityID = eid; ControllerType = AI_Random; CurrentAction = Idle; CurrentActions = [|Idle|]; PotentialActions = [|Idle|] }
         let matingStatus = if n = 1 || rnd = 0 then Male else Female
         let symbol = if matingStatus = Male then 'R' else 'r'
@@ -57,7 +57,6 @@ let MakeRabbits (enm:EntityManager) n =
         let visionRange = 10
         let rangeTemplate = RangeTemplate2D visionRange
         let visionMap = LocationsWithinRange2D location (RangeTemplate2D visionRange)
-        let viewedMap = visionMap |> Array.fold (fun (v:Map<LocationDataInt,RoundNumber>) l -> v.Add(l,RoundNumber(0u))) Map.empty
         let baseBunny = 
             [|
                 controller
@@ -65,7 +64,7 @@ let MakeRabbits (enm:EntityManager) n =
                 Form { ID = enm.NewComponentID(); EntityID = eid; Born = RoundNumber(0u); CanSeePast = true; IsPassable = true; Name = "rabbit"; Symbol = symbol; Location = location }
                 Mating { ID = enm.NewComponentID(); EntityID = eid; ChanceOfReproduction = 0.9; LastMatingAttempt = RoundNumber(0u); MatingStatus = matingStatus; Species = Rabbit }
                 Movement { ID = enm.NewComponentID(); EntityID = eid; MovesPerTurn = 1 }
-                Vision { ID = enm.NewComponentID(); EntityID = eid; Range = visionRange; RangeTemplate = rangeTemplate; ViewedMap = viewedMap; ViewableMap = visionMap; VisionMap = visionMap }
+                Vision { ID = enm.NewComponentID(); EntityID = eid; Range = visionRange; RangeTemplate = rangeTemplate; ViewedHistory = Map.empty; (*ViewedHistory2 = Map.empty;*) VisibleLocations = Array.empty; LocationsWithinRange = visionMap }
             |]
         baseBunny
     match n with 

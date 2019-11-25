@@ -12,7 +12,7 @@ open VisionSystem
 open WorldMapRenderer
 
 
-let format = LoadAndSave.SaveGameFormats.Binary
+let format = LoadAndSave.SaveGameFormats.XML
 
 let wmr = new WorldMapRenderer()
 

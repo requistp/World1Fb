@@ -4,6 +4,11 @@ open CommonGenericFunctions
 open Component
 open ComponentEnums
 
+type Save_ComponentTypes = 
+    {
+        ComponentTypes_Current : Map<ComponentType,ComponentID[]>
+        ComponentTypes_History : Map<ComponentType,(RoundNumber*ComponentID[] option)[]>
+    }
 
 type private agent_CurrentMsg = 
     | Add of Component
@@ -72,26 +77,30 @@ type agent_ComponentTypes(useHistory:bool, compMan:agent_Components) =
                     while true do
                         let! msg = inbox.Receive()
                         let add round (c:Component) = 
+                            let ctid = GetComponentType c
+                            let cid = GetComponentID c
                             _history <- 
-                                match _history.ContainsKey(GetComponentType c) with
-                                | false -> _history.Add(GetComponentType c,[|round,Some [|GetComponentID c|]|])
+                                match (_history.ContainsKey ctid) with
+                                | false -> _history.Add(ctid,[|round,Some [|cid|]|])
                                 | true -> 
-                                    let h,t = _history.Item(GetComponentType c) |> Array.splitAt 1
-                                    let newArray = 
-                                        match ((fst h.[0]) = round) with
-                                        | false -> Array.append [|round,Some [|GetComponentID c|]|] t
-                                        | true -> Array.append [|round,Some [|GetComponentID c|]|] (_history.Item(GetComponentType c))
-                                    _history.Remove(GetComponentType c).Add(GetComponentType c,newArray)
+                                    let cids = 
+                                        match (snd (_history.Item(ctid).[0])) with
+                                        | None -> [|cid|]
+                                        | Some cids -> cids |> Array.filter (fun id -> id <> cid) |> Array.append [|cid|]
+                                    let newArray = Array.append [|round,Some cids|] (_history.Item(ctid))
+                                    _history.Remove(ctid).Add(ctid,newArray)
                         let remove round (c:Component) =
-                            if (_history.ContainsKey(GetComponentType c)) then
-                                match snd (_history.Item(GetComponentType c)).[0] with
-                                | None -> ()
-                                | Some a ->
-                                    if a |> Array.contains(GetComponentID c) then
-                                        _history <-
-                                            match a |> Array.filter (fun id -> id <> GetComponentID c) with
-                                            | [||] -> _history.Add(GetComponentType c,[|round,None|])
-                                            | n -> _history.Add(GetComponentType c,[|round,Some n|])
+                            let ctid = GetComponentType c
+                            _history <- 
+                                match (_history.ContainsKey ctid) with
+                                | false -> _history.Add(ctid,[|round,None|])
+                                | true -> 
+                                    let cidso = 
+                                        match (snd (_history.Item(ctid).[0])) with
+                                        | None -> None
+                                        | Some cids -> Some (cids |> Array.filter (fun id -> id <> GetComponentID c))
+                                    let newArray = Array.append [|round,cidso|] (_history.Item ctid)
+                                    _history.Remove(ctid).Add(ctid,newArray)
                         match msg with
                         | History_Add (round,c) -> add round c
                         | History_AddMany (round,cs) -> cs |> Array.iter (add round)
@@ -119,9 +128,10 @@ type agent_ComponentTypes(useHistory:bool, compMan:agent_Components) =
         | Some r,true -> getHistory r ctid
         |> compMan.GetMany round
     member _.GetForSave =
-        agent_Current.PostAndReply GetMap
-        ,
-        _history
+        {
+            ComponentTypes_Current = agent_Current.PostAndReply GetMap
+            ComponentTypes_History = _history
+        }
     member _.GetMap (round:RoundNumber option) = 
         match round,useHistory with
         | None,_ | Some _,false -> 
@@ -135,11 +145,11 @@ type agent_ComponentTypes(useHistory:bool, compMan:agent_Components) =
                 | Some cids ->
                     cids |> Array.choose (compMan.Get round)
                 )
-    member _.Init currentMap historyMap =
+    member _.Init (save:Save_ComponentTypes) =
         Async.Parallel
         (
-            agent_Current.Post (Init currentMap)
-            if useHistory then agent_History.Post (History_Init historyMap)
+            agent_Current.Post (Init save.ComponentTypes_Current)
+            if useHistory then agent_History.Post (History_Init save.ComponentTypes_History)
         )
     member _.Remove (round:RoundNumber) (comp:Component) = 
         Async.Parallel

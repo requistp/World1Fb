@@ -60,6 +60,9 @@ let MapKeys(map: Map<'K,'V>) =
             yield key
     } |> Set.ofSeq
 
+let MapKeysToArray (map) =
+    map |> MapKeys |> Seq.toArray
+
 let MapValuesToArray (map:Map<'K,'V>) =
     seq {
         for KeyValue(_,value) in map do

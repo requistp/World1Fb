@@ -69,7 +69,7 @@ type WorldMapRenderer() =
         let addX = centerX - f.Location.X
         let addY = centerY - f.Location.Y
         
-        v.ViewedMap
+        v.ViewedHistory
         |> Map.iter (fun location round -> 
             let drawX = location.X + addX
             let drawY = location.Y + addY
@@ -77,17 +77,20 @@ type WorldMapRenderer() =
             | false -> ()
             | true -> 
                 let drawCall = 
-                    match v.ViewableMap |> Array.contains location with
+                    match v.VisibleLocations |> Array.contains location with
                     | false -> ColoredConsole.Console.DrawDarkGray
                     | true -> ColoredConsole.Console.DrawWhite
                 let forms = 
                     //let es = enm.GetEntityMap (Some round) 
                     location
                     |> enm.GetFormsAtLocation (Some round)
+                    |> Array.sortByDescending (fun f -> f.ID)
+                    |> Array.head
                     //|> EntityExt.GetHistory_Locations enm (Some round)
                     //|> Array.Parallel.map (fun e -> (e|>EntityExt.GetComponent2 es FormComponentID).ToForm)
                 System.Console.SetCursorPosition(drawX,drawY)
-                drawCall forms.[0].Symbol
+                //drawCall forms.[0].Symbol
+                drawCall forms.Symbol
             )
 
 
