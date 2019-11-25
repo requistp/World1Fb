@@ -23,11 +23,11 @@ type WorldMapRenderer() =
         | ConsoleKey.RightArrow -> _windowLocation <- (Math.Clamp(fst _windowLocation + 1, 0, MapWidth-viewSizeX), snd _windowLocation)
         | _ -> ()
 
-    member me.Update (enm:EntityManager) (round:RoundNumber option) = 
+    member me.Update (enm:EntityManager) = 
         Console.CursorVisible <- false
         Console.Title <- "World Map"
         
-        let allForms = enm.GetLocationMap None
+        let allForms = enm.GetLocationMap
 
         let rangeY = 
             [|(snd _windowLocation)..(snd _windowLocation + viewSizeY - 1)|]
@@ -41,10 +41,10 @@ type WorldMapRenderer() =
                     match fds.Length with
                     | 1 -> fds.[0]
                     | _ ->
-                        match fds |> Array.tryFind (fun c -> (EntityExt.TryGetComponent enm round ControllerComponent c.EntityID).IsSome) with
+                        match fds |> Array.tryFind (fun c -> (EntityExt.TryGetComponent enm ControllerComponent c.EntityID).IsSome) with
                         | Some f -> f
                         | None ->
-                            (fds |> Array.sortBy (fun c -> (EntityExt.TryGetComponent enm round TerrainComponent c.EntityID).IsSome)).[0]
+                            (fds |> Array.sortBy (fun c -> (EntityExt.TryGetComponent enm TerrainComponent c.EntityID).IsSome)).[0]
                 
                 let fs = allForms.Item({ X = x; Y = y; Z = 0 })
 
@@ -63,8 +63,8 @@ type WorldMapRenderer() =
         let centerX = 30
         let centerY = 10
 
-        let (Vision v) = enm.GetComponent None VisionComponent entityID
-        let (Form f) = enm.GetComponent None FormComponent entityID
+        let (Vision v) = enm.GetComponent VisionComponent entityID
+        let (Form f) = enm.GetComponent FormComponent entityID
 
         let addX = centerX - f.Location.X
         let addY = centerY - f.Location.Y
@@ -83,7 +83,7 @@ type WorldMapRenderer() =
                 let forms = 
                     //let es = enm.GetEntityMap (Some round) 
                     location
-                    |> enm.GetFormsAtLocation (Some round)
+                    |> enm.GetFormsAtLocation 
                     |> Array.sortByDescending (fun f -> f.ID)
                     |> Array.head
                     //|> EntityExt.GetHistory_Locations enm (Some round)

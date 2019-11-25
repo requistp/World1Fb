@@ -4,9 +4,9 @@ open Logging
 
 
 type private agentLogMsg =
-| Log of RoundNumber * string // Typical Format: "%-3s | %-20s -> %-30s #%7i%s"
-| SetLogging of bool
-| WriteLog
+    | Log of RoundNumber * string // Typical Format: "%-3s | %-20s -> %-30s #%7i%s"
+    | SetLogging of bool
+    | WriteLog
 
 
 type agent_GameLog() =

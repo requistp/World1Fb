@@ -1,8 +1,4 @@
 ﻿module LoadAndSave
-open agent_Components
-open agent_ComponentTypes
-open agent_EntityManager
-open agent_Locations
 open CommonGenericFunctions
 open Component
 open ComponentEnums
@@ -14,10 +10,10 @@ open System.IO
 
 type SaveGameData = 
     { 
-        Components : Save_Components
-        ComponentTypes : Save_ComponentTypes
-        Entities : Save_Entities
-        Locations : Save_Locations
+        Components : Map<ComponentID,Component>
+        ComponentTypes : Map<ComponentType,ComponentID[]>
+        Entities : Map<EntityID,ComponentID[]>
+        Locations : Map<LocationDataInt,ComponentID[]>
         Round : RoundNumber
         ScheduledEvents : Map<RoundNumber,ScheduledEventData[]>
     }

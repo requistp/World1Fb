@@ -5,12 +5,6 @@ open Component
 open FormComponent
 open LocationTypes
 
-type Save_Locations = 
-    {
-        Locations_Current : Map<LocationDataInt,ComponentID[]>
-        Locations_History : Map<LocationDataInt,(RoundNumber*ComponentID[] option)[]>
-    }
-
 type private agent_CurrentMsg =
     | Add of FormComponent
     | Get of LocationDataInt * AsyncReplyChannel<ComponentID[]>
@@ -19,17 +13,10 @@ type private agent_CurrentMsg =
     | Move of oldForm:FormComponent * newForm:FormComponent
     | Remove of FormComponent
 
-type private agent_HistoryMsg =
-    | History_Add of RoundNumber * FormComponent
-    | History_Init of Map<LocationDataInt,(RoundNumber*ComponentID[] option)[]>
-    | History_Move of RoundNumber * oldForm:FormComponent * newForm:FormComponent
-    | History_Remove of RoundNumber * FormComponent
-
-type agent_Locations(useHistory:bool, compMan:agent_Components) = 
-    let mutable _history = Map.empty<LocationDataInt,(RoundNumber*ComponentID[] option)[]>
-
+type agent_Locations(compMan:agent_Components) = 
+    let mutable _map = Map.empty<LocationDataInt,ComponentID[]>
     let agent_Current =
-        let mutable _map = Map.empty<LocationDataInt,ComponentID[]>
+        
         MailboxProcessor<agent_CurrentMsg>.Start(
             fun inbox ->
                 async { 
@@ -60,100 +47,21 @@ type agent_Locations(useHistory:bool, compMan:agent_Components) =
                         | Remove form -> remove form
                 }
             )
-            
-    let agent_History =
-        MailboxProcessor<agent_HistoryMsg>.Start(
-            fun inbox ->
-                async { 
-                    while true do
-                        let! msg = inbox.Receive()
-                        let add round (f:FormComponent) = 
-                            _history <- 
-                                match _history.ContainsKey f.Location with
-                                | false -> _history.Add(f.Location,[|round,Some [|f.ID|]|])
-                                | true -> 
-                                    let cids = 
-                                        match (snd (_history.Item(f.Location).[0])) with
-                                        | None -> [|f.ID|]
-                                        | Some cids -> cids |> Array.filter (fun cid -> cid <> f.ID) |> Array.append [|f.ID|]
-                                    let newArray = Array.append [|round,Some cids|] (_history.Item f.Location)
-                                    _history.Remove(f.Location).Add(f.Location,newArray)
-                        let remove round (f:FormComponent) =
-                            _history <-
-                                match (_history.ContainsKey f.Location) with
-                                | false -> _history.Add(f.Location,[|round,None|])
-                                | true ->
-                                    let cidso = 
-                                        match (snd (_history.Item(f.Location).[0])) with
-                                        | None -> None
-                                        | Some cids -> Some (cids |> Array.filter (fun cid -> cid <> f.ID))
-                                    let newArray = Array.append [|round,cidso|] (_history.Item f.Location)
-                                    _history.Remove(f.Location).Add(f.Location,newArray)
-                        match msg with
-                        | History_Add (round,f) -> add round f
-                        | History_Init startMap -> _history <- startMap
-                        | History_Move (round,oldForm,newForm) -> 
-                            remove round oldForm
-                            add round newForm
-                        | History_Remove (round,f) -> remove round f
-                }
-            )
-    
-    member _.Add (round:RoundNumber) (form:FormComponent) = 
-        Async.Parallel
-        (
-            agent_Current.Post (Add form)
-            if useHistory then agent_History.Post (History_Add (round,form))
-        )
-    member _.Get (round:RoundNumber option) location = 
-        let getHistory round location = 
-            match (_history.ContainsKey location) with
-            | false -> [||]
-            | true -> 
-                match searchArrayDataForRound round (_history.Item location) with
-                | None -> [||]
-                | Some cids -> cids
-        match round,useHistory with
-        | None,_ | Some _,false -> agent_Current.PostAndReply (fun replyChannel -> Get (location,replyChannel))
-        | Some r,true -> getHistory r location
-        |> compMan.GetMany round
+
+    member _.Add (form:FormComponent) = agent_Current.Post (Add form)
+    member _.Get location = //agent_Current.PostAndReply (fun replyChannel -> Get (location,replyChannel)) |> compMan.GetMany |> Array.Parallel.map ToForm
+        match _map.ContainsKey location with
+        | false -> Array.empty
+        | true -> _map.Item location
+        |> compMan.GetMany 
         |> Array.Parallel.map ToForm
-    member _.GetForSave =
-        {
-            Locations_Current = agent_Current.PostAndReply GetMap
-            Locations_History = _history
-        }
-    member _.GetMap (round:RoundNumber option) = 
-        match round,useHistory with
-        | None,_ | Some _,false -> 
-            agent_Current.PostAndReply GetMap
-            |> Map.map (fun _ cids -> cids |> Array.choose (compMan.Get round) |> Array.map ToForm)
-        | Some _,true -> 
-            _history
-            |> Map.map (fun _ a -> 
-                match (snd a.[0]) with
-                | None -> [||]
-                | Some cids ->
-                    cids |> Array.choose (compMan.Get round) |> Array.map ToForm
-                )
-    member _.Init (save:Save_Locations) =
-        Async.Parallel
-        (
-            agent_Current.Post (Init save.Locations_Current)
-            agent_History.Post (History_Init save.Locations_History)
-        )
-    member _.Move (round:RoundNumber) oldForm newForm = 
-        Async.Parallel
-        (
-            agent_Current.Post (Move (oldForm,newForm))
-            if useHistory then agent_History.Post (History_Move (round,oldForm,newForm))
-        )
-    member _.Remove (round:RoundNumber) (form:FormComponent) = 
-        Async.Parallel
-        (
-            agent_Current.Post (Remove form)
-            if useHistory then agent_History.Post (History_Remove (round,form))
-        )
+    member _.GetMap = _map //agent_Current.PostAndReply GetMap  // |> Map.map (fun _ cids -> cids |> Array.choose compMan.Get |> Array.map ToForm)
+    member _.GetMap_Forms = //agent_Current.PostAndReply GetMap |> Map.map (fun _ cids -> cids |> Array.Parallel.choose compMan.Get |> Array.Parallel.map ToForm)
+        _map 
+        |> Map.map (fun _ cids -> cids |> Array.Parallel.choose compMan.Get |> Array.Parallel.map ToForm)
+    member _.Init startMap = agent_Current.Post (Init startMap)
+    member _.Move oldForm newForm = agent_Current.Post (Move (oldForm,newForm))
+    member _.Remove (form:FormComponent) = agent_Current.Post (Remove form)
 
 
 
@@ -172,3 +80,53 @@ type agent_Locations(useHistory:bool, compMan:agent_Components) =
 //    | Some r -> agent_Current.PostAndReply GetMap
 
 
+
+(*
+type private agent_HistoryMsg =
+    | History_Add of RoundNumber * FormComponent
+    | History_Init of Map<LocationDataInt,(RoundNumber*ComponentID[] option)[]>
+    | History_Move of RoundNumber * oldForm:FormComponent * newForm:FormComponent
+    | History_Remove of RoundNumber * FormComponent
+
+let mutable _history = Map.empty<LocationDataInt,(RoundNumber*ComponentID[] option)[]>
+
+let agent_History =
+    MailboxProcessor<agent_HistoryMsg>.Start(
+        fun inbox ->
+async { 
+    while true do
+        let! msg = inbox.Receive()
+        let add round (f:FormComponent) = 
+            _history <- 
+                match _history.ContainsKey f.Location with
+                | false -> _history.Add(f.Location,[|round,Some [|f.ID|]|])
+                | true -> 
+                    let cids = 
+                        match (snd (_history.Item(f.Location).[0])) with
+                        | None -> [|f.ID|]
+                        | Some cids -> cids |> Array.filter (fun cid -> cid <> f.ID) |> Array.append [|f.ID|]
+                    let newArray = Array.append [|round,Some cids|] (_history.Item f.Location)
+                    _history.Remove(f.Location).Add(f.Location,newArray)
+        let remove round (f:FormComponent) =
+            _history <-
+                match (_history.ContainsKey f.Location) with
+                | false -> _history.Add(f.Location,[|round,None|])
+                | true ->
+                    let cidso = 
+                        match (snd (_history.Item(f.Location).[0])) with
+                        | None -> None
+                        | Some cids -> Some (cids |> Array.filter (fun cid -> cid <> f.ID))
+                    let newArray = Array.append [|round,cidso|] (_history.Item f.Location)
+                    _history.Remove(f.Location).Add(f.Location,newArray)
+        match msg with
+        | History_Add (round,f) -> add round f
+        | History_Init startMap -> _history <- startMap
+        | History_Move (round,oldForm,newForm) -> 
+            remove round oldForm
+            add round newForm
+        | History_Remove (round,f) -> remove round f
+}
+        )
+    
+    
+    *)

@@ -43,18 +43,18 @@ type PlantGrowthSystem(description:string, isActive:bool, enm:EntityManager, evm
             match pgc.ReproductionRate >= r with
             | false -> Error (sprintf "Failed: reproduction rate (%f<%f)" pgc.ReproductionRate r)
             | true -> 
-                let newLocation = AddOffset (EntityExt.GetLocation enm None pgc.EntityID) pgc.ReproductionRange pgc.ReproductionRange 0 false true
+                let newLocation = AddOffset (EntityExt.GetLocation enm pgc.EntityID) pgc.ReproductionRange pgc.ReproductionRange 0 false true
                 match IsOnMap2D newLocation with
                 | false -> Error (sprintf "Failed: location not on map:%s" (newLocation.ToString()))
                 | true -> 
-                    let eids = enm.GetEntityIDsAtLocation None newLocation
-                    match (EntityExt.GetComponentForEntities enm None PlantGrowthComponent eids).Length with 
+                    let eids = enm.GetEntityIDsAtLocation newLocation
+                    match (EntityExt.GetComponentForEntities enm PlantGrowthComponent eids).Length with 
                     | x when x > 0 -> Error (sprintf "Failed: plant exists at location:%s" (newLocation.ToString()))
                     | _ -> 
-                        match pgc.GrowsInTerrain|>Array.contains (ToTerrain (EntityExt.GetComponentForEntities enm None TerrainComponent eids).[0]).Terrain with
+                        match pgc.GrowsInTerrain|>Array.contains (ToTerrain (EntityExt.GetComponentForEntities enm TerrainComponent eids).[0]).Terrain with
                         | false -> Error "Failed: terrain is not suitable"
                         | true -> 
-                            match (EntityExt.TryGetComponent enm None FoodComponent pgc.EntityID) with
+                            match (EntityExt.TryGetComponent enm FoodComponent pgc.EntityID) with
                             | None -> Ok newLocation
                             | Some (Food fd) -> 
                                 let pct = float fd.Quantity / float fd.QuantityMax

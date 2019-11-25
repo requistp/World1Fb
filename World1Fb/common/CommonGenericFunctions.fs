@@ -32,17 +32,6 @@ type RoundNumber =
     static member (%) (RoundNumber m1, m2:uint32) = RoundNumber (m1 % m2)
     static member (%) (m1:uint32, RoundNumber m2) = RoundNumber (m1 % m2)
 
-let rec searchArrayDataForRound (round:RoundNumber) (arrayToSearch:(RoundNumber*'a option)[]) =
-    match arrayToSearch with
-    | [||] -> None
-    | _ -> 
-        match Array.head arrayToSearch with
-        | r,c when r <= round -> c
-        | _ -> 
-            match Array.tail arrayToSearch with
-            | [||] -> None
-            | t -> searchArrayDataForRound round t
-
 let castEnumToArray<'a> = (Enum.GetValues(typeof<'a>) :?> ('a [])) //This only works if the enum has been assigned int values
 let castEnumToStringArray<'a> = Enum.GetNames(typeof<'a>) 
 
@@ -141,4 +130,15 @@ module Timer =
 //    bind switchFunction twoTrackInput 
 
 
+
+//let rec searchArrayDataForRound (round:RoundNumber) (arrayToSearch:(RoundNumber*'a option)[]) =
+//    match arrayToSearch with
+//    | [||] -> None
+//    | _ -> 
+//        match Array.head arrayToSearch with
+//        | r,c when r <= round -> c
+//        | _ -> 
+//            match Array.tail arrayToSearch with
+//            | [||] -> None
+//            | t -> searchArrayDataForRound round t
 

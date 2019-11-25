@@ -10,85 +10,83 @@ open FormComponent
 open LocationTypes
 
 
-type EntityManager(useHistory:bool) = 
-    let agent_Components = new agent_Components(useHistory)
-    let agent_Entities = new agent_EntityManager(useHistory, agent_Components)
-    let agent_Locations = new agent_Locations(useHistory, agent_Components)
-    let agent_ComponentTypes = new agent_ComponentTypes(useHistory, agent_Components)
+type EntityManager() = 
+    let agent_Components = new agent_Components()
+    let agent_ComponentTypes = new agent_ComponentTypes(agent_Components)
+    let agent_Entities = new agent_EntityManager(agent_Components)
+    let agent_Locations = new agent_Locations(agent_Components)
     
-    member  _.CreateEntity (round:RoundNumber) (cts:Component[]) = 
+    member  _.CreateEntity (cts:Component[]) = 
         Async.Parallel 
         (
-            agent_Components.AddMany round cts
+            agent_Components.AddMany cts
 
-            agent_ComponentTypes.AddMany round cts
+            agent_ComponentTypes.AddMany cts
 
-            cts |> Array.iter (fun c -> if GetComponentType c = FormComponent then agent_Locations.Add round (ToForm c))
+            cts |> Array.iter (fun c -> if GetComponentType c = FormComponent then agent_Locations.Add (ToForm c))
 
-            agent_Entities.Add round cts       
+            agent_Entities.Add cts       
         ) 
         Ok None
-    member  _.CreateEntityMany (round:RoundNumber) (ctss:Component[][]) = 
+    member  _.CreateEntityMany (ctss:Component[][]) = 
         Async.Parallel 
         (
-            ctss |> Array.iter (agent_Components.AddMany round)
+            ctss |> Array.iter agent_Components.AddMany
 
-            ctss |> Array.iter (agent_ComponentTypes.AddMany round)
+            ctss |> Array.iter agent_ComponentTypes.AddMany
 
-            ctss |> Array.iter (fun cts -> cts |> Array.iter (fun c -> if GetComponentType c = FormComponent then agent_Locations.Add round (ToForm c)))
+            ctss |> Array.iter (fun cts -> cts |> Array.iter (fun c -> if GetComponentType c = FormComponent then agent_Locations.Add (ToForm c)))
 
-            ctss |> Array.iter (agent_Entities.Add round)
+            ctss |> Array.iter agent_Entities.Add
         ) 
         Ok None
-    member me.EntityExists round entityID = 
-        match me.GetComponents round entityID with
+    member me.EntityExists entityID = 
+        match me.GetComponents entityID with
         | [||] -> false
         | _ -> true
-    member me.GetComponent round ctid eid = 
+    member me.GetComponent ctid eid = 
         eid
-        |> me.GetComponents round
+        |> me.GetComponents
         |> Array.find (fun (c:Component) -> GetComponentType c = ctid)
-    member  _.GetComponents round eid = agent_Entities.Get round eid
-    member  _.GetComponentsOfType round ctid = agent_ComponentTypes.Get round ctid
-    member  _.GetFormsAtLocation round location = agent_Locations.Get round location
-    member  _.GetForSave_Components = agent_Components.GetForSave
-    member  _.GetForSave_ComponentTypes = agent_ComponentTypes.GetForSave
-    member  _.GetForSave_Entities = agent_Entities.GetForSave
-    member  _.GetForSave_Locations = agent_Locations.GetForSave
-    member me.GetEntityIDsAtLocation round location = 
-        me.GetFormsAtLocation round location
-        |> Array.Parallel.map (fun f -> f.EntityID)
-    member  _.GetLocationMap round = agent_Locations.GetMap round
-    member  _.Init (c:Save_Components) (ct:Save_ComponentTypes) (e:Save_Entities) (l:Save_Locations) =
-        agent_Components.Init c
-        agent_ComponentTypes.Init ct
-        agent_Entities.Init e
-        agent_Locations.Init l
+    member  _.GetComponents eid = agent_Entities.Get eid
+    member  _.GetComponentsOfType ctid = agent_ComponentTypes.Get ctid
+    member  _.GetFormsAtLocation location = agent_Locations.Get location
+    member  _.GetForSave_Components = agent_Components.GetMap
+    member  _.GetForSave_ComponentTypes = agent_ComponentTypes.GetMap
+    member  _.GetForSave_Entities = agent_Entities.GetMap
+    member  _.GetForSave_Locations = agent_Locations.GetMap
+    member me.GetEntityIDsAtLocation location = me.GetFormsAtLocation location |> Array.Parallel.map (fun f -> f.EntityID)
+    member  _.GetLocationMap = agent_Locations.GetMap_Forms 
+    member  _.Init (compMap:Map<ComponentID,Component>) (compTypeMap:Map<ComponentType,ComponentID[]>) (entityMap:Map<EntityID,ComponentID[]>) (locationMap:Map<LocationDataInt,ComponentID[]>) =
+        agent_Components.Init compMap
+        agent_ComponentTypes.Init compTypeMap
+        agent_Entities.Init entityMap
+        agent_Locations.Init locationMap
     member  _.NewComponentID() = agent_Components.NewComponentID()
     member  _.NewEntityID() = agent_Entities.NewEntityID()
-    member me.RemoveEntity round eid = 
-        let cts = eid |> me.GetComponents (Some round)
+    member me.RemoveEntity eid = 
+        let cts = me.GetComponents eid
         
         Async.Parallel
         (
-            agent_Components.RemoveMany round cts
+            agent_Components.RemoveMany cts
 
-            agent_ComponentTypes.RemoveMany round cts
+            agent_ComponentTypes.RemoveMany cts
 
-            cts |> Array.iter (fun c -> if GetComponentType c = FormComponent then agent_Locations.Remove round (ToForm c))
+            cts |> Array.iter (fun c -> if GetComponentType c = FormComponent then agent_Locations.Remove (ToForm c))
 
-            agent_Entities.Remove round eid
+            agent_Entities.Remove eid
         )
         Ok None
     member me.UpdateComponent round comp = 
         match comp with
         | Form f -> 
-            let oldForm = ToForm (me.GetComponent None FormComponent f.EntityID)
+            let oldForm = ToForm (me.GetComponent FormComponent f.EntityID)
             if (oldForm.Location <> f.Location) then
-                agent_Locations.Move round oldForm f
+                agent_Locations.Move oldForm f
         | _ -> ()
         
-        agent_Components.Update round comp
+        agent_Components.Update comp
         
 
 

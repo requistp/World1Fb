@@ -69,7 +69,7 @@ type EventManager(enm:EntityManager, log:agent_GameLog, getRound:unit->RoundNumb
                                 | RepeatIndefinitely -> addToSchedule round se false 
                                 | RepeatFinite remaining -> if (remaining > 1) then addToSchedule round { se with ScheduleType = RepeatFinite (remaining - 1) } false
                             let executeAndReschedule (se:ScheduledEventData) =
-                                if (enm.EntityExists None (GetGameEvent_EntityID se.GameEvent)) then
+                                if (enm.EntityExists (GetGameEvent_EntityID se.GameEvent)) then
                                     agentListeners.Post (Execute (round,se.GameEvent))
                                     reschedule se
                             if (_schedule.ContainsKey round) then

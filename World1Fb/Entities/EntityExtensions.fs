@@ -10,35 +10,35 @@ module rec EntityExt =
     let CopyEntity (enm:EntityManager) (round:RoundNumber) (oldeid:EntityID) =
         let neweid = enm.NewEntityID()
         oldeid
-        |> enm.GetComponents None
+        |> enm.GetComponents
         |> Array.Parallel.map (Component.Copy neweid enm.NewComponentID round)
 
-    let FormImpassableAtLocation (enm:EntityManager) (round:RoundNumber option) (excludeEID:EntityID option) (location:LocationDataInt) =
+    let FormImpassableAtLocation (enm:EntityManager) (excludeEID:EntityID option) (location:LocationDataInt) =
         location
-        |> GetEntitiesAtLocationWithComponent enm round FormComponent excludeEID
+        |> GetEntitiesAtLocationWithComponent enm FormComponent excludeEID
         |> Array.exists (fun (Form f) -> not f.IsPassable)
 
-    let GetComponentForEntities (enm:EntityManager) (round:RoundNumber option) (ct:ComponentType) (eids:EntityID[]) = 
+    let GetComponentForEntities (enm:EntityManager) (ct:ComponentType) (eids:EntityID[]) = 
         ct
-        |> enm.GetComponentsOfType round
+        |> enm.GetComponentsOfType
         |> Array.filter (fun (c:Component) -> eids |> Array.contains (GetComponentEntityID c))
 
-    let GetComponentTypes (enm:EntityManager) (round:RoundNumber option) (eid:EntityID) =
+    let GetComponentTypes (enm:EntityManager) (eid:EntityID) =
         eid
-        |> enm.GetComponents round
+        |> enm.GetComponents
         |> Array.Parallel.map GetComponentType
 
-    let GetEntitiesAtLocationWithComponent (enm:EntityManager) (round:RoundNumber option) (ct:ComponentType) (excludeEID:EntityID option) (location:LocationDataInt) = 
+    let GetEntitiesAtLocationWithComponent (enm:EntityManager) (ct:ComponentType) (excludeEID:EntityID option) (location:LocationDataInt) = 
         location
-        |> enm.GetEntityIDsAtLocation round
+        |> enm.GetEntityIDsAtLocation 
         |> Array.filter (fun eid -> excludeEID.IsNone || eid <> excludeEID.Value) // Not excluded or not me
-        |> Array.Parallel.choose (TryGetComponent enm round ct)
+        |> Array.Parallel.choose (TryGetComponent enm ct)
     
-    let GetLocation (enm:EntityManager) (round:RoundNumber option) (eid:EntityID) = 
-        (ToForm (enm.GetComponent round FormComponent eid)).Location
+    let GetLocation (enm:EntityManager) (eid:EntityID) = 
+        (ToForm (enm.GetComponent FormComponent eid)).Location
 
-    let TryGetComponent (enm:EntityManager) (round:RoundNumber option) (ct:ComponentType) (eid:EntityID) : Option<Component> = 
-        match (enm.GetComponents round eid) |> Array.filter (fun c -> GetComponentType c = ct) with
+    let TryGetComponent (enm:EntityManager) (ct:ComponentType) (eid:EntityID) : Option<Component> = 
+        match (enm.GetComponents eid) |> Array.filter (fun c -> GetComponentType c = ct) with
         | [||] -> None
         | cts -> Some cts.[0]
 

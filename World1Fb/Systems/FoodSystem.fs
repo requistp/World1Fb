@@ -35,7 +35,7 @@ type FoodSystem(description:string, isActive:bool, enm:EntityManager, evm:EventM
                 let quantity = Math.Clamp((int (Math.Round(pg.RegrowRate * (float f.QuantityMax),0))), 1, missing)
                 enm.UpdateComponent round (Food (UpdateFood f None (Some (f.Quantity+quantity)) None)) 
                 Ok (Some (sprintf "EntityID:%i. Regrown quantity:%i" pg.EntityID.ToUint32 quantity))
-        match (EntityExt.TryGetComponent enm None FoodComponent pg.EntityID) with
+        match (EntityExt.TryGetComponent enm FoodComponent pg.EntityID) with
         | None -> Ok None
         | Some (Food c) -> tryRegrowFood c
         | Some _ -> Error "Should not happen"

@@ -12,13 +12,13 @@ open EntityManager
 
 let private EligibleFemales (enm:EntityManager) (mating:MatingComponent) round = 
     mating.EntityID 
-    |> EntityExt.GetLocation enm None
-    |> EntityExt.GetEntitiesAtLocationWithComponent enm None MatingComponent (Some mating.EntityID)
+    |> EntityExt.GetLocation enm 
+    |> EntityExt.GetEntitiesAtLocationWithComponent enm MatingComponent (Some mating.EntityID)
     |> Array.Parallel.map ToMating
     |> Array.filter (fun m -> m.Species = mating.Species && m.MatingStatus = Female && CanMate m round) // Same Species & Non-Pregnant Females & Can Retry
 
 let MateActionEnabled (enm:EntityManager) (entityID:EntityID) (round:RoundNumber) =
-    let (Mating m) = enm.GetComponent None MatingComponent entityID
+    let (Mating m) = enm.GetComponent MatingComponent entityID
     match m.MatingStatus with
     | Male when CanMate m round -> 
         (EligibleFemales enm m round).Length > 0
