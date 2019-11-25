@@ -14,13 +14,13 @@ open EntityManager
 
 let FoodsAtLocation (enm:EntityManager) (eat:EatingComponent) =
     eat.EntityID
-    |> EntityExt.GetLocation enm None
-    |> EntityExt.GetEntitiesAtLocationWithComponent enm None FoodComponent (Some eat.EntityID)
+    |> EntityExt.GetLocation enm 
+    |> EntityExt.GetEntitiesAtLocationWithComponent enm FoodComponent (Some eat.EntityID)
     |> Array.filter (fun (Food f) -> CanEat eat f.FoodType && f.Quantity > 0) // Types I can eat & Food remaining
     |> Array.Parallel.map ToFood
 
 let EatActionEnabled (enm:EntityManager) (entityID:EntityID) =
-    let (Eating eat) = enm.GetComponent None EatingComponent entityID
+    let (Eating eat) = enm.GetComponent EatingComponent entityID
     (eat.QuantityRemaining > 0) && ((FoodsAtLocation enm eat).Length > 0)
 
 type EatingSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =

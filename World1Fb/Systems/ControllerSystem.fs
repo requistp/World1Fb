@@ -25,7 +25,7 @@ let private getCurrentActions (enm:EntityManager) (actions:ActionTypes[]) (entit
         | Move_East ->  if Array.contains Move_East  movesAllowed then Some Move_East  else None
         | Move_South -> if Array.contains Move_South movesAllowed then Some Move_South else None
         | Move_West ->  if Array.contains Move_West  movesAllowed then Some Move_West  else None
-    actions |> Array.Parallel.choose actionEnabledTest
+    actions |> Array.choose actionEnabledTest  // Test Parallel
 
 let GetInputForAllEntities (enm:EntityManager) (log:agent_GameLog) (round:RoundNumber) (renderer:EntityManager -> EntityID -> unit) = 
     let setCurrentActions (controller:ControllerComponent) = 
@@ -73,9 +73,9 @@ let GetInputForAllEntities (enm:EntityManager) (log:agent_GameLog) (round:RoundN
         |> Array.forall (fun b -> b)
 
     ControllerComponent
-    |> enm.GetComponentsOfType None
-    |> Array.Parallel.map (fun (Controller c) -> setCurrentActions c)
-    |> Array.Parallel.partition (fun c -> c.ControllerType = Keyboard)
+    |> enm.GetComponentsOfType
+    |> Array.map (fun (Controller c) -> setCurrentActions c) 
+    |> Array.partition (fun c -> c.ControllerType = Keyboard)
     |> handleSplitInputTypes 
 
 type ControllerSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
@@ -87,19 +87,19 @@ type ControllerSystem(description:string, isActive:bool, enm:EntityManager, evm:
         | _ -> 
             evm.RaiseEvent (
                 match controller.CurrentAction with 
-                | Eat  -> Action_Eat (ToEating (enm.GetComponent None EatingComponent controller.EntityID))
-                | Mate -> Action_Mate (ToMating (enm.GetComponent None MatingComponent controller.EntityID))
-                | Move_North -> Action_Movement ((ToForm (enm.GetComponent None FormComponent controller.EntityID)), North)
-                | Move_East  -> Action_Movement ((ToForm (enm.GetComponent None FormComponent controller.EntityID)), East)
-                | Move_South -> Action_Movement ((ToForm (enm.GetComponent None FormComponent controller.EntityID)), South)
-                | Move_West  -> Action_Movement ((ToForm (enm.GetComponent None FormComponent controller.EntityID)), West)
+                | Eat  -> Action_Eat (ToEating (enm.GetComponent EatingComponent controller.EntityID))
+                | Mate -> Action_Mate (ToMating (enm.GetComponent MatingComponent controller.EntityID))
+                | Move_North -> Action_Movement ((ToForm (enm.GetComponent FormComponent controller.EntityID)), North)
+                | Move_East  -> Action_Movement ((ToForm (enm.GetComponent FormComponent controller.EntityID)), East)
+                | Move_South -> Action_Movement ((ToForm (enm.GetComponent FormComponent controller.EntityID)), South)
+                | Move_West  -> Action_Movement ((ToForm (enm.GetComponent FormComponent controller.EntityID)), West)
                 )
 
     member private me.onSetPotentialActions (round:RoundNumber) (ComponentAdded_Controller c:GameEventData) =
         let potential = 
-            let ects = EntityExt.GetComponentTypes enm None c.EntityID
+            let ects = EntityExt.GetComponentTypes enm c.EntityID
             ActionTypes.AsArray 
-            |> Array.Parallel.choose (fun a -> if a.RequiredComponents |> Array.forall (fun ct -> ects |> Array.contains ct) then Some a else None)
+            |> Array.choose (fun a -> if a.RequiredComponents |> Array.forall (fun ct -> ects |> Array.contains ct) then Some a else None)
         
         match (ArrayContentsMatch potential c.PotentialActions) with
         | true -> Ok None
@@ -110,8 +110,8 @@ type ControllerSystem(description:string, isActive:bool, enm:EntityManager, evm:
 
     member private me.handleAllActions =
         ControllerComponent
-        |> enm.GetComponentsOfType None
-        |> Array.Parallel.iter handleAction
+        |> enm.GetComponentsOfType
+        |> Array.iter handleAction
 
     override me.Initialize = 
         evm.RegisterListener me.Description Event_ComponentAdded_Controller (me.TrackTask me.onSetPotentialActions)

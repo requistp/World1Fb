@@ -7,7 +7,6 @@ open ComponentEnums
 type Save_ComponentTypes = 
     {
         ComponentTypes_Current : Map<ComponentType,ComponentID[]>
-        ComponentTypes_History : Map<ComponentType,(RoundNumber*ComponentID[] option)[]>
     }
 
 type private agent_CurrentMsg = 
@@ -19,23 +18,8 @@ type private agent_CurrentMsg =
     | Remove of Component
     | RemoveMany of Component[]
         
-type private agent_HistoryMsg = 
-    | History_Add of RoundNumber * Component
-    | History_AddMany of RoundNumber * Component[]
-    | History_Init of Map<ComponentType,(RoundNumber*ComponentID[] option)[]>
-    | History_Remove of RoundNumber * Component
-    | History_RemoveMany of RoundNumber * Component[]
         
 type agent_ComponentTypes(useHistory:bool, compMan:agent_Components) = 
-    let mutable _history = Map.empty<ComponentType,(RoundNumber*ComponentID[] option)[]>
-
-    let getHistory round ctid = 
-        match (_history.ContainsKey ctid) with
-        | false -> [||]
-        | true -> 
-            match searchArrayDataForRound round (_history.Item ctid) with
-            | None -> [||]
-            | Some a -> a
 
     let agent_Current =
         let mutable _map = Map.empty<ComponentType,ComponentID[]>
@@ -70,99 +54,16 @@ type agent_ComponentTypes(useHistory:bool, compMan:agent_Components) =
                 }
             )
     
-    let agent_History =
-        MailboxProcessor<agent_HistoryMsg>.Start(
-            fun inbox ->
-                async { 
-                    while true do
-                        let! msg = inbox.Receive()
-                        let add round (c:Component) = 
-                            let ctid = GetComponentType c
-                            let cid = GetComponentID c
-                            _history <- 
-                                match (_history.ContainsKey ctid) with
-                                | false -> _history.Add(ctid,[|round,Some [|cid|]|])
-                                | true -> 
-                                    let cids = 
-                                        match (snd (_history.Item(ctid).[0])) with
-                                        | None -> [|cid|]
-                                        | Some cids -> cids |> Array.filter (fun id -> id <> cid) |> Array.append [|cid|]
-                                    let newArray = Array.append [|round,Some cids|] (_history.Item(ctid))
-                                    _history.Remove(ctid).Add(ctid,newArray)
-                        let remove round (c:Component) =
-                            let ctid = GetComponentType c
-                            _history <- 
-                                match (_history.ContainsKey ctid) with
-                                | false -> _history.Add(ctid,[|round,None|])
-                                | true -> 
-                                    let cidso = 
-                                        match (snd (_history.Item(ctid).[0])) with
-                                        | None -> None
-                                        | Some cids -> Some (cids |> Array.filter (fun id -> id <> GetComponentID c))
-                                    let newArray = Array.append [|round,cidso|] (_history.Item ctid)
-                                    _history.Remove(ctid).Add(ctid,newArray)
-                        match msg with
-                        | History_Add (round,c) -> add round c
-                        | History_AddMany (round,cs) -> cs |> Array.iter (add round)
-                        | History_Init startMap -> _history <- startMap
-                        | History_Remove (round,c) -> remove round c
-                        | History_RemoveMany (round,cs) -> cs |> Array.iter (remove round)
-                }
-            )
+
     
-    member _.Add (round:RoundNumber) comp = 
-        Async.Parallel
-        (
-            agent_Current.Post (Add comp)
-            if useHistory then agent_History.Post (History_Add (round,comp))
-        )
-    member _.AddMany (round:RoundNumber) cts = 
-        Async.Parallel
-        (
-            agent_Current.Post (AddMany cts)
-            if useHistory then agent_History.Post (History_AddMany (round,cts))
-        )
-    member _.Get round ctid = 
-        match round,useHistory with
-        | None,_ | Some _,false -> agent_Current.PostAndReply (fun replyChannel -> Get (ctid,replyChannel))
-        | Some r,true -> getHistory r ctid
-        |> compMan.GetMany round
-    member _.GetForSave =
-        {
-            ComponentTypes_Current = agent_Current.PostAndReply GetMap
-            ComponentTypes_History = _history
-        }
-    member _.GetMap (round:RoundNumber option) = 
-        match round,useHistory with
-        | None,_ | Some _,false -> 
-            agent_Current.PostAndReply GetMap
-            |> Map.map (fun _ cids -> cids |> Array.choose (compMan.Get round))
-        | Some _,true -> 
-            _history
-            |> Map.map (fun _ a -> 
-                match (snd a.[0]) with
-                | None -> [||]
-                | Some cids ->
-                    cids |> Array.choose (compMan.Get round)
-                )
-    member _.Init (save:Save_ComponentTypes) =
-        Async.Parallel
-        (
-            agent_Current.Post (Init save.ComponentTypes_Current)
-            if useHistory then agent_History.Post (History_Init save.ComponentTypes_History)
-        )
-    member _.Remove (round:RoundNumber) (comp:Component) = 
-        Async.Parallel
-        (
-            agent_Current.Post (Remove comp)
-            if useHistory then agent_History.Post (History_Remove (round,comp))
-        )
-    member _.RemoveMany (round:RoundNumber) (cts:Component[]) = 
-        Async.Parallel
-        (
-            agent_Current.Post (RemoveMany cts)
-            if useHistory then agent_History.Post (History_RemoveMany (round,cts))
-        )
+    member _.Add comp = agent_Current.Post (Add comp)
+    member _.AddMany cts = agent_Current.Post (AddMany cts)
+    member _.Get ctid = agent_Current.PostAndReply (fun replyChannel -> Get (ctid,replyChannel)) |> compMan.GetMany None
+    member _.GetForSave = { ComponentTypes_Current = agent_Current.PostAndReply GetMap }
+    member _.GetMap = agent_Current.PostAndReply GetMap |> Map.map (fun _ cids -> cids |> Array.choose (compMan.Get None))
+    member _.Init (save:Save_ComponentTypes) = agent_Current.Post (Init save.ComponentTypes_Current)
+    member _.Remove (comp:Component) = agent_Current.Post (Remove comp)
+    member _.RemoveMany (cts:Component[]) = agent_Current.Post (RemoveMany cts)
 
 
 
@@ -173,3 +74,57 @@ type agent_ComponentTypes(useHistory:bool, compMan:agent_Components) =
     //member _.Get round ctid = agent_History.PostAndReply (fun replyChannel -> GetHistory (ctid,replyChannel)) |> searchArrayDataForRound round
     //member _.Remove round (comp:Component) = agent_History.Post (RemoveHistory (round,comp.ComponentTypeID,comp.ID))
 
+    //ComponentTypes_History : Map<ComponentType,(RoundNumber*ComponentID[] option)[]>
+//type private agent_HistoryMsg = 
+//    | History_Add of RoundNumber * Component
+//    | History_AddMany of RoundNumber * Component[]
+//    | History_Init of Map<ComponentType,(RoundNumber*ComponentID[] option)[]>
+//    | History_Remove of RoundNumber * Component
+//    | History_RemoveMany of RoundNumber * Component[]
+    //let mutable _history = Map.empty<ComponentType,(RoundNumber*ComponentID[] option)[]>
+    //let getHistory round ctid = 
+    //    match (_history.ContainsKey ctid) with
+    //    | false -> [||]
+    //    | true -> 
+    //        match searchArrayDataForRound round (_history.Item ctid) with
+    //        | None -> [||]
+    //        | Some a -> a
+    //let agent_History =
+    //    MailboxProcessor<agent_HistoryMsg>.Start(
+    //        fun inbox ->
+    //            async { 
+    //                while true do
+    //                    let! msg = inbox.Receive()
+    //                    let add round (c:Component) = 
+    //                        let ctid = GetComponentType c
+    //                        let cid = GetComponentID c
+    //                        _history <- 
+    //                            match (_history.ContainsKey ctid) with
+    //                            | false -> _history.Add(ctid,[|round,Some [|cid|]|])
+    //                            | true -> 
+    //                                let cids = 
+    //                                    match (snd (_history.Item(ctid).[0])) with
+    //                                    | None -> [|cid|]
+    //                                    | Some cids -> cids |> Array.filter (fun id -> id <> cid) |> Array.append [|cid|]
+    //                                let newArray = Array.append [|round,Some cids|] (_history.Item(ctid))
+    //                                _history.Remove(ctid).Add(ctid,newArray)
+    //                    let remove round (c:Component) =
+    //                        let ctid = GetComponentType c
+    //                        _history <- 
+    //                            match (_history.ContainsKey ctid) with
+    //                            | false -> _history.Add(ctid,[|round,None|])
+    //                            | true -> 
+    //                                let cidso = 
+    //                                    match (snd (_history.Item(ctid).[0])) with
+    //                                    | None -> None
+    //                                    | Some cids -> Some (cids |> Array.filter (fun id -> id <> GetComponentID c))
+    //                                let newArray = Array.append [|round,cidso|] (_history.Item ctid)
+    //                                _history.Remove(ctid).Add(ctid,newArray)
+    //                    match msg with
+    //                    | History_Add (round,c) -> add round c
+    //                    | History_AddMany (round,cs) -> cs |> Array.iter (add round)
+    //                    | History_Init startMap -> _history <- startMap
+    //                    | History_Remove (round,c) -> remove round c
+    //                    | History_RemoveMany (round,cs) -> cs |> Array.iter (remove round)
+    //            }
+    //        )
