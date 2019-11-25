@@ -53,7 +53,7 @@ type Game(wmrAll:EntityManager->RoundNumber option->unit, wmrEntity:EntityManage
         //me.saveGame
 
         // Uncomment for world-view: 
-        //wmrAll enm None; printfn "Round#%i" round.ToUint32
+        wmrAll enm None; printfn "Round#%i" round.ToUint32
 
     member me.Start (ss:AbstractSystem[]) (initialForms:Component[][]) (filename:string) = 
         let mutable _round = RoundNumber(0u)
@@ -66,13 +66,13 @@ type Game(wmrAll:EntityManager->RoundNumber option->unit, wmrEntity:EntityManage
         | _ -> 
             initialForms 
             |> Array.Parallel.iter (fun cts -> if (cts.Length > 0) then evm.RaiseEvent (CreateEntity cts))
-            System.Threading.Thread.Sleep 1000
+            System.Threading.Thread.Sleep 5000
             VisionSystem.UpdateViewableForAll enm (RoundNumber(0u))
         
         // Uncomment for world-view: 
-        //wmrAll enm None; printfn "Round#%i" _round.ToUint32
+        wmrAll enm None; printfn "Round#%i" _round.ToUint32
 
-        while  (ControllerSystem.GetInputForAllEntities enm gameLog _round wmrEntity) && (_round.ToUint32<500u) do
+        while  (ControllerSystem.GetInputForAllEntities enm gameLog _round wmrEntity) && (_round.ToUint32<500000000u) do
             me.gameLoop _round
             _round <- agentForRound.Increment
             VisionSystem.UpdateViewableForAll enm _round

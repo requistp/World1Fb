@@ -9,7 +9,7 @@ let AwaitKeyboardInput (enm:EntityManager) (controller:ControllerComponent) (ren
     let mutable _action = None
     
     // Uncomment for Entity-view... 
-    renderer enm (controller.EntityID)
+    //renderer enm (controller.EntityID)
 
     let handleKeyPressed (k:ConsoleKeyInfo) = 
         while Console.KeyAvailable do //Might help clear double movement keys entered in one turn
