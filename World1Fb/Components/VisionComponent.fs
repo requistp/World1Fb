@@ -1,5 +1,6 @@
 ﻿module VisionComponent
 open CommonGenericFunctions
+open FormComponent
 open LocationTypes
 
         
@@ -9,9 +10,9 @@ type VisionComponent =
         EntityID : EntityID
         Range : int
         RangeTemplate : LocationDataInt[]
-        ViewedHistory : Map<LocationDataInt,RoundNumber> // All locations that entity has ever seen, and when
-        VisibleLocations : LocationDataInt[]             // Locations that are visible taking into account occlusion, etc. (i.e. a subset of VisionMap)
-        LocationsWithinRange : LocationDataInt[]         // Locations within range--regardless of being blocked/visible/etc.
+        ViewedHistory : Map<LocationDataInt,FormComponent[]>    // All locations that entity has ever seen, and when
+        VisibleLocations : Map<LocationDataInt,FormComponent[]> // Locations that are visible taking into account occlusion, etc. (i.e. a subset of VisionMap)
+        LocationsWithinRange : LocationDataInt[]                // Locations within range--regardless of being blocked/visible/etc.
     }
 
 let UpdateVision (vision:VisionComponent) (rangeUpdate:int option) (locationsWithinRangeUpdate:LocationDataInt[] option) =
@@ -22,16 +23,14 @@ let UpdateVision (vision:VisionComponent) (rangeUpdate:int option) (locationsWit
             LocationsWithinRange = if locationsWithinRangeUpdate.IsSome then locationsWithinRangeUpdate.Value else vision.LocationsWithinRange
     } 
 
-let UpdateViewed (vision:VisionComponent) (round:RoundNumber) (visibleLocations:LocationDataInt[]) =
+let UpdateViewed (vision:VisionComponent) (round:RoundNumber) (visibleLocations:Map<LocationDataInt,FormComponent[]>) =
     {
         vision with
             VisibleLocations = visibleLocations
             ViewedHistory = 
                 visibleLocations 
-                |> Array.fold (fun (m:Map<LocationDataInt,RoundNumber>) l -> 
-                    match m.ContainsKey l with
-                    | false -> m.Add(l,round)
-                    | true -> m.Remove(l).Add(l,round)
+                |> Map.fold (fun m l fs -> 
+                    m.Remove(l).Add(l,fs)
                     ) vision.ViewedHistory
     } 
 

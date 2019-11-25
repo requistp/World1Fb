@@ -23,7 +23,7 @@ type WorldMapRenderer() =
         | ConsoleKey.RightArrow -> _windowLocation <- (Math.Clamp(fst _windowLocation + 1, 0, MapWidth-viewSizeX), snd _windowLocation)
         | _ -> ()
 
-    member me.Update (enm:EntityManager) (round:RoundNumber option) = 
+    member me.Update (enm:EntityManager) = 
         Console.CursorVisible <- false
         Console.Title <- "World Map"
         
@@ -38,20 +38,23 @@ type WorldMapRenderer() =
         for y in rangeY do
             for x in rangeX do
                 let selectForm (fds:FormComponent[]) = 
-                    match fds.Length with
-                    | 1 -> fds.[0]
-                    | _ ->
-                        match fds |> Array.tryFind (fun c -> (EntityExt.TryGetComponent enm ControllerComponent c.EntityID).IsSome) with
-                        | Some f -> f
-                        | None ->
-                            (fds |> Array.sortBy (fun c -> (EntityExt.TryGetComponent enm TerrainComponent c.EntityID).IsSome)).[0]
+                    fds
+                    |> Array.sortByDescending (fun f -> f.ID)
+                    |> Array.head
+                    //match fds.Length with
+                    //| 1 -> fds.[0]
+                    //| _ ->
+                    //    match fds |> Array.tryFind (fun c -> (EntityExt.TryGetComponent enm ControllerComponent c.EntityID).IsSome) with
+                    //    | Some f -> f
+                    //    | None ->
+                    //        (fds |> Array.sortBy (fun c -> (EntityExt.TryGetComponent enm TerrainComponent c.EntityID).IsSome)).[0]
                 
-                let fs = allForms.Item({ X = x; Y = y; Z = 0 })
+                let formsAtLocation = allForms.Item({ X = x; Y = y; Z = 0 })
 
-                match fs.Length with
+                match formsAtLocation.Length with
                 | 0 -> ()
                 | _ ->
-                    let fd = selectForm fs
+                    let fd = selectForm formsAtLocation
                     System.Console.SetCursorPosition(x - fst _windowLocation, y - snd _windowLocation)
                     System.Console.Write(fd.Symbol)
         
@@ -77,19 +80,20 @@ type WorldMapRenderer() =
             | false -> ()
             | true -> 
                 let drawCall = 
-                    match v.VisibleLocations |> Array.contains location with
+                    match (v.VisibleLocations.ContainsKey location) with
                     | false -> ColoredConsole.Console.DrawDarkGray
                     | true -> ColoredConsole.Console.DrawWhite
                 let forms = 
-                    //let es = enm.GetEntityMap (Some round) 
-                    location
-                    |> enm.GetFormsAtLocation 
-                    |> Array.sortByDescending (fun f -> f.ID)
-                    |> Array.head
-                    //|> EntityExt.GetHistory_Locations enm (Some round)
-                    //|> Array.Parallel.map (fun e -> (e|>EntityExt.GetComponent2 es FormComponentID).ToForm)
+                    match (v.VisibleLocations.ContainsKey location) with
+                    | false -> 
+                        v.ViewedHistory.Item location
+                        |> Array.sortBy (fun f -> f.ID)
+                        |> Array.head
+                    | true -> 
+                        v.ViewedHistory.Item location
+                        |> Array.sortByDescending (fun f -> f.ID)
+                        |> Array.head
                 System.Console.SetCursorPosition(drawX,drawY)
-                //drawCall forms.[0].Symbol
                 drawCall forms.Symbol
             )
 

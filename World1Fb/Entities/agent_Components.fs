@@ -5,7 +5,7 @@ open Component
 
 type Save_Components = 
     {
-        Components_Current : Map<ComponentID,Component>
+        Components : Map<ComponentID,Component>
     }
 
 type private agent_CurrentMsg = 
@@ -62,14 +62,14 @@ type agent_Components() =
     member _.Add comp = agent.Post (Add comp)
     member _.AddMany comps = agent.Post (AddMany comps)
     member _.Get cid = agent.PostAndReply (fun replyChannel -> Get (cid,replyChannel))
-    member _.GetForSave = { Components_Current = agent.PostAndReply GetMap }
+    member _.GetForSave = { Components = agent.PostAndReply GetMap }
     member _.GetMany cids = agent.PostAndReply (fun replyChannel -> GetMany (cids,replyChannel))
     member _.NewComponentID() = ComponentID(idMan.GetNewID())
     member _.Init (save:Save_Components) =
         Async.Parallel
         (
-            agent.Post (Init save.Components_Current)
-            idMan.Init (MapKeys save.Components_Current |> Seq.map (fun k -> k.ToUint32) |> Seq.max)
+            agent.Post (Init save.Components)
+            idMan.Init (MapKeys save.Components |> Seq.map (fun k -> k.ToUint32) |> Seq.max)
         )
     member _.Remove comp = agent.Post (Remove comp)
     member _.RemoveMany cts = agent.Post (RemoveMany cts)

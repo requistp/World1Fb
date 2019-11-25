@@ -7,7 +7,7 @@ open LocationTypes
 
 type Save_Locations = 
     {
-        Locations_Current : Map<LocationDataInt,ComponentID[]>
+        Locations : Map<LocationDataInt,ComponentID[]>
     }
 
 type private agent_CurrentMsg =
@@ -57,11 +57,11 @@ type agent_Locations(compMan:agent_Components) =
         agent.PostAndReply (fun replyChannel -> Get (location,replyChannel))
         |> compMan.GetMany
         |> Array.map ToForm
-    member _.GetForSave = { Locations_Current = agent.PostAndReply GetMap }
+    member _.GetForSave = { Locations = agent.PostAndReply GetMap }
     member _.GetMap = 
         agent.PostAndReply GetMap
         |> Map.map (fun _ cids -> cids |> compMan.GetMany |> Array.map ToForm) //Parallel slowed down the Array.map step
-    member _.Init (save:Save_Locations) = agent.Post (Init save.Locations_Current)
+    member _.Init (save:Save_Locations) = agent.Post (Init save.Locations)
     member _.Move oldForm newForm = agent.Post (Move (oldForm,newForm))
     member _.Remove (form:FormComponent) = agent.Post (Remove form)
 

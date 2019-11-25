@@ -18,7 +18,7 @@ let UpdateViewableForAll (enm:EntityManager) round =
     |> enm.GetComponentsOfType
     |> Array.Parallel.map ToVision
     |> Array.Parallel.iter (fun v ->
-        enm.UpdateComponent (Vision (UpdateViewed v round (ComputeVisibility (EntityExt.GetLocation enm v.EntityID) v.LocationsWithinRange allForms v.Range)))
+        enm.UpdateComponent (Vision (UpdateViewed v round (ComputeVisibility2 (EntityExt.GetLocation enm v.EntityID) v.LocationsWithinRange allForms v.Range)))
         )
 
 type VisionSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =

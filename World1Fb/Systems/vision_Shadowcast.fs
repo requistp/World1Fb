@@ -81,6 +81,67 @@ let ComputeVisibility (viewerLocation:LocationDataInt) (grid:LocationDataInt[]) 
     OctantTransforms |> Array.iter (fun ot -> castLight 1 1.0 0.0 ot) // Can't Parallel
     viewableMap
 
+let ComputeVisibility2 (viewerLocation:LocationDataInt) (grid:LocationDataInt[]) (forms:Map<LocationDataInt,FormComponent[]>) (viewRadius:int) =
+    let mutable viewableMap = Map.empty<LocationDataInt,FormComponent[]>  
+    viewableMap <- viewableMap.Add(viewerLocation,forms.Item(viewerLocation))
+
+    let rec castLight (startColumn:int) (lvs:float) (rightViewSlope:float) (txfrm:OctantTransform) = 
+        let mutable leftViewSlope = lvs
+        let mutable prevWasBlocked = false
+        let mutable currentCol = startColumn
+        let mutable savedRightSlope = -1.0
+        
+        while currentCol <= viewRadius && not prevWasBlocked do
+            let xc = currentCol
+            let mutable yc = currentCol
+
+            while yc >= 0 do
+                let gridX = viewerLocation.X + xc * txfrm.XX + yc * txfrm.XY
+                let gridY = viewerLocation.Y + xc * txfrm.YX + yc * txfrm.YY
+                let l = { X = gridX; Y = gridY; Z = 0 }
+                
+                match (Array.contains l grid) with
+                | false -> ()
+                | true -> 
+                    let leftBlockSlope = (float yc + 0.5) / (float xc - 0.5)
+                    let rightBlockSlope = (float yc - 0.5) / (float xc + 0.5)
+
+                    match rightBlockSlope > leftViewSlope with
+                    | true -> ()
+                    | false ->
+
+                        match (leftBlockSlope < rightViewSlope) with
+                        | true -> 
+                            yc <- -1 // Because we want to abort the loop
+                        | false ->
+                            let curBlocked = 
+                                forms.Item l 
+                                |> Array.exists (fun f -> not f.CanSeePast)
+                            match prevWasBlocked with 
+                            | true ->
+                                match curBlocked with
+                                | true ->
+                                    savedRightSlope <- rightBlockSlope // Still traversing a column of walls.
+                                | false ->
+                                    prevWasBlocked <- false
+                                    leftViewSlope <- savedRightSlope
+                            | false ->
+                                match curBlocked with 
+                                | false -> ()
+                                | true ->
+                                    if (leftBlockSlope <= leftViewSlope) then
+                                        castLight (currentCol + 1) leftViewSlope leftBlockSlope txfrm 
+                                    prevWasBlocked <- true
+                                    savedRightSlope <- rightBlockSlope
+                            viewableMap <- viewableMap.Add(l,forms.Item(l)) // Array.append viewableMap [|l|]
+                yc <- yc - 1
+            currentCol <- currentCol + 1
+    OctantTransforms |> Array.iter (fun ot -> castLight 1 1.0 0.0 ot) // Can't Parallel
+    viewableMap
+
+
+
+
 
 
 

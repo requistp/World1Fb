@@ -54,7 +54,7 @@ let MakeRabbits (enm:EntityManager) n =
         let matingStatus = if n = 1 || rnd = 0 then Male else Female
         let symbol = if matingStatus = Male then 'R' else 'r'
         let location = { X = x; Y = y; Z = 0 }
-        let visionRange = 10
+        let visionRange = 5 //10
         let rangeTemplate = RangeTemplate2D visionRange
         let visionMap = LocationsWithinRange2D location (RangeTemplate2D visionRange)
         let baseBunny = 
@@ -64,7 +64,7 @@ let MakeRabbits (enm:EntityManager) n =
                 Form { ID = enm.NewComponentID(); EntityID = eid; Born = RoundNumber(0u); CanSeePast = true; IsPassable = true; Name = "rabbit"; Symbol = symbol; Location = location }
                 Mating { ID = enm.NewComponentID(); EntityID = eid; ChanceOfReproduction = 0.9; LastMatingAttempt = RoundNumber(0u); MatingStatus = matingStatus; Species = Rabbit }
                 Movement { ID = enm.NewComponentID(); EntityID = eid; MovesPerTurn = 1 }
-                Vision { ID = enm.NewComponentID(); EntityID = eid; Range = visionRange; RangeTemplate = rangeTemplate; ViewedHistory = Map.empty; (*ViewedHistory2 = Map.empty;*) VisibleLocations = Array.empty; LocationsWithinRange = visionMap }
+                Vision { ID = enm.NewComponentID(); EntityID = eid; Range = visionRange; RangeTemplate = rangeTemplate; ViewedHistory = Map.empty; (*ViewedHistory2 = Map.empty;*) VisibleLocations = Map.empty; LocationsWithinRange = visionMap }
             |]
         baseBunny
     match n with 
