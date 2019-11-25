@@ -40,7 +40,7 @@ type MovementSystem(description:string, isActive:bool, enm:EntityManager, evm:Ev
         | true -> Error (sprintf "Off map or form at location %s" (destination.ToString()))
         | false -> 
             let newForm = UpdateForm f None None None (Some destination)
-            enm.UpdateComponent round (Form newForm)
+            enm.UpdateComponent (Form newForm)
             evm.RaiseEvent (LocationChanged newForm)
             Ok (Some (sprintf "Location %s" (destination.ToString())))
         

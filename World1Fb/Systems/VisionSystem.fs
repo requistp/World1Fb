@@ -18,7 +18,7 @@ let UpdateViewableForAll (enm:EntityManager) round =
     |> enm.GetComponentsOfType
     |> Array.Parallel.map ToVision
     |> Array.Parallel.iter (fun v ->
-        enm.UpdateComponent round (Vision (UpdateViewed v round (ComputeVisibility (EntityExt.GetLocation enm v.EntityID) v.LocationsWithinRange allForms v.Range)))
+        enm.UpdateComponent (Vision (UpdateViewed v round (ComputeVisibility (EntityExt.GetLocation enm v.EntityID) v.LocationsWithinRange allForms v.Range)))
         )
 
 type VisionSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
@@ -28,7 +28,7 @@ type VisionSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
         match EntityExt.TryGetComponent enm VisionComponent form.EntityID with
         | None -> Ok (Some "No vision Component")
         | Some (Vision vision) ->
-            enm.UpdateComponent round (Vision (UpdateVision vision None (Some (LocationsWithinRange2D form.Location vision.RangeTemplate))))
+            enm.UpdateComponent (Vision (UpdateVision vision None (Some (LocationsWithinRange2D form.Location vision.RangeTemplate))))
             Ok (Some "VisionMap updated")
 
     override me.Initialize = 

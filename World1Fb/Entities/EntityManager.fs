@@ -10,16 +10,16 @@ open FormComponent
 open LocationTypes
 
 
-type EntityManager(useHistory:bool) = 
-    let agent_Components = new agent_Components(useHistory)
+type EntityManager() = 
+    let agent_Components = new agent_Components()
     let agent_Entities = new agent_EntityManager(agent_Components)
     let agent_Locations = new agent_Locations(agent_Components)
-    let agent_ComponentTypes = new agent_ComponentTypes(useHistory, agent_Components)
+    let agent_ComponentTypes = new agent_ComponentTypes(agent_Components)
     
-    member  _.CreateEntity (round:RoundNumber) (cts:Component[]) = 
+    member  _.CreateEntity (cts:Component[]) = 
         Async.Parallel 
         (
-            agent_Components.AddMany round cts
+            agent_Components.AddMany cts
 
             agent_ComponentTypes.AddMany cts
 
@@ -28,10 +28,10 @@ type EntityManager(useHistory:bool) =
             agent_Entities.Add cts       
         ) 
         Ok None
-    member  _.CreateEntityMany (round:RoundNumber) (ctss:Component[][]) = 
+    member  _.CreateEntityMany (ctss:Component[][]) = 
         Async.Parallel 
         (
-            ctss |> Array.iter (agent_Components.AddMany round)
+            ctss |> Array.iter agent_Components.AddMany
 
             ctss |> Array.iter agent_ComponentTypes.AddMany
 
@@ -64,12 +64,12 @@ type EntityManager(useHistory:bool) =
         agent_Locations.Init l
     member  _.NewComponentID() = agent_Components.NewComponentID()
     member  _.NewEntityID() = agent_Entities.NewEntityID()
-    member me.RemoveEntity round eid = 
+    member me.RemoveEntity eid = 
         let cts = eid |> me.GetComponents
         
         Async.Parallel
         (
-            agent_Components.RemoveMany round cts
+            agent_Components.RemoveMany cts
 
             agent_ComponentTypes.RemoveMany cts
 
@@ -78,7 +78,7 @@ type EntityManager(useHistory:bool) =
             agent_Entities.Remove eid
         )
         Ok None
-    member me.UpdateComponent round comp = 
+    member me.UpdateComponent comp = 
         match comp with
         | Form f -> 
             let oldForm = ToForm (me.GetComponent FormComponent f.EntityID)
@@ -86,7 +86,7 @@ type EntityManager(useHistory:bool) =
                 agent_Locations.Move oldForm f
         | _ -> ()
         
-        agent_Components.Update round comp
+        agent_Components.Update comp
         
 
 

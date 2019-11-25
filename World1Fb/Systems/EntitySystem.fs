@@ -17,8 +17,8 @@ type EntitySystem(description:string, isActive:bool, enm:EntityManager, evm:Even
             | x when x = EatingComponent -> evm.RaiseEvent (ComponentAdded_Eating (ToEating c))
             | x when x = PlantGrowthComponent -> evm.RaiseEvent (ComponentAdded_PlantGrowth (ToPlantGrowth c))
             | _ -> ()
-        cts |> Array.Parallel.iter checkComponentForEvents
-        enm.CreateEntity round cts
+        cts |> Array.iter checkComponentForEvents
+        enm.CreateEntity cts
 
     override me.Initialize =
         evm.RegisterListener me.Description Event_CreateEntity (me.TrackTask me.onCreateEntity)

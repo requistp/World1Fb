@@ -10,10 +10,10 @@ open EventTypes
 open LoadAndSave
 open SystemManager
 
-type Game(wmrAll:EntityManager->RoundNumber option->unit, wmrEntity:EntityManager->EntityID->unit, format:SaveGameFormats, useHistory:bool) =
+type Game(wmrAll:EntityManager->RoundNumber option->unit, wmrEntity:EntityManager->EntityID->unit, format:SaveGameFormats) =
     let agentForRound = new agent_Round()
     let gameLog = new agent_GameLog()
-    let enm = new EntityManager(useHistory)
+    let enm = new EntityManager()
     let evm = new EventManager(enm, gameLog, agentForRound.Get)
     let systemMan = new SystemManager()
  

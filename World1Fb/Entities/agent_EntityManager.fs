@@ -54,9 +54,9 @@ type agent_EntityManager(compMan:agent_Components) =
 
     member _.Add cts = agent.Post (Add cts)
     member _.AddMany ctss = agent.Post (AddMany ctss)
-    member _.Get eid = agent.PostAndReply (fun replyChannel -> Get (eid,replyChannel)) |> compMan.GetMany None
+    member _.Get eid = agent.PostAndReply (fun replyChannel -> Get (eid,replyChannel)) |> compMan.GetMany
     member _.GetForSave = { Entities_Current = agent.PostAndReply GetMap }
-    member _.GetMany eids = agent.PostAndReply (fun replyChannel -> GetMany (eids,replyChannel)) |> Array.map (compMan.GetMany None)
+    member _.GetMany eids = agent.PostAndReply (fun replyChannel -> GetMany (eids,replyChannel)) |> Array.map compMan.GetMany
     member _.Init (save:Save_Entities) = agent.Post (Init save.Entities_Current)
     member _.NewEntityID() = EntityID(idMan.GetNewID())
     member _.Remove eid = agent.Post (Remove eid)

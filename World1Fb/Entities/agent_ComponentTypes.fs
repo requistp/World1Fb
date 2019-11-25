@@ -18,8 +18,7 @@ type private agent_CurrentMsg =
     | Remove of Component
     | RemoveMany of Component[]
         
-        
-type agent_ComponentTypes(useHistory:bool, compMan:agent_Components) = 
+type agent_ComponentTypes(compMan:agent_Components) = 
 
     let agent_Current =
         let mutable _map = Map.empty<ComponentType,ComponentID[]>
@@ -54,13 +53,11 @@ type agent_ComponentTypes(useHistory:bool, compMan:agent_Components) =
                 }
             )
     
-
-    
     member _.Add comp = agent_Current.Post (Add comp)
     member _.AddMany cts = agent_Current.Post (AddMany cts)
-    member _.Get ctid = agent_Current.PostAndReply (fun replyChannel -> Get (ctid,replyChannel)) |> compMan.GetMany None
+    member _.Get ctid = agent_Current.PostAndReply (fun replyChannel -> Get (ctid,replyChannel)) |> compMan.GetMany
     member _.GetForSave = { ComponentTypes_Current = agent_Current.PostAndReply GetMap }
-    member _.GetMap = agent_Current.PostAndReply GetMap |> Map.map (fun _ cids -> cids |> Array.choose (compMan.Get None))
+    member _.GetMap = agent_Current.PostAndReply GetMap |> Map.map (fun _ cids -> cids |> Array.choose compMan.Get)
     member _.Init (save:Save_ComponentTypes) = agent_Current.Post (Init save.ComponentTypes_Current)
     member _.Remove (comp:Component) = agent_Current.Post (Remove comp)
     member _.RemoveMany (cts:Component[]) = agent_Current.Post (RemoveMany cts)

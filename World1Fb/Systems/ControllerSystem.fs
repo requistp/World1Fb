@@ -25,7 +25,7 @@ let private getCurrentActions (enm:EntityManager) (actions:ActionTypes[]) (entit
         | Move_East ->  if Array.contains Move_East  movesAllowed then Some Move_East  else None
         | Move_South -> if Array.contains Move_South movesAllowed then Some Move_South else None
         | Move_West ->  if Array.contains Move_West  movesAllowed then Some Move_West  else None
-    actions |> Array.choose actionEnabledTest  // Test Parallel
+    actions |> Array.choose actionEnabledTest
 
 let GetInputForAllEntities (enm:EntityManager) (log:agent_GameLog) (round:RoundNumber) (renderer:EntityManager -> EntityID -> unit) = 
     let setCurrentActions (controller:ControllerComponent) = 
@@ -34,7 +34,7 @@ let GetInputForAllEntities (enm:EntityManager) (log:agent_GameLog) (round:RoundN
         | true -> controller
         | false ->
             let newController = UpdateController controller None None (Some newCurrent) None
-            enm.UpdateComponent round (Controller newController)
+            enm.UpdateComponent (Controller newController)
             log.Log round (sprintf "%-3s | %-20s -> %-30s #%7i : %A" "Ok" "Controller System" "Current actions" controller.EntityID.ToUint32 newCurrent)
             newController
 
@@ -45,7 +45,7 @@ let GetInputForAllEntities (enm:EntityManager) (log:agent_GameLog) (round:RoundN
                 controller.CurrentActions.[random.Next(controller.CurrentActions.Length)]
             | _ -> Idle // Should raise an error
         if (newAction <> controller.CurrentAction) then
-            enm.UpdateComponent round (Controller (UpdateController controller None (Some newAction) None None))
+            enm.UpdateComponent (Controller (UpdateController controller None (Some newAction) None None))
             log.Log round (sprintf "%-3s | %-20s -> %-30s #%7i : %A" "Ok" "Controller System" "Current action" controller.EntityID.ToUint32 newAction)
 
     let getKeyboardInputForEntity (controller:ControllerComponent) =
@@ -58,7 +58,7 @@ let GetInputForAllEntities (enm:EntityManager) (log:agent_GameLog) (round:RoundN
         | false -> false
         | true -> 
             if (newAction <> controller.CurrentAction) then
-                enm.UpdateComponent round (Controller (UpdateController controller None (Some newAction) None None))
+                enm.UpdateComponent (Controller (UpdateController controller None (Some newAction) None None))
                 log.Log round (sprintf "%-3s | %-20s -> %-30s #%7i.%i : %A" "Ok" "Controller System" "Current action" controller.EntityID.ToUint32 controller.ID.ToUint32 newAction)
             true
 
@@ -105,7 +105,7 @@ type ControllerSystem(description:string, isActive:bool, enm:EntityManager, evm:
         | true -> Ok None
         | false ->
             let current = getCurrentActions enm potential c.EntityID round
-            enm.UpdateComponent round (Controller (UpdateController c None None (Some current) (Some potential)))
+            enm.UpdateComponent (Controller (UpdateController c None None (Some current) (Some potential)))
             Ok (Some (sprintf "Actions:%A. Current:%A" potential current))
 
     member private me.handleAllActions =

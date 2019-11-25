@@ -17,7 +17,7 @@ let FoodsAtLocation (enm:EntityManager) (eat:EatingComponent) =
     |> EntityExt.GetLocation enm 
     |> EntityExt.GetEntitiesAtLocationWithComponent enm FoodComponent (Some eat.EntityID)
     |> Array.filter (fun (Food f) -> CanEat eat f.FoodType && f.Quantity > 0) // Types I can eat & Food remaining
-    |> Array.Parallel.map ToFood
+    |> Array.map ToFood
 
 let EatActionEnabled (enm:EntityManager) (entityID:EntityID) =
     let (Eating eat) = enm.GetComponent EatingComponent entityID
@@ -41,7 +41,7 @@ type EatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
             match quantity with
             | 0 -> Error "Stomach is full"
             | _ -> 
-                enm.UpdateComponent round (Eating (UpdateEating eat (Some (eat.Quantity+quantity)) (Some (eat.Calories+calories))))
+                enm.UpdateComponent (Eating (UpdateEating eat (Some (eat.Quantity+quantity)) (Some (eat.Calories+calories))))
                 evm.RaiseEvent (Eaten (eat,food))
                 Ok (Some (sprintf "EateeID: %i. Quantity: +%i=%i. Calories: +%i=%i" (food.EntityID.ToUint32) quantity (eat.Quantity+quantity) calories (eat.Calories+calories)))
         
@@ -59,7 +59,7 @@ type EatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
         let starving = newC < 0
         let result = sprintf "Quantity:-%i=%i. Calories:-%i=%i. Starving:%b" eat.QuantityPerMetabolize newQ eat.CaloriesPerMetabolize newC starving
         if starving then evm.RaiseEvent (Starving eat) 
-        enm.UpdateComponent round (Eating (UpdateEating eat (Some newQ) (Some newC))) 
+        enm.UpdateComponent (Eating (UpdateEating eat (Some newQ) (Some newC))) 
         Ok (Some result)
 
     override me.Initialize = 

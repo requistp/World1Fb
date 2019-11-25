@@ -34,7 +34,7 @@ type PlantGrowthSystem(description:string, isActive:bool, enm:EntityManager, evm
             let newcts = 
                 pgc.EntityID
                 |> EntityExt.CopyEntity enm round
-                |> Array.Parallel.map adjustComponents
+                |> Array.map adjustComponents
             evm.RaiseEvent (CreateEntity newcts)
             Ok (Some (sprintf "New plant:%i. Location:%s" (GetComponentEntityID newcts.[0]).ToUint32 (l.ToString())))
 

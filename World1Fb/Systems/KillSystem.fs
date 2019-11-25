@@ -9,7 +9,7 @@ type KillSystem(description:string, isActive:bool, enm:EntityManager, evm:EventM
     inherit AbstractSystem(description,isActive) 
 
     member private me.onKillAllEaten round (Kill_AllEaten (_,food):GameEventData) =
-        enm.RemoveEntity round food.EntityID
+        enm.RemoveEntity food.EntityID
 
     override me.Initialize = 
         evm.RegisterListener me.Description Event_KillAllEaten (me.TrackTask me.onKillAllEaten)

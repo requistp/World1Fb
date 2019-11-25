@@ -55,12 +55,12 @@ type agent_Locations(compMan:agent_Components) =
     member _.Add (form:FormComponent) = agent.Post (Add form)
     member _.Get location = 
         agent.PostAndReply (fun replyChannel -> Get (location,replyChannel))
-        |> compMan.GetMany None
+        |> compMan.GetMany
         |> Array.map ToForm
     member _.GetForSave = { Locations_Current = agent.PostAndReply GetMap }
     member _.GetMap = 
         agent.PostAndReply GetMap
-        |> Map.map (fun _ cids -> cids |> compMan.GetMany None |> Array.map ToForm) //Parallel slowed down the Array.map step
+        |> Map.map (fun _ cids -> cids |> compMan.GetMany |> Array.map ToForm) //Parallel slowed down the Array.map step
     member _.Init (save:Save_Locations) = agent.Post (Init save.Locations_Current)
     member _.Move oldForm newForm = agent.Post (Move (oldForm,newForm))
     member _.Remove (form:FormComponent) = agent.Post (Remove form)
