@@ -30,7 +30,7 @@ module rec EntityExt =
 
     let GetEntitiesAtLocationWithComponent (enm:EntityManager) (round:RoundNumber option) (ct:ComponentType) (excludeEID:EntityID option) (location:LocationDataInt) = 
         location
-        |> enm.GetEntityIDsAtLocation round
+        |> enm.GetEntityIDsAtLocation 
         |> Array.filter (fun eid -> excludeEID.IsNone || eid <> excludeEID.Value) // Not excluded or not me
         |> Array.Parallel.choose (TryGetComponent enm round ct)
     

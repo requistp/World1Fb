@@ -12,7 +12,7 @@ open VisionComponent
 open EntityManager
 
 let UpdateViewableForAll (enm:EntityManager) round = 
-    let allForms = enm.GetLocationMap None
+    let allForms = enm.GetLocationMap 
 
     VisionComponent
     |> enm.GetComponentsOfType None

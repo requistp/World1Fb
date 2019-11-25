@@ -13,7 +13,7 @@ open LocationTypes
 type EntityManager(useHistory:bool) = 
     let agent_Components = new agent_Components(useHistory)
     let agent_Entities = new agent_EntityManager(useHistory, agent_Components)
-    let agent_Locations = new agent_Locations(useHistory, agent_Components)
+    let agent_Locations = new agent_Locations(agent_Components)
     let agent_ComponentTypes = new agent_ComponentTypes(useHistory, agent_Components)
     
     member  _.CreateEntity (round:RoundNumber) (cts:Component[]) = 
@@ -23,7 +23,7 @@ type EntityManager(useHistory:bool) =
 
             agent_ComponentTypes.AddMany round cts
 
-            cts |> Array.iter (fun c -> if GetComponentType c = FormComponent then agent_Locations.Add round (ToForm c))
+            cts |> Array.iter (fun c -> if GetComponentType c = FormComponent then agent_Locations.Add (ToForm c))
 
             agent_Entities.Add round cts       
         ) 
@@ -35,7 +35,7 @@ type EntityManager(useHistory:bool) =
 
             ctss |> Array.iter (agent_ComponentTypes.AddMany round)
 
-            ctss |> Array.iter (fun cts -> cts |> Array.iter (fun c -> if GetComponentType c = FormComponent then agent_Locations.Add round (ToForm c)))
+            ctss |> Array.iter (fun cts -> cts |> Array.iter (fun c -> if GetComponentType c = FormComponent then agent_Locations.Add (ToForm c)))
 
             ctss |> Array.iter (agent_Entities.Add round)
         ) 
@@ -50,15 +50,13 @@ type EntityManager(useHistory:bool) =
         |> Array.find (fun (c:Component) -> GetComponentType c = ctid)
     member  _.GetComponents round eid = agent_Entities.Get round eid
     member  _.GetComponentsOfType round ctid = agent_ComponentTypes.Get round ctid
-    member  _.GetFormsAtLocation round location = agent_Locations.Get round location
+    member  _.GetFormsAtLocation location = agent_Locations.Get location
     member  _.GetForSave_Components = agent_Components.GetForSave
     member  _.GetForSave_ComponentTypes = agent_ComponentTypes.GetForSave
     member  _.GetForSave_Entities = agent_Entities.GetForSave
     member  _.GetForSave_Locations = agent_Locations.GetForSave
-    member me.GetEntityIDsAtLocation round location = 
-        me.GetFormsAtLocation round location
-        |> Array.Parallel.map (fun f -> f.EntityID)
-    member  _.GetLocationMap round = agent_Locations.GetMap round
+    member me.GetEntityIDsAtLocation location = me.GetFormsAtLocation location |> Array.map (fun f -> f.EntityID)
+    member  _.GetLocationMap = agent_Locations.GetMap 
     member  _.Init (c:Save_Components) (ct:Save_ComponentTypes) (e:Save_Entities) (l:Save_Locations) =
         agent_Components.Init c
         agent_ComponentTypes.Init ct
@@ -75,7 +73,7 @@ type EntityManager(useHistory:bool) =
 
             agent_ComponentTypes.RemoveMany round cts
 
-            cts |> Array.iter (fun c -> if GetComponentType c = FormComponent then agent_Locations.Remove round (ToForm c))
+            cts |> Array.iter (fun c -> if GetComponentType c = FormComponent then agent_Locations.Remove (ToForm c))
 
             agent_Entities.Remove round eid
         )
@@ -85,7 +83,7 @@ type EntityManager(useHistory:bool) =
         | Form f -> 
             let oldForm = ToForm (me.GetComponent None FormComponent f.EntityID)
             if (oldForm.Location <> f.Location) then
-                agent_Locations.Move round oldForm f
+                agent_Locations.Move oldForm f
         | _ -> ()
         
         agent_Components.Update round comp

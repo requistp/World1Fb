@@ -27,7 +27,7 @@ type WorldMapRenderer() =
         Console.CursorVisible <- false
         Console.Title <- "World Map"
         
-        let allForms = enm.GetLocationMap None
+        let allForms = enm.GetLocationMap 
 
         let rangeY = 
             [|(snd _windowLocation)..(snd _windowLocation + viewSizeY - 1)|]
@@ -83,7 +83,7 @@ type WorldMapRenderer() =
                 let forms = 
                     //let es = enm.GetEntityMap (Some round) 
                     location
-                    |> enm.GetFormsAtLocation (Some round)
+                    |> enm.GetFormsAtLocation 
                     |> Array.sortByDescending (fun f -> f.ID)
                     |> Array.head
                     //|> EntityExt.GetHistory_Locations enm (Some round)

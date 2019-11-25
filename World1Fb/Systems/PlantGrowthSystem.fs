@@ -47,7 +47,7 @@ type PlantGrowthSystem(description:string, isActive:bool, enm:EntityManager, evm
                 match IsOnMap2D newLocation with
                 | false -> Error (sprintf "Failed: location not on map:%s" (newLocation.ToString()))
                 | true -> 
-                    let eids = enm.GetEntityIDsAtLocation None newLocation
+                    let eids = enm.GetEntityIDsAtLocation newLocation
                     match (EntityExt.GetComponentForEntities enm None PlantGrowthComponent eids).Length with 
                     | x when x > 0 -> Error (sprintf "Failed: plant exists at location:%s" (newLocation.ToString()))
                     | _ -> 

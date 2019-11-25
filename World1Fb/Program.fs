@@ -16,7 +16,7 @@ let format = LoadAndSave.SaveGameFormats.XML
 
 let wmr = new WorldMapRenderer()
 
-let useHistory = true
+let useHistory = false
 
 let g = new Game(wmr.Update, wmr.UpdateEntity, format, useHistory)
 
