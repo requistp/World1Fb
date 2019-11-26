@@ -63,6 +63,7 @@ type agent_Locations(compMan:agent_Components) =
         |> Map.map (fun _ cids -> cids |> compMan.GetMany |> Array.map ToForm) //Parallel slowed down the Array.map step
     member _.Init (save:Save_Locations) = agent.Post (Init save.Locations)
     member _.Move oldForm newForm = agent.Post (Move (oldForm,newForm))
+    member _.PendingUpdates = agent.CurrentQueueLength > 0
     member _.Remove (form:FormComponent) = agent.Post (Remove form)
 
 

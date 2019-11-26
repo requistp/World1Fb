@@ -64,6 +64,7 @@ type EntityManager() =
         agent_Locations.Init l
     member  _.NewComponentID() = agent_Components.NewComponentID()
     member  _.NewEntityID() = agent_Entities.NewEntityID()
+    member  _.PendingUpdates = agent_Entities.PendingUpdates || agent_Components.PendingUpdates || agent_ComponentTypes.PendingUpdates || agent_Locations.PendingUpdates
     member me.RemoveEntity eid = 
         let cts = eid |> me.GetComponents
         

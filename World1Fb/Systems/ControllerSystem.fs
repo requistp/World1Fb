@@ -27,7 +27,7 @@ let private getCurrentActions (enm:EntityManager) (actions:ActionTypes[]) (entit
         | Move_West ->  if Array.contains Move_West  movesAllowed then Some Move_West  else None
     actions |> Array.choose actionEnabledTest
 
-let GetInputForAllEntities (enm:EntityManager) (log:agent_GameLog) (round:RoundNumber) (renderer:EntityManager -> EntityID -> unit) = 
+let GetInputForAllEntities (enm:EntityManager) (log:agent_GameLog) (round:RoundNumber) (renderer:(EntityManager->EntityID->unit) option) = 
     let setCurrentActions (controller:ControllerComponent) = 
         let newCurrent = getCurrentActions enm controller.PotentialActions controller.EntityID round
         match (ArrayContentsMatch newCurrent controller.CurrentActions) with

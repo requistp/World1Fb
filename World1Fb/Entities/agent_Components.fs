@@ -71,6 +71,7 @@ type agent_Components() =
             agent.Post (Init save.Components)
             idMan.Init (MapKeys save.Components |> Seq.map (fun k -> k.ToUint32) |> Seq.max)
         )
+    member _.PendingUpdates = agent.CurrentQueueLength > 0
     member _.Remove comp = agent.Post (Remove comp)
     member _.RemoveMany cts = agent.Post (RemoveMany cts)
     member _.Update comp = agent.Post (Update comp)

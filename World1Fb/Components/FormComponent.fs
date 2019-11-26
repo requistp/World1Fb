@@ -23,3 +23,4 @@ let UpdateForm (f:FormComponent) (isPassableUpdate:bool option) (nameUpdate:stri
             Name = if nameUpdate.IsSome then nameUpdate.Value else f.Name
             Symbol = if symbolUpdate.IsSome then symbolUpdate.Value else f.Symbol
     }
+

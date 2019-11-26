@@ -5,6 +5,7 @@ open ComponentEnums
 open ControllerComponent
 open LocationTypes
 open EntityManager
+open VisionComponent
 
 let MakeMap (enm:EntityManager) = 
     let AddTerrain l = 
@@ -44,19 +45,20 @@ let MakeGrasses (enm:EntityManager) n =
     | _ -> [|1..n|] |> Array.Parallel.map (fun i -> MakeGrass (random.Next(0,MapWidth)) (random.Next(0,MapHeight))) 
 
 
-let MakeRabbits (enm:EntityManager) n = 
+let MakeRabbits (enm:EntityManager) (firstIsHuman:bool) n = 
     let MakeRabbit x y rnd n = 
         let eid = enm.NewEntityID()
         let controller = 
             match n with
-            | 1 -> Controller { ID = enm.NewComponentID(); EntityID = eid; ControllerType = Keyboard; CurrentAction = Idle; CurrentActions = [|Idle|]; PotentialActions = [|Idle|] }
+            | 1 -> Controller { ID = enm.NewComponentID(); EntityID = eid; ControllerType = (if firstIsHuman then Keyboard else AI_Random); CurrentAction = Idle; CurrentActions = [|Idle|]; PotentialActions = [|Idle|] }
             | _ -> Controller { ID = enm.NewComponentID(); EntityID = eid; ControllerType = AI_Random; CurrentAction = Idle; CurrentActions = [|Idle|]; PotentialActions = [|Idle|] }
         let matingStatus = if n = 1 || rnd = 0 then Male else Female
         let symbol = if matingStatus = Male then 'R' else 'r' // Handy for debugging: n.ToString().ToCharArray().[0]
         let location = { X = x; Y = y; Z = 0 }
-        let visionRange = 5 //10
+        let visionRange = 10
         let rangeTemplate = RangeTemplate2D visionRange
         let visionMap = LocationsWithinRange2D location (RangeTemplate2D visionRange)
+        let visionCalculationType = Shadowcast1
         let baseBunny = 
             [|
                 controller
@@ -64,7 +66,7 @@ let MakeRabbits (enm:EntityManager) n =
                 Form { ID = enm.NewComponentID(); EntityID = eid; Born = RoundNumber(0u); CanSeePast = true; IsPassable = true; Name = "rabbit"; Symbol = symbol; Location = location }
                 Mating { ID = enm.NewComponentID(); EntityID = eid; ChanceOfReproduction = 0.9; LastMatingAttempt = RoundNumber(0u); MatingStatus = matingStatus; Species = Rabbit }
                 Movement { ID = enm.NewComponentID(); EntityID = eid; MovesPerTurn = 1 }
-                Vision { ID = enm.NewComponentID(); EntityID = eid; Range = visionRange; RangeTemplate = rangeTemplate; ViewedHistory = Map.empty; (*ViewedHistory2 = Map.empty;*) VisibleLocations = Map.empty; LocationsWithinRange = visionMap }
+                Vision { ID = enm.NewComponentID(); EntityID = eid; LocationsWithinRange = visionMap; Range = visionRange; RangeTemplate = rangeTemplate; ViewedHistory = Map.empty; VisibleLocations = Map.empty; VisionCalculationType = visionCalculationType }
             |]
         baseBunny
     match n with 

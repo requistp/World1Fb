@@ -20,7 +20,7 @@ type private agent_CurrentMsg =
         
 type agent_ComponentTypes(compMan:agent_Components) = 
 
-    let agent_Current =
+    let agent =
         let mutable _map = Map.empty<ComponentType,ComponentID[]>
         MailboxProcessor<agent_CurrentMsg>.Start(
             fun inbox ->
@@ -53,14 +53,15 @@ type agent_ComponentTypes(compMan:agent_Components) =
                 }
             )
     
-    member _.Add comp = agent_Current.Post (Add comp)
-    member _.AddMany cts = agent_Current.Post (AddMany cts)
-    member _.Get ctid = agent_Current.PostAndReply (fun replyChannel -> Get (ctid,replyChannel)) |> compMan.GetMany
-    member _.GetForSave = { ComponentTypes = agent_Current.PostAndReply GetMap }
-    member _.GetMap = agent_Current.PostAndReply GetMap |> Map.map (fun _ cids -> cids |> Array.choose compMan.Get)
-    member _.Init (save:Save_ComponentTypes) = agent_Current.Post (Init save.ComponentTypes)
-    member _.Remove (comp:Component) = agent_Current.Post (Remove comp)
-    member _.RemoveMany (cts:Component[]) = agent_Current.Post (RemoveMany cts)
+    member _.Add comp = agent.Post (Add comp)
+    member _.AddMany cts = agent.Post (AddMany cts)
+    member _.Get ctid = agent.PostAndReply (fun replyChannel -> Get (ctid,replyChannel)) |> compMan.GetMany
+    member _.GetForSave = { ComponentTypes = agent.PostAndReply GetMap }
+    member _.GetMap = agent.PostAndReply GetMap |> Map.map (fun _ cids -> cids |> Array.choose compMan.Get)
+    member _.Init (save:Save_ComponentTypes) = agent.Post (Init save.ComponentTypes)
+    member _.PendingUpdates = agent.CurrentQueueLength > 0
+    member _.Remove (comp:Component) = agent.Post (Remove comp)
+    member _.RemoveMany (cts:Component[]) = agent.Post (RemoveMany cts)
 
 
 

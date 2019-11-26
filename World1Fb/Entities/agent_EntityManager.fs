@@ -59,6 +59,7 @@ type agent_EntityManager(compMan:agent_Components) =
     member _.GetMany eids = agent.PostAndReply (fun replyChannel -> GetMany (eids,replyChannel)) |> Array.map compMan.GetMany
     member _.Init (save:Save_Entities) = agent.Post (Init save.Entities)
     member _.NewEntityID() = EntityID(idMan.GetNewID())
+    member _.PendingUpdates = agent.CurrentQueueLength > 0
     member _.Remove eid = agent.Post (Remove eid)
 
 

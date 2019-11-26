@@ -18,25 +18,11 @@ let UpdateViewableForAll (enm:EntityManager) round =
     |> enm.GetComponentsOfType
     |> Array.Parallel.map ToVision
     |> Array.Parallel.iter (fun vision ->
-        let visibleLocations = ComputeVisibility2 (EntityExt.GetLocation enm vision.EntityID) vision.LocationsWithinRange allForms vision.Range
-
-        let fids =
-            visibleLocations
-            |> Map.toArray
-            |> Array.collect snd
-            |> Array.map (fun f -> f.ID)
-
-        let viewedHistory = 
-            vision.ViewedHistory
-            |> Map.fold (fun (m:Map<LocationDataInt,FormComponent[]>) l fs -> 
-                let newFS =
-                    match (m.ContainsKey l) with
-                    | true -> m.Item l
-                    | false -> fs |> Array.filter (fun f -> not (fids |> Array.contains f.ID))
-                m.Add(l,newFS)
-            ) visibleLocations
-
-        enm.UpdateComponent (Vision (UpdateViewed vision visibleLocations viewedHistory))
+        let visibleLocations = 
+            match vision.VisionCalculationType with
+            | Basic_Cheating -> ComputeVisibility_Basic vision.LocationsWithinRange allForms
+            | Shadowcast1 -> ComputeVisibility_Shadowcast1 (EntityExt.GetLocation enm vision.EntityID) vision.LocationsWithinRange allForms vision.Range
+        enm.UpdateComponent (Vision (UpdateViewed vision visibleLocations))
         )
 
 type VisionSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =

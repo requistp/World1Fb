@@ -1,4 +1,5 @@
 ﻿open BuildNewWorld
+open CommonGenericFunctions
 open ControllerSystem
 open EatingSystem
 open EntitySystem
@@ -12,16 +13,20 @@ open VisionSystem
 open WorldMapRenderer
 
 
+let renderType : RenderTypes = RenderTypes.World 
+
+let aiOnly : bool = true
+
 let format = LoadAndSave.SaveGameFormats.XML
 
 let wmr = new WorldMapRenderer()
 
-let g = new Game(wmr.Update, wmr.UpdateEntity, format)
+let g = new Game(wmr.UpdateWorld, wmr.UpdateEntity, renderType, format)
 
 let startingEntities = 
     MakeMap g.Entities
     |> Array.append (MakeGrasses g.Entities 5)
-    |> Array.append (MakeRabbits g.Entities 3)
+    |> Array.append (MakeRabbits g.Entities (not aiOnly) 3)
 
 let systems =
     [|

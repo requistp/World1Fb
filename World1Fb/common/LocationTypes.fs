@@ -3,11 +3,11 @@ open CommonGenericFunctions
 open System
 
 [<Literal>]
-let MapWidth = 20
+let MapWidth = 50
 
 
 [<Literal>]
-let MapHeight = 20
+let MapHeight = 50
 
 
 type LocationDataInt = 
@@ -59,12 +59,12 @@ let WithinRange2D (l1:LocationDataInt) (range:int) (l2:LocationDataInt) =
 
 let RangeTemplate2D (range:int) =
     [| -range .. range |] 
-    |> Array.Parallel.collect (fun y -> [| -range .. range |] |> Array.map (fun x -> { X=x; Y=y; Z=0 } ))
+    |> Array.collect (fun y -> [| -range .. range |] |> Array.map (fun x -> { X=x; Y=y; Z=0 } ))
     |> Array.filter (WithinRange2D LocationDataInt.empty range)
 
 let LocationsWithinRange2D (location:LocationDataInt) (rangeTemplate:LocationDataInt[]) = 
     rangeTemplate 
-    |> Array.Parallel.map (AddLocations location)
+    |> Array.map (AddLocations location)
     |> Array.filter IsOnMap2D
 
 let MapLocations =

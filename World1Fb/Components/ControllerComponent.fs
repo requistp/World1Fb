@@ -34,6 +34,7 @@ type ActionTypes =
         | Move_South -> [| FormComponent; MovementComponent |]
         | Move_West -> [| FormComponent; MovementComponent |]
 
+
 type ControllerComponent = 
     { 
         ID : ComponentID

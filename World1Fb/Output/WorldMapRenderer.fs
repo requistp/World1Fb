@@ -23,7 +23,7 @@ type WorldMapRenderer() =
         | ConsoleKey.RightArrow -> _windowLocation <- (Math.Clamp(fst _windowLocation + 1, 0, MapWidth-viewSizeX), snd _windowLocation)
         | _ -> ()
 
-    member me.Update (enm:EntityManager) = 
+    member me.UpdateWorld (enm:EntityManager) = 
         Console.CursorVisible <- false
         Console.Title <- "World Map"
         
@@ -106,6 +106,4 @@ type WorldMapRenderer() =
                 System.Console.SetCursorPosition(drawX,drawY)
                 drawCall formChar
             )
-
-
 

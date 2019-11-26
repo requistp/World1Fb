@@ -3,16 +3,21 @@ open CommonGenericFunctions
 open FormComponent
 open LocationTypes
 
-        
+type VisionCalculationTypes =
+    | Basic_Cheating
+    | Shadowcast1
+
+
 type VisionComponent = 
     { 
         ID : ComponentID
         EntityID : EntityID
+        LocationsWithinRange : LocationDataInt[]                // Locations within range--regardless of being blocked/visible/etc.
         Range : int
         RangeTemplate : LocationDataInt[]
+        VisionCalculationType : VisionCalculationTypes
         ViewedHistory : Map<LocationDataInt,FormComponent[]>    // All locations that entity has ever seen, and when
         VisibleLocations : Map<LocationDataInt,FormComponent[]> // Locations that are visible taking into account occlusion, etc. (i.e. a subset of VisionMap)
-        LocationsWithinRange : LocationDataInt[]                // Locations within range--regardless of being blocked/visible/etc.
     }
 
 let UpdateVision (vision:VisionComponent) (rangeUpdate:int option) (locationsWithinRangeUpdate:LocationDataInt[] option) =
@@ -23,7 +28,22 @@ let UpdateVision (vision:VisionComponent) (rangeUpdate:int option) (locationsWit
             LocationsWithinRange = if locationsWithinRangeUpdate.IsSome then locationsWithinRangeUpdate.Value else vision.LocationsWithinRange
     } 
 
-let UpdateViewed (vision:VisionComponent) (visibleLocations:Map<LocationDataInt,FormComponent[]>) (viewedHistory:Map<LocationDataInt,FormComponent[]>) = 
+let UpdateViewed (vision:VisionComponent) (visibleLocations:Map<LocationDataInt,FormComponent[]>) = 
+    let fids =
+        visibleLocations
+        |> Map.toArray
+        |> Array.collect snd
+        |> Array.map (fun f -> f.ID)
+
+    let viewedHistory = 
+        vision.ViewedHistory
+        |> Map.fold (fun (m:Map<LocationDataInt,FormComponent[]>) l fs -> 
+            let newFS =
+                match (m.ContainsKey l) with
+                | true -> m.Item l
+                | false -> fs |> Array.filter (fun f -> not (fids |> Array.contains f.ID))
+            m.Add(l,newFS)
+        ) visibleLocations
     {
         vision with
             VisibleLocations = visibleLocations
