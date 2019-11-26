@@ -52,7 +52,7 @@ type Game(wmrAll:EntityManager->unit, wmrEntity:EntityManager->EntityID->unit, f
         handleEndOfRound 5
 
         // Uncomment for world-view: 
-        wmrAll enm; printfn "Round#%i" round.ToUint32
+        //wmrAll enm; printfn "Round#%i" round.ToUint32
 
     member me.Start (ss:AbstractSystem[]) (initialForms:Component[][]) (filename:string) = 
         let mutable _round = RoundNumber(0u)
@@ -69,7 +69,7 @@ type Game(wmrAll:EntityManager->unit, wmrEntity:EntityManager->EntityID->unit, f
             VisionSystem.UpdateViewableForAll enm (RoundNumber(0u))
         
         // Uncomment for world-view: 
-        wmrAll enm; printfn "Round#%i" _round.ToUint32
+        //wmrAll enm; printfn "Round#%i" _round.ToUint32
 
         while  (ControllerSystem.GetInputForAllEntities enm gameLog _round wmrEntity) && (_round.ToUint32<500u) do
             me.gameLoop _round

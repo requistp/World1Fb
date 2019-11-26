@@ -23,16 +23,12 @@ let UpdateVision (vision:VisionComponent) (rangeUpdate:int option) (locationsWit
             LocationsWithinRange = if locationsWithinRangeUpdate.IsSome then locationsWithinRangeUpdate.Value else vision.LocationsWithinRange
     } 
 
-let UpdateViewed (vision:VisionComponent) (round:RoundNumber) (visibleLocations:Map<LocationDataInt,FormComponent[]>) =
+let UpdateViewed (vision:VisionComponent) (visibleLocations:Map<LocationDataInt,FormComponent[]>) (viewedHistory:Map<LocationDataInt,FormComponent[]>) = 
     {
         vision with
             VisibleLocations = visibleLocations
-            ViewedHistory = 
-                visibleLocations 
-                |> Map.fold (fun m l fs -> 
-                    m.Remove(l).Add(l,fs)
-                    ) vision.ViewedHistory
-    } 
+            ViewedHistory = viewedHistory
+    }
 
 
 

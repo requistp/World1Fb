@@ -83,18 +83,28 @@ type WorldMapRenderer() =
                     match (v.VisibleLocations.ContainsKey location) with
                     | false -> ColoredConsole.Console.DrawDarkGray
                     | true -> ColoredConsole.Console.DrawWhite
-                let forms = 
+                let formChar = 
+                    (
                     match (v.VisibleLocations.ContainsKey location) with
                     | false -> 
                         v.ViewedHistory.Item location
-                        |> Array.sortBy (fun f -> f.ID)
+                        |> Array.sortByDescending (fun f -> f.ID)
                         |> Array.head
                     | true -> 
                         v.ViewedHistory.Item location
                         |> Array.sortByDescending (fun f -> f.ID)
                         |> Array.head
+                    ).Symbol
+                let countAsChar = // Useful for debugging
+                    match (v.VisibleLocations.ContainsKey location) with
+                    | false -> 
+                        (v.ViewedHistory.Item location).Length.ToString().ToCharArray().[0]
+                    | true -> 
+                        (v.ViewedHistory.Item location
+                        |> Array.sortByDescending (fun f -> f.ID)
+                        |> Array.head).Symbol
                 System.Console.SetCursorPosition(drawX,drawY)
-                drawCall forms.Symbol
+                drawCall formChar
             )
 
 

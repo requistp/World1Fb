@@ -49,10 +49,10 @@ let MakeRabbits (enm:EntityManager) n =
         let eid = enm.NewEntityID()
         let controller = 
             match n with
-            | 1 -> Controller { ID = enm.NewComponentID(); EntityID = eid; ControllerType = AI_Random; CurrentAction = Idle; CurrentActions = [|Idle|]; PotentialActions = [|Idle|] }
+            | 1 -> Controller { ID = enm.NewComponentID(); EntityID = eid; ControllerType = Keyboard; CurrentAction = Idle; CurrentActions = [|Idle|]; PotentialActions = [|Idle|] }
             | _ -> Controller { ID = enm.NewComponentID(); EntityID = eid; ControllerType = AI_Random; CurrentAction = Idle; CurrentActions = [|Idle|]; PotentialActions = [|Idle|] }
         let matingStatus = if n = 1 || rnd = 0 then Male else Female
-        let symbol = if matingStatus = Male then 'R' else 'r'
+        let symbol = if matingStatus = Male then 'R' else 'r' // Handy for debugging: n.ToString().ToCharArray().[0]
         let location = { X = x; Y = y; Z = 0 }
         let visionRange = 5 //10
         let rangeTemplate = RangeTemplate2D visionRange

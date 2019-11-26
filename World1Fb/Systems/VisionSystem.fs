@@ -17,8 +17,26 @@ let UpdateViewableForAll (enm:EntityManager) round =
     VisionComponent
     |> enm.GetComponentsOfType
     |> Array.Parallel.map ToVision
-    |> Array.Parallel.iter (fun v ->
-        enm.UpdateComponent (Vision (UpdateViewed v round (ComputeVisibility2 (EntityExt.GetLocation enm v.EntityID) v.LocationsWithinRange allForms v.Range)))
+    |> Array.Parallel.iter (fun vision ->
+        let visibleLocations = ComputeVisibility2 (EntityExt.GetLocation enm vision.EntityID) vision.LocationsWithinRange allForms vision.Range
+
+        let fids =
+            visibleLocations
+            |> Map.toArray
+            |> Array.collect snd
+            |> Array.map (fun f -> f.ID)
+
+        let viewedHistory = 
+            vision.ViewedHistory
+            |> Map.fold (fun (m:Map<LocationDataInt,FormComponent[]>) l fs -> 
+                let newFS =
+                    match (m.ContainsKey l) with
+                    | true -> m.Item l
+                    | false -> fs |> Array.filter (fun f -> not (fids |> Array.contains f.ID))
+                m.Add(l,newFS)
+            ) visibleLocations
+
+        enm.UpdateComponent (Vision (UpdateViewed vision visibleLocations viewedHistory))
         )
 
 type VisionSystem(description:string, isActive:bool, enm:EntityManager, evm:EventManager) =
@@ -37,6 +55,49 @@ type VisionSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
 
     override me.Update round = 
         () 
+
+
+
+
+(*
+let viewedHistory = 
+    visibleLocations
+    |> Map.fold (fun (m:Map<LocationDataInt,FormComponent[]>) l fs -> 
+        let newFS =
+            match (visibleLocations.ContainsKey l) with
+            | true -> visibleLocations.Item l
+            | false -> fs |> Array.filter (fun f -> not (fids |> Array.contains f.ID))
+        m.Add(l,newFS)
+    ) vision.ViewedHistory
+
+//fs 
+//|> Array.filter (fun (f:FormComponent) -> 
+//    let visibleIDs = 
+//        match (visibleLocations.ContainsKey l) with
+//        | false -> [||]
+//        | true -> visibleLocations.Item(l) |> Array.map (fun f -> f.ID)
+//    not (visibleIDs |> Array.contains f.ID))
+
+let viewedHistory = 
+    match vision.ViewedHistory.IsEmpty with
+    | true -> visibleLocations
+    | false -> vision.ViewedHistory
+    |> Map.fold (fun (m:Map<LocationDataInt,FormComponent[]>) l fs -> 
+        let newFS =
+            match  (visibleLocations.ContainsKey l) with // if in visibile locations, it will be handled next
+            | true -> visibleLocations.Item l
+            | false -> //fs |> Array.filter (fun (f:FormComponent) -> not (visibleIDs |> Array.contains f.ID))
+                fs 
+                |> Array.filter (fun (f:FormComponent) -> 
+                    let visibleIDs = 
+                        match (visibleLocations.ContainsKey l) with
+                        | false -> [||]
+                        | true -> visibleLocations.Item(l) |> Array.map (fun f -> f.ID)
+                    not (visibleIDs |> Array.contains f.ID))
+        m.Add(l,newFS)
+    ) vision.ViewedHistory
+*)
+
 
 
     //let handleFOV (form:FormComponent) (vision:VisionComponent) =
