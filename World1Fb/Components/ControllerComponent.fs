@@ -26,34 +26,32 @@ type ActionTypes =
         |]
     member me.RequiredComponents =
         match me with
-        | Eat -> [| EatingComponent |]
+        | Eat -> [| EatingComponentType |]
         | Idle -> [||]
-        | Mate -> [| MatingComponent |]
-        | Move_East -> [| FormComponent; MovementComponent |]
-        | Move_North -> [| FormComponent; MovementComponent |]
-        | Move_South -> [| FormComponent; MovementComponent |]
-        | Move_West -> [| FormComponent; MovementComponent |]
+        | Mate -> [| MatingComponentType |]
+        | Move_East -> [| FormComponentType; MovementComponentType |]
+        | Move_North -> [| FormComponentType; MovementComponentType |]
+        | Move_South -> [| FormComponentType; MovementComponentType |]
+        | Move_West -> [| FormComponentType; MovementComponentType |]
 
-
-type ControllerComponent = 
-    { 
-        ID : ComponentID
-        EntityID : EntityID
-        ControllerType : ControllerTypes
-        CurrentAction : ActionTypes
-        CurrentActions : ActionTypes[]   // Actions that can be done this turn
-        PotentialActions : ActionTypes[] // Actions that can be done by entities components
-    }
+[<Struct>]
+type ControllerComponent(id:ComponentID, eid:EntityID, controllerType:ControllerTypes, currentAction:ActionTypes, currentActions:ActionTypes[], potentialActions:ActionTypes[]) =
+    member _.ID = id
+    member _.EntityID = eid
+    member _.ControllerType = controllerType
+    member _.CurrentAction = currentAction
+    member _.CurrentActions = currentActions
+    member _.PotentialActions = potentialActions
 
 let ActionIsAllowed (cc:ControllerComponent) (action:ActionTypes) = cc.CurrentActions |> Array.contains action
 
-let UpdateController (cc:ControllerComponent) (controllerTypeUpdate:ControllerTypes option) (currentActionUpdate:ActionTypes option) (currentActionsUpdate:ActionTypes[] option) (potentialActionsUpdate:ActionTypes[] option) =
-    {
-        cc with
-            ControllerType = if controllerTypeUpdate.IsSome then controllerTypeUpdate.Value else cc.ControllerType
-            CurrentAction = if currentActionUpdate.IsSome then currentActionUpdate.Value else cc.CurrentAction
-            CurrentActions = if currentActionsUpdate.IsSome then currentActionsUpdate.Value else cc.CurrentActions
-            PotentialActions = if potentialActionsUpdate.IsSome then potentialActionsUpdate.Value else cc.PotentialActions
-    }
+//let UpdateController (cc:ControllerComponent) (controllerTypeUpdate:ControllerTypes option) (currentActionUpdate:ActionTypes option) (currentActionsUpdate:ActionTypes[] option) (potentialActionsUpdate:ActionTypes[] option) =
+//    {
+//        cc with
+//            ControllerType = if controllerTypeUpdate.IsSome then controllerTypeUpdate.Value else cc.ControllerType
+//            CurrentAction = if currentActionUpdate.IsSome then currentActionUpdate.Value else cc.CurrentAction
+//            CurrentActions = if currentActionsUpdate.IsSome then currentActionsUpdate.Value else cc.CurrentActions
+//            PotentialActions = if potentialActionsUpdate.IsSome then potentialActionsUpdate.Value else cc.PotentialActions
+//    }
 
 

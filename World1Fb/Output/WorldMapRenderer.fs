@@ -49,7 +49,7 @@ type WorldMapRenderer() =
                     //    | None ->
                     //        (fds |> Array.sortBy (fun c -> (EntityExt.TryGetComponent enm TerrainComponent c.EntityID).IsSome)).[0]
                 
-                let formsAtLocation = allForms.Item({ X = x; Y = y; Z = 0 })
+                let formsAtLocation = allForms.Item(LocationDataInt(x,y,0))
 
                 match formsAtLocation.Length with
                 | 0 -> ()
@@ -66,8 +66,8 @@ type WorldMapRenderer() =
         let centerX = 30
         let centerY = 10
 
-        let (Vision v) = enm.GetComponent VisionComponent entityID
-        let (Form f) = enm.GetComponent FormComponent entityID
+        let (Vision v) = enm.GetComponent VisionComponentType entityID
+        let (Form f) = enm.GetComponent ComponentEnums.FormComponentType entityID
 
         let addX = centerX - f.Location.X
         let addY = centerY - f.Location.Y

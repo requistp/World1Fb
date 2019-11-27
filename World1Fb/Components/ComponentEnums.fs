@@ -3,16 +3,16 @@ open CommonGenericFunctions
 open LocationTypes
 
 type ComponentType = 
-    | ControllerComponent
-    | EatingComponent
-    | FoodComponent
-    | FormComponent
-    | MatingComponent
+    | ControllerComponentType
+    | EatingComponentType
+    | FoodComponentType
+    | FormComponentType
+    | MatingComponentType
     | MemoryComponent
-    | MovementComponent
-    | PlantGrowthComponent
-    | TerrainComponent
-    | VisionComponent
+    | MovementComponentType
+    | PlantGrowthComponentType
+    | TerrainComponentType
+    | VisionComponentType
 
 
 type FoodClassifications =
@@ -67,8 +67,7 @@ type MovementDirection =
     member this.Z_change = 
         match this with
         | _ -> 0
-    member this.AddToLocation (l:LocationDataInt) =
-        { X = l.X + this.X_change; Y = l.Y + this.Y_change; Z = l.Z + this.Z_change}
+    member this.AddToLocation (l:LocationDataInt) = LocationDataInt(l.X + this.X_change, l.Y + this.Y_change, l.Z + this.Z_change)
 
 
 type Species = 

@@ -2,16 +2,14 @@
 open CommonGenericFunctions
 open ComponentEnums
 
-
-type PlantGrowthComponent = 
-    { 
-        ID : ComponentID
-        EntityID : EntityID
-        GrowsInTerrain : TerrainType[]
-        RegrowRate : float
-        ReproductionRate : float
-        ReproductionRange : int
-        ReproductionRequiredFoodQuantity : float 
-    } 
+[<Struct>]
+type PlantGrowthComponent (id:ComponentID, eid:EntityID, growsInTerrain:TerrainType[], regrowRate:float, reproductionRate:float, reproductionRange:int, reproductionRequiredFoodQuantity:float) = 
+    member _.ID = id
+    member _.EntityID = eid
+    member _.GrowsInTerrain = growsInTerrain
+    member _.RegrowRate = regrowRate
+    member _.ReproductionRate = reproductionRate
+    member _.ReproductionRange = reproductionRange
+    member _.ReproductionRequiredFoodQuantity = reproductionRequiredFoodQuantity
 
 

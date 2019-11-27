@@ -13,7 +13,7 @@ open SystemManager
 
 let MovementActionsAllowed (enm:EntityManager) (entityID:EntityID) =
     let mutable _allowed = Array.empty<ActionTypes>
-    let (Component.Movement move) = enm.GetComponent MovementComponent entityID
+    let (Component.Movement move) = enm.GetComponent MovementComponentType entityID
     let location = EntityExt.GetLocation enm entityID
     let testOnMap (direction:MovementDirection) = IsOnMap2D (direction.AddToLocation location)
     let formImpassableAtLocation (direction:MovementDirection) =
@@ -39,7 +39,7 @@ type MovementSystem(description:string, isActive:bool, enm:EntityManager, evm:Ev
         match not (IsOnMap2D destination) || EntityExt.FormImpassableAtLocation enm (Some f.EntityID) destination with
         | true -> Error (sprintf "Off map or form at location %s" (destination.ToString()))
         | false -> 
-            let newForm = UpdateForm f None None None (Some destination)
+            let newForm = FormComponent(f.ID, f.EntityID, f.Born, f.CanSeePast, f.IsPassable, destination, f.Name, f.Symbol)
             enm.UpdateComponent (Form newForm)
             evm.RaiseEvent (LocationChanged newForm)
             Ok (Some (sprintf "Location %s" (destination.ToString())))

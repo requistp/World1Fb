@@ -1,13 +1,15 @@
 ﻿module TerrainComponent
 open CommonGenericFunctions
 open ComponentEnums
+open System.Runtime.CompilerServices
 
 
-type TerrainComponent = 
-    { 
-        ID : ComponentID
-        EntityID : EntityID
-        Terrain : TerrainType 
-    } 
+//[<IsByRefLike; Struct>]
+[<Struct>]
+type TerrainComponent(id:ComponentID, eid:EntityID, terrain:TerrainType) = 
+    member _.ID = id
+    member _.EntityID = eid
+    member _.Terrain = terrain
+
         
         

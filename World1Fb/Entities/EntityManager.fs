@@ -23,7 +23,7 @@ type EntityManager() =
 
             agent_ComponentTypes.AddMany cts
 
-            cts |> Array.iter (fun c -> if GetComponentType c = FormComponent then agent_Locations.Add (ToForm c))
+            cts |> Array.iter (fun c -> if GetComponentType c = ComponentType.FormComponentType then agent_Locations.Add (ToForm c))
 
             agent_Entities.Add cts       
         ) 
@@ -35,7 +35,7 @@ type EntityManager() =
 
             ctss |> Array.iter agent_ComponentTypes.AddMany
 
-            ctss |> Array.iter (fun cts -> cts |> Array.iter (fun c -> if GetComponentType c = FormComponent then agent_Locations.Add (ToForm c)))
+            ctss |> Array.iter (fun cts -> cts |> Array.iter (fun c -> if GetComponentType c = ComponentType.FormComponentType then agent_Locations.Add (ToForm c)))
 
             ctss |> Array.iter agent_Entities.Add
         ) 
@@ -74,7 +74,7 @@ type EntityManager() =
 
             agent_ComponentTypes.RemoveMany cts
 
-            cts |> Array.iter (fun c -> if GetComponentType c = FormComponent then agent_Locations.Remove (ToForm c))
+            cts |> Array.iter (fun c -> if GetComponentType c = ComponentType.FormComponentType then agent_Locations.Remove (ToForm c))
 
             agent_Entities.Remove eid
         )
@@ -82,7 +82,7 @@ type EntityManager() =
     member me.UpdateComponent comp = 
         match comp with
         | Form f -> 
-            let oldForm = ToForm (me.GetComponent FormComponent f.EntityID)
+            let oldForm = ToForm (me.GetComponent ComponentType.FormComponentType f.EntityID)
             if (oldForm.Location <> f.Location) then
                 agent_Locations.Move oldForm f
         | _ -> ()

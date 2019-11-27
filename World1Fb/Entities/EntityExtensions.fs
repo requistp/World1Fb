@@ -15,7 +15,7 @@ module rec EntityExt =
 
     let FormImpassableAtLocation (enm:EntityManager) (excludeEID:EntityID option) (location:LocationDataInt) =
         location
-        |> GetEntitiesAtLocationWithComponent enm FormComponent excludeEID
+        |> GetEntitiesAtLocationWithComponent enm FormComponentType excludeEID
         |> Array.exists (fun (Form f) -> not f.IsPassable)
 
     let GetComponentForEntities (enm:EntityManager) (ct:ComponentType) (eids:EntityID[]) = 
@@ -34,7 +34,7 @@ module rec EntityExt =
         |> Array.filter (fun eid -> excludeEID.IsNone || eid <> excludeEID.Value) // Not excluded or not me
         |> Array.choose (TryGetComponent enm ct)
     
-    let GetLocation (enm:EntityManager) (eid:EntityID) = (ToForm (enm.GetComponent FormComponent eid)).Location
+    let GetLocation (enm:EntityManager) (eid:EntityID) = (ToForm (enm.GetComponent FormComponentType eid)).Location
 
     let TryGetComponent (enm:EntityManager) (ct:ComponentType) (eid:EntityID) : Option<Component> = 
         match (enm.GetComponents eid) |> Array.filter (fun c -> GetComponentType c = ct) with

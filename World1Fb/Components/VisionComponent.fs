@@ -2,33 +2,35 @@
 open CommonGenericFunctions
 open FormComponent
 open LocationTypes
+open System.Runtime.CompilerServices
+
 
 type VisionCalculationTypes =
     | Basic_Cheating
     | Shadowcast1
 
+//[<IsByRefLike; Struct>]
+[<Struct>]
+type VisionComponent (id:ComponentID, eid:EntityID, locationsWithinRange:LocationDataInt[], range:int, rangeTemplate:LocationDataInt[], visionCalculationType:VisionCalculationTypes, viewedHistory:Map<LocationDataInt,FormComponent[]>, visibleLocations:Map<LocationDataInt,FormComponent[]>) =
+    member _.ID = id
+    member _.EntityID = eid
+    member _.LocationsWithinRange = locationsWithinRange   // Locations within range--regardless of being blocked/visible/etc.
+    member _.Range = range
+    member _.RangeTemplate = rangeTemplate
+    member _.VisionCalculationType = visionCalculationType
+    member _.ViewedHistory = viewedHistory                 // All locations that entity has ever seen, and when
+    member _.VisibleLocations = visibleLocations           // Locations that are visible taking into account occlusion, etc. (i.e. a subset of VisionMap)
 
-type VisionComponent = 
-    { 
-        ID : ComponentID
-        EntityID : EntityID
-        LocationsWithinRange : LocationDataInt[]                // Locations within range--regardless of being blocked/visible/etc.
-        Range : int
-        RangeTemplate : LocationDataInt[]
-        VisionCalculationType : VisionCalculationTypes
-        ViewedHistory : Map<LocationDataInt,FormComponent[]>    // All locations that entity has ever seen, and when
-        VisibleLocations : Map<LocationDataInt,FormComponent[]> // Locations that are visible taking into account occlusion, etc. (i.e. a subset of VisionMap)
-    }
 
-let UpdateVision (vision:VisionComponent) (rangeUpdate:int option) (locationsWithinRangeUpdate:LocationDataInt[] option) =
-    {
-        vision with
-            Range = if rangeUpdate.IsSome then rangeUpdate.Value else vision.Range
-            RangeTemplate = if rangeUpdate.IsSome then RangeTemplate2D rangeUpdate.Value else vision.RangeTemplate
-            LocationsWithinRange = if locationsWithinRangeUpdate.IsSome then locationsWithinRangeUpdate.Value else vision.LocationsWithinRange
-    } 
+//let UpdateVision (vision:VisionComponent) (rangeUpdate:int option) (locationsWithinRangeUpdate:LocationDataInt[] option) =
+//    {
+//        vision with
+//            Range = if rangeUpdate.IsSome then rangeUpdate.Value else vision.Range
+//            RangeTemplate = if rangeUpdate.IsSome then RangeTemplate2D rangeUpdate.Value else vision.RangeTemplate
+//            LocationsWithinRange = if locationsWithinRangeUpdate.IsSome then locationsWithinRangeUpdate.Value else vision.LocationsWithinRange
+//    } 
 
-let UpdateViewed (vision:VisionComponent) (visibleLocations:Map<LocationDataInt,FormComponent[]>) = 
+let UpdateViewed (v:VisionComponent) (visibleLocations:Map<LocationDataInt,FormComponent[]>) = 
     let fids =
         visibleLocations
         |> Map.toArray
@@ -36,7 +38,7 @@ let UpdateViewed (vision:VisionComponent) (visibleLocations:Map<LocationDataInt,
         |> Array.map (fun f -> f.ID)
 
     let viewedHistory = 
-        vision.ViewedHistory
+        v.ViewedHistory
         |> Map.fold (fun (m:Map<LocationDataInt,FormComponent[]>) l fs -> 
             let newFS =
                 match (m.ContainsKey l) with
@@ -44,11 +46,12 @@ let UpdateViewed (vision:VisionComponent) (visibleLocations:Map<LocationDataInt,
                 | false -> fs |> Array.filter (fun f -> not (fids |> Array.contains f.ID))
             m.Add(l,newFS)
         ) visibleLocations
-    {
-        vision with
-            VisibleLocations = visibleLocations
-            ViewedHistory = viewedHistory
-    }
+    VisionComponent(v.ID, v.EntityID, v.LocationsWithinRange, v.Range, v.RangeTemplate, v.VisionCalculationType, viewedHistory, visibleLocations)
+    //{
+    //    v with
+    //        VisibleLocations = visibleLocations
+    //        ViewedHistory = viewedHistory
+    //}
 
 
 

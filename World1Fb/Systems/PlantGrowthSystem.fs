@@ -27,9 +27,9 @@ type PlantGrowthSystem(description:string, isActive:bool, enm:EntityManager, evm
             let adjustComponents (c:Component) =
                 match c with
                 | Food d -> 
-                    Food (UpdateFood d None (Some 1) None)
-                | Form d -> 
-                    Form (UpdateForm d None None None (Some l))
+                    Food(FoodComponent(d.ID, d.EntityID, d.FoodType, 1, d.QuantityMax)) // (UpdateFood d None (Some 1) None)
+                | Form d ->
+                    Form(FormComponent(d.ID, d.EntityID, d.Born, d.CanSeePast, d.IsPassable, l, d.Name, d.Symbol))
                 | _ -> c          
             let newcts = 
                 pgc.EntityID
@@ -48,13 +48,13 @@ type PlantGrowthSystem(description:string, isActive:bool, enm:EntityManager, evm
                 | false -> Error (sprintf "Failed: location not on map:%s" (newLocation.ToString()))
                 | true -> 
                     let eids = enm.GetEntityIDsAtLocation newLocation
-                    match (EntityExt.GetComponentForEntities enm PlantGrowthComponent eids).Length with 
+                    match (EntityExt.GetComponentForEntities enm PlantGrowthComponentType eids).Length with 
                     | x when x > 0 -> Error (sprintf "Failed: plant exists at location:%s" (newLocation.ToString()))
                     | _ -> 
-                        match pgc.GrowsInTerrain|>Array.contains (ToTerrain (EntityExt.GetComponentForEntities enm TerrainComponent eids).[0]).Terrain with
+                        match pgc.GrowsInTerrain|>Array.contains (ToTerrain (EntityExt.GetComponentForEntities enm TerrainComponentType eids).[0]).Terrain with
                         | false -> Error "Failed: terrain is not suitable"
                         | true -> 
-                            match (EntityExt.TryGetComponent enm FoodComponent pgc.EntityID) with
+                            match (EntityExt.TryGetComponent enm FoodComponentType pgc.EntityID) with
                             | None -> Ok newLocation
                             | Some (Food fd) -> 
                                 let pct = float fd.Quantity / float fd.QuantityMax

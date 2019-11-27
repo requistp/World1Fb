@@ -5,7 +5,10 @@ open FormComponent
 open LocationTypes
 // I ported this from: https://fadden.com/tech/ShadowCast.cs.txt
 
+open System.Runtime.CompilerServices
 
+//[<IsByRefLike; Struct>]
+[<Struct>]
 type OctantTransform(xx:int, xy:int, yx:int, yy:int) =
     member _.XX = xx
     member _.XY = xy
@@ -48,7 +51,7 @@ let ComputeVisibility_Shadowcast1 (viewerLocation:LocationDataInt) (grid:Locatio
             while yc >= 0 do
                 let gridX = viewerLocation.X + xc * txfrm.XX + yc * txfrm.XY
                 let gridY = viewerLocation.Y + xc * txfrm.YX + yc * txfrm.YY
-                let l = { X = gridX; Y = gridY; Z = 0 }
+                let l = LocationDataInt(gridX,gridY,0) //{ X = gridX; Y = gridY; Z = 0 }
                 
                 match (Array.contains l grid) with
                 | false -> ()
@@ -107,7 +110,7 @@ let ComputeVisibility_original (viewerLocation:LocationDataInt) (grid:LocationDa
             while yc >= 0 do
                 let gridX = viewerLocation.X + xc * txfrm.XX + yc * txfrm.XY
                 let gridY = viewerLocation.Y + xc * txfrm.YX + yc * txfrm.YY
-                let l = { X = gridX; Y = gridY; Z = 0 }
+                let l = LocationDataInt(gridX,gridY,0)
                 
                 match (Array.contains l grid) with
                 | false -> ()

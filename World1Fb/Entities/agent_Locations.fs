@@ -26,14 +26,14 @@ type agent_Locations(compMan:agent_Components) =
                 async { 
                     while true do
                         let! msg = inbox.Receive()
-                        let add form = 
+                        let add (form:FormComponent) = 
                             _map <-
                                 match _map.ContainsKey form.Location with
                                 | false -> _map.Add(form.Location,[|form.ID|])
                                 | true ->
                                     let others = _map.Item(form.Location) |> Array.filter (fun c -> c <> form.ID) // In case component was already here
                                     _map.Remove(form.Location).Add(form.Location,Array.append others [|form.ID|]) 
-                        let remove form =
+                        let remove (form:FormComponent) =
                             if (_map.ContainsKey form.Location) then
                                 let others = _map.Item(form.Location) |> Array.filter (fun c -> c <> form.ID)
                                 _map <- _map.Remove(form.Location).Add(form.Location,others) 

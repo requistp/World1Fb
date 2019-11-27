@@ -9,30 +9,26 @@ let MapWidth = 50
 [<Literal>]
 let MapHeight = 50
 
-
-type LocationDataInt = 
-    {
-        X : int
-        Y : int
-        Z : int
-    } 
-    static member (+) (l1:LocationDataInt,l2:LocationDataInt) = { X = l1.X + l2.X; Y = l1.Y + l2.Y; Z = l1.Z + l2.Z }
-    static member (-) (l1:LocationDataInt,l2:LocationDataInt) = { X = l1.X - l2.X; Y = l1.Y - l2.Y; Z = l1.Z - l2.Z }
-    static member empty = { X = 0; Y = 0; Z = 0 }
+[<Struct>]
+type LocationDataInt(x:int, y:int, z:int) = 
+    member _.X = x
+    member _.Y = y
+    member _.Z = z
+    static member (+) (l1:LocationDataInt,l2:LocationDataInt) = LocationDataInt(l1.X + l2.X, l1.Y + l2.Y, l1.Z + l2.Z)
+    static member (-) (l1:LocationDataInt,l2:LocationDataInt) = LocationDataInt(l1.X - l2.X, l1.Y - l2.Y, l1.Z - l2.Z)
+    static member empty = LocationDataInt()
     static member Is000 l = (l = LocationDataInt.empty)
     static member Offset (rangeX:int) (rangeY:int) (rangeZ:int) (allow000:bool) (doubleRandom:bool) =
-        let getNewLocation rnd = 
-            {
-                X = random.Next(-rangeX,rangeX+1)
-                Y = random.Next(-rangeY,rangeY+1)
-                Z = random.Next(-rangeZ,rangeZ+1)
-            }
-        let getNewLocation_double rnd = 
-            {
-                X = int (Math.Round((float (random.Next(-rangeX,rangeX+1)) + float (random.Next(-rangeX,rangeX+1))) / 2.0, 0))
-                Y = int (Math.Round((float (random.Next(-rangeY,rangeY+1)) + float (random.Next(-rangeY,rangeY+1))) / 2.0, 0))
-                Z = int (Math.Round((float (random.Next(-rangeZ,rangeZ+1)) + float (random.Next(-rangeZ,rangeZ+1))) / 2.0, 0))
-            }
+        let getNewLocation rnd = LocationDataInt(random.Next(-rangeX,rangeX+1), random.Next(-rangeY,rangeY+1), random.Next(-rangeZ,rangeZ+1))
+            //{
+            //    X = random.Next(-rangeX,rangeX+1)
+            //    Y = random.Next(-rangeY,rangeY+1)
+            //    Z = random.Next(-rangeZ,rangeZ+1)
+            //}
+        let getNewLocation_double rnd = LocationDataInt(
+            int (Math.Round((float (random.Next(-rangeX,rangeX+1)) + float (random.Next(-rangeX,rangeX+1))) / 2.0, 0)),
+            int (Math.Round((float (random.Next(-rangeY,rangeY+1)) + float (random.Next(-rangeY,rangeY+1))) / 2.0, 0)),
+            int (Math.Round((float (random.Next(-rangeZ,rangeZ+1)) + float (random.Next(-rangeZ,rangeZ+1))) / 2.0, 0)))
         let newLocation rnd =
             if doubleRandom then getNewLocation_double rnd else getNewLocation rnd
 
@@ -59,7 +55,7 @@ let WithinRange2D (l1:LocationDataInt) (range:int) (l2:LocationDataInt) =
 
 let RangeTemplate2D (range:int) =
     [| -range .. range |] 
-    |> Array.collect (fun y -> [| -range .. range |] |> Array.map (fun x -> { X=x; Y=y; Z=0 } ))
+    |> Array.collect (fun y -> [| -range .. range |] |> Array.map (fun x -> LocationDataInt(x,y,0)))
     |> Array.filter (WithinRange2D LocationDataInt.empty range)
 
 let LocationsWithinRange2D (location:LocationDataInt) (rangeTemplate:LocationDataInt[]) = 
@@ -68,7 +64,7 @@ let LocationsWithinRange2D (location:LocationDataInt) (rangeTemplate:LocationDat
     |> Array.filter IsOnMap2D
 
 let MapLocations =
-    [|0..MapHeight-1|] |> Array.collect (fun y -> [|0..MapWidth-1|] |> Array.map (fun x -> { X=x; Y=y; Z=0 } ))
+    [|0..MapHeight-1|] |> Array.collect (fun y -> [|0..MapWidth-1|] |> Array.map (fun x -> LocationDataInt(x,y,0) ))
 
 
 

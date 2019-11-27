@@ -14,7 +14,7 @@ open EntityManager
 let UpdateViewableForAll (enm:EntityManager) round = 
     let allForms = enm.GetLocationMap 
 
-    VisionComponent
+    VisionComponentType
     |> enm.GetComponentsOfType
     |> Array.Parallel.map ToVision
     |> Array.Parallel.iter (fun vision ->
@@ -29,10 +29,10 @@ type VisionSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
     inherit AbstractSystem(description,isActive) 
     
     member private me.onLocationChanged round (LocationChanged form:GameEventData) =
-        match EntityExt.TryGetComponent enm VisionComponent form.EntityID with
+        match EntityExt.TryGetComponent enm VisionComponentType form.EntityID with
         | None -> Ok (Some "No vision Component")
-        | Some (Vision vision) ->
-            enm.UpdateComponent (Vision (UpdateVision vision None (Some (LocationsWithinRange2D form.Location vision.RangeTemplate))))
+        | Some (Vision v) ->
+            enm.UpdateComponent (Vision(VisionComponent(v.ID, v.EntityID, LocationsWithinRange2D form.Location v.RangeTemplate, v.Range, v.RangeTemplate, v.VisionCalculationType, v.ViewedHistory, v.VisibleLocations)))
             Ok (Some "VisionMap updated")
 
     override me.Initialize = 
