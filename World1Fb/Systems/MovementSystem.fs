@@ -39,7 +39,7 @@ type MovementSystem(description:string, isActive:bool, enm:EntityManager, evm:Ev
         match not (IsOnMap2D destination) || EntityExt.FormImpassableAtLocation enm (Some f.EntityID) destination with
         | true -> Error (sprintf "Off map or form at location %s" (destination.ToString()))
         | false -> 
-            let newForm = UpdateForm f None None None (Some destination)
+            let newForm = { f with Location = destination }
             enm.UpdateComponent (Form newForm)
             evm.RaiseEvent (LocationChanged newForm)
             Ok (Some (sprintf "Location %s" (destination.ToString())))

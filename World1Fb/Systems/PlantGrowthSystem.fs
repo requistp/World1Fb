@@ -27,9 +27,9 @@ type PlantGrowthSystem(description:string, isActive:bool, enm:EntityManager, evm
             let adjustComponents (c:Component) =
                 match c with
                 | Food d -> 
-                    Food (UpdateFood d None (Some 1) None)
+                    Food { d with Quantity = 1 }
                 | Form d -> 
-                    Form (UpdateForm d None None None (Some l))
+                    Form { d with Location = l }
                 | _ -> c          
             let newcts = 
                 pgc.EntityID

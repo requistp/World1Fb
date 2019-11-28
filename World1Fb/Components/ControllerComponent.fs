@@ -45,15 +45,7 @@ type ControllerComponent =
         PotentialActions : ActionTypes[] // Actions that can be done by entities components
     }
 
-let ActionIsAllowed (cc:ControllerComponent) (action:ActionTypes) = cc.CurrentActions |> Array.contains action
 
-let UpdateController (cc:ControllerComponent) (controllerTypeUpdate:ControllerTypes option) (currentActionUpdate:ActionTypes option) (currentActionsUpdate:ActionTypes[] option) (potentialActionsUpdate:ActionTypes[] option) =
-    {
-        cc with
-            ControllerType = if controllerTypeUpdate.IsSome then controllerTypeUpdate.Value else cc.ControllerType
-            CurrentAction = if currentActionUpdate.IsSome then currentActionUpdate.Value else cc.CurrentAction
-            CurrentActions = if currentActionsUpdate.IsSome then currentActionsUpdate.Value else cc.CurrentActions
-            PotentialActions = if potentialActionsUpdate.IsSome then potentialActionsUpdate.Value else cc.PotentialActions
-    }
+let ActionIsAllowed (cc:ControllerComponent) (action:ActionTypes) = cc.CurrentActions |> Array.contains action
 
 

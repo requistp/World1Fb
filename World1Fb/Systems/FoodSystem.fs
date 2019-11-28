@@ -22,7 +22,7 @@ type FoodSystem(description:string, isActive:bool, enm:EntityManager, evm:EventM
             let newQ = Math.Clamp(food.Quantity - eat.Quantity, 0, food.QuantityMax)
             let allEaten = newQ <= 0
             if allEaten then evm.RaiseEvent (Food_AllEaten (eat,food))
-            enm.UpdateComponent (Food (UpdateFood food None (Some newQ) None))
+            enm.UpdateComponent (Food { food with Quantity = newQ })
             Ok (Some (sprintf "Quantity:-%i=%i. All eaten:%b" eat.Quantity newQ allEaten))
 
     member private me.onRegrowth round (PlantRegrowth pg:GameEventData) =
@@ -33,7 +33,7 @@ type FoodSystem(description:string, isActive:bool, enm:EntityManager, evm:EventM
             | (_,0.0) -> Ok (Some "Zero regrow rate")
             | (_,_) -> 
                 let quantity = Math.Clamp((int (Math.Round(pg.RegrowRate * (float f.QuantityMax),0))), 1, missing)
-                enm.UpdateComponent (Food (UpdateFood f None (Some (f.Quantity+quantity)) None)) 
+                enm.UpdateComponent (Food { f with Quantity = f.Quantity + quantity })
                 Ok (Some (sprintf "EntityID:%i. Regrown quantity:%i" pg.EntityID.ToUint32 quantity))
         match (EntityExt.TryGetComponent enm FoodComponent pg.EntityID) with
         | None -> Ok None

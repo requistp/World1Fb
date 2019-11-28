@@ -45,14 +45,14 @@ type MatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
         let tryMating (mc2:MatingComponent) =
             let chance = mc.ChanceOfReproduction * mc2.ChanceOfReproduction
             let rnd = random.NextDouble()
-            enm.UpdateComponent (Mating (UpdateMating mc None None (Some round) None)) 
+            enm.UpdateComponent (Mating { mc with LastMatingAttempt = round })
             match chance >= rnd with
             | false -> 
-                enm.UpdateComponent (Mating (UpdateMating mc2 None None (Some round) None))
+                enm.UpdateComponent (Mating { mc with LastMatingAttempt = round })
                 Error (sprintf "Reproduction failed (%f<%f)" chance rnd)
             | true ->
                 evm.AddToSchedule { ScheduleType = RunOnce; Frequency = mc2.Species.Gestation; GameEvent = Birth (mc2,mc) }
-                enm.UpdateComponent (Mating (UpdateMating mc2 None (Some Female_Pregnant) (Some round) None)) 
+                enm.UpdateComponent (Mating { mc2 with LastMatingAttempt = round; MatingStatus = Female_Pregnant }) 
                 Ok (Some (sprintf "Reproduction succeeded (%f >= %f)" chance rnd))
 
         selectFemale
@@ -60,7 +60,7 @@ type MatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
         |> Result.bind tryMating
 
     member me.onBirth round (Birth (mom,_):GameEventData) =
-        enm.UpdateComponent (Mating (UpdateMating mom None (Some Female) (Some (round + mom.Species.MaxMatingFrequency)) None)) // Change Mom to Non-Pregnant Female and add some extra time to before she can mate again
+        enm.UpdateComponent (Mating { mom with LastMatingAttempt = round + mom.Species.MaxMatingFrequency; MatingStatus = Female }) // Change Mom to Non-Pregnant Female and add some extra time to before she can mate again
         let adjustComponents (c:Component) =
             match c with
             | Mating d -> 

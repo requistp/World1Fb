@@ -41,7 +41,7 @@ type EatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
             match quantity with
             | 0 -> Error "Stomach is full"
             | _ -> 
-                enm.UpdateComponent (Eating (UpdateEating eat (Some (eat.Quantity+quantity)) (Some (eat.Calories+calories))))
+                enm.UpdateComponent (Eating { eat with Quantity = eat.Quantity+quantity; Calories = eat.Calories+calories })
                 evm.RaiseEvent (Eaten (eat,food))
                 Ok (Some (sprintf "EateeID: %i. Quantity: +%i=%i. Calories: +%i=%i" (food.EntityID.ToUint32) quantity (eat.Quantity+quantity) calories (eat.Calories+calories)))
         
@@ -59,7 +59,7 @@ type EatingSystem(description:string, isActive:bool, enm:EntityManager, evm:Even
         let starving = newC < 0
         let result = sprintf "Quantity:-%i=%i. Calories:-%i=%i. Starving:%b" eat.QuantityPerMetabolize newQ eat.CaloriesPerMetabolize newC starving
         if starving then evm.RaiseEvent (Starving eat) 
-        enm.UpdateComponent (Eating (UpdateEating eat (Some newQ) (Some newC))) 
+        enm.UpdateComponent (Eating { eat with Quantity = newQ; Calories = newC })
         Ok (Some result)
 
     override me.Initialize = 

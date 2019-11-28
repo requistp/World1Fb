@@ -22,10 +22,3 @@ type EatingComponent =
     
 let CanEat (eat:EatingComponent) (fd:FoodTypes) = eat.Foods |> Array.contains fd    
 
-let UpdateEating (eat:EatingComponent) (quantityUpdate:int option) (caloriesUpdate:int option) = 
-       {
-           eat with
-               Quantity = if quantityUpdate.IsSome then quantityUpdate.Value else eat.Quantity
-               Calories = if caloriesUpdate.IsSome then caloriesUpdate.Value else eat.Calories
-       }
-
